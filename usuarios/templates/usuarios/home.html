@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo à QuickEAM</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
+        header { background: #333; color: #fff; padding: 1rem 0; text-align: center; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 1rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        a { color: #4CAF50; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .buttons { margin-top: 2rem; display: flex; justify-content: space-around; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; background: #4CAF50; color: #fff; cursor: pointer; }
+        button:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>QuickEAM</h1>
+        <p>Inovação e Sustentabilidade na Gestão de Ativos Empresariais</p>
+    </header>
+    <div class="container">
+        <h2>Sobre Nós</h2>
+        <p>
+            A QuickEAM é líder em soluções de gestão de ativos, oferecendo ferramentas inovadoras para transformar
+            a operação das empresas. Nossa missão é impulsionar a eficiência operacional e promover a sustentabilidade
+            no setor industrial.
+        </p>
+        <h3>Impacto</h3>
+        <p>
+            Nossos projetos já transformaram a operação de grandes empresas, ajudando a prever falhas e reduzir custos
+            com o uso de inteligência artificial de ponta.
+        </p>
+        <div class="buttons">
+            <a href="{% url 'register' %}"><button>Cadastrar-se</button></a>
+            <a href="{% url 'login' %}"><button>Login</button></a>
+        </div>
+    </div>
+</body>
+</html>
