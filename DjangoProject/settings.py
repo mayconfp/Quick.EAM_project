@@ -73,7 +73,7 @@ AUTH_USER_MODEL = 'usuarios.CustomUser'
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
 
-LANGUAGE_CODE = 'pt-br'
+LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_L10N = True

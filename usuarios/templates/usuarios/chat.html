@@ -1,26 +1,29 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat com a IA - QuickEAM</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
     <h1>Chat com a IA - QuickEAM</h1>
     <p>
         Este projeto foi desenvolvido para demonstrar como a inteligência artificial pode revolucionar a gestão de ativos.
         Projeto desenvolvido pelo estagiário <strong>Maycon</strong>.
-        </p>
-      <form method="post">
-      {% csrf_token %}
-      <textarea name="message" placeholder="Digite sua mensagem aqui..."></textarea>
-      <button type="submit">Enviar</button>
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        <textarea name="message" placeholder="Digite sua mensagem aqui..."></textarea>
+        <button type="submit">Enviar</button>
+
     </form>
-
     {% if response %}
-      <p><strong>IA:</strong> {{ response }}</p>
+        <p><strong>IA:</strong> {{ response }}</p>
     {% endif %}
-
     <a href="{% url 'logout' %}">Sair</a>
 </body>
 </html>

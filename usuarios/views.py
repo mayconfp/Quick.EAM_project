@@ -18,6 +18,7 @@ def chat(request):
         ai_response = gerar_resposta(user_message)  # Gera resposta da IA
     return render(request, 'usuarios/chat.html', {'response': ai_response})
 
+
 def home(request):
     """Página inicial com informações sobre a QuickEAM."""
     return render(request, 'usuarios/home.html')
