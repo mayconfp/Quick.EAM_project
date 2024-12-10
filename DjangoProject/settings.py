@@ -3,7 +3,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv, find_dotenv
 
-# Carrega variáveis de ambiente do .env
+# Carrega variáveis de ambiente do ..env
 _ = load_dotenv(find_dotenv())
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,6 +34,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'DjangoProject.urls'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -52,14 +53,15 @@ TEMPLATES = [
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # Tipo do banco de dados
-        'NAME': os.getenv("DB_NAME", "testes"),  # Nome do banco (padrão: "django_db")
-        'USER': os.getenv("DB_USER", "postgres"),  # Usuário (padrão: "postgres")
-        'PASSWORD': os.getenv("DB_PASSWORD", "admin"),  # Senha (padrão: "admin")
-        'HOST': os.getenv("DB_HOST", "localhost"),  # Host (padrão: "localhost")
-        'PORT': os.getenv("DB_PORT", "5432"),  # Porta (padrão: "5432")
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'testes',
+        'USER': 'postgres',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -73,7 +75,7 @@ AUTH_USER_MODEL = 'usuarios.CustomUser'
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_L10N = True
@@ -83,3 +85,17 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
