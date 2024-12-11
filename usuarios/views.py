@@ -64,7 +64,7 @@ def chat(request):
         'response': ai_response,
         'chat_history': chat_history
     })
-
+#
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
