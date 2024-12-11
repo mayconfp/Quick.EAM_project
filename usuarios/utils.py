@@ -16,6 +16,7 @@ def gerar_resposta(mensagem):
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
+            temperature=0.8,
             messages=[{"role": "user", "content": mensagem}]
         )
         return response.choices[0].message['content']
