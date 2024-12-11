@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
+from usuarios.models import ChatHistory, CustomUser
 
 class CustomUserCreationForm(UserCreationForm):
     """Formulário para cadastro de novos usuários."""

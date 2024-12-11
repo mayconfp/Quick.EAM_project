@@ -15,12 +15,12 @@
         Este projeto foi desenvolvido para demonstrar como a inteligência artificial pode revolucionar a gestão de ativos.
         Projeto desenvolvido pelo estagiário <strong>Maycon</strong>.
     </p>
-    <form method="post">
+    <form method="POST">
         {% csrf_token %}
-        <textarea name="message" placeholder="Digite sua mensagem aqui..."></textarea>
+        <input type="text" name="message" placeholder="Digite sua pergunta">
         <button type="submit">Enviar</button>
-
     </form>
+
     {% if response %}
         <p><strong>IA:</strong> {{ response }}</p>
     {% endif %}
