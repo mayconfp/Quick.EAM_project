@@ -55,7 +55,7 @@ def chat(request):
                 question=user_message,  # Mensagem do usuário
                 answer=ai_response  # Resposta da IA
             )
-#comentario
+
     # Recupera o histórico de mensagens para o usuário atual, ordenado por data
     chat_history = ChatHistory.objects.filter(user=request.user).order_by('-timestamp')
 
