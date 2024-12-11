@@ -1,34 +1,29 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat com IA</title>
-    <!-- Carregando o CSS externo -->
+    <title>Chat com a IA - QuickEAM</title>
+    {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <div class="chat-container">
-        <h1>Chat com IA</h1>
-        <!-- Exibição das mensagens do usuário e da IA -->
-        <div class="chat-messages">
-            {% if response %}
-                <p class="user-message">Você: {{ request.POST.message }}</p>
-                <p class="ia-response">IA: {{ response }}</p>
-            {% else %}
-                <p class="ia-response">Faça uma pergunta para a IA!</p>
-            {% endif %}
-        </div>
+    <h1>Chat com a IA - QuickEAM</h1>
+    <p>
+        Este projeto foi desenvolvido para demonstrar como a inteligência artificial pode revolucionar a gestão de ativos.
+        Projeto desenvolvido pelo estagiário <strong>Maycon</strong>.
+    </p>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="message" placeholder="Digite sua pergunta">
+        <button type="submit">Enviar</button>
+    </form>
 
-        <!-- Formulário para enviar mensagens -->
-        <form method="post" class="chat-form">
-            {% csrf_token %}
-            <input type="text" name="message" placeholder="Digite sua mensagem" required>
-            <button type="submit">Enviar</button>
-        </form>
-    </div>
+    {% if response %}
+        <p><strong>IA:</strong> {{ response }}</p>
+    {% endif %}
+    <a href="{% url 'logout' %}">Sair</a>
 </body>
 </html>
-

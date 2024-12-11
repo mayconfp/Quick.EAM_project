@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import CustomUser, ChatHistory  # Importa os modelos necessários
-from usuarios.models import ChatHistory, CustomUser
 
 # Registro do modelo CustomUser no admin
 @admin.register(CustomUser)
