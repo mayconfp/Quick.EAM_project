@@ -8,22 +8,14 @@ from .openai_cliente import gerar_resposta
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .openai_cliente import gerar_resposta
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from usuarios.openai_cliente import gerar_resposta
 
 @login_required
-def chat_view(request):
+def chat(request):
+    """Página do chat com a IA."""
     ai_response = None
-
-    if request.method == "POST":
-        user_message = request.POST.get("message")
-        print(f"Mensagem do usuário: {user_message}")
-
-        if user_message:
-            # Chama a função que gera a resposta e salva no histórico
-            ai_response = gerar_resposta(user_message, user=request.user)
-
+    if request.method == 'POST':
+        user_message = request.POST.get('message')  # Obtém mensagem do usuário
+        ai_response = gerar_resposta(user_message)  # Gera resposta da IA
     return render(request, 'usuarios/chat.html', {'response': ai_response})
 
 

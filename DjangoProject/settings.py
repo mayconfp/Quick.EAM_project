@@ -54,9 +54,9 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'testes',
+        'NAME': 'quick',
         'USER': 'postgres',
-        'PASSWORD': 'admin',
+        'PASSWORD': 'boot',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -82,7 +82,7 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [ os.path.join(BASE_DIR, "usuarios", "static"),]
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 

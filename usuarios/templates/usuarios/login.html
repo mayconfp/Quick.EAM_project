@@ -1,11 +1,33 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/styles.css'  %}">
     <title>Login - QuickEAM</title>
 </head>
 <body>
+<header>
+        <button id="menuToggle" class="menu-btn">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+</button>
+        <nav id="menu" class="menu hidden">
+        <ul>
+            <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="#">Serviços</a></li>
+        </ul>
+    </nav>
+        <div class="logo">
+            <a href="{% url 'home' %}" class="logo">
+                <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
+            </a>
+        </div>
+    </header>
     <h1>Login</h1>
     <p>Entre na sua conta para acessar o sistema da QuickEAM.</p>
     <form method="post">
@@ -14,5 +36,22 @@
         <button type="submit">Entrar</button>
     </form>
     <p>Não tem uma conta? <a href="{% url 'register' %}">Cadastre-se aqui</a>.</p>
+<footer class="footer">
+    <div class="footer-content">
+        <p>&copy; 2024 QuickEAM. Todos os direitos reservados.</p>
+        <ul class="footer-links">
+            <li><a href="#">Termos de Uso</a></li>
+            <li><a href="#">Política de Privacidade</a></li>
+            <li><a href="#">Contato</a></li>
+        </ul>
+    </div>
+</footer>
+<script>
+        document.getElementById("menuToggle").addEventListener("click", function () {
+            const menu = document.getElementById("menu");
+            menu.classList.toggle("hidden");
+        });
+    </script>
+
 </body>
 </html>
