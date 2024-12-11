@@ -74,6 +74,26 @@ a:hover {
 }
 
 
-img {
+.chat-history {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+}
 
+.chat-message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.user-message {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.ai-message {
+    color: #28a745;
 }
