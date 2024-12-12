@@ -57,7 +57,7 @@ def chat(request):
             )
 
     # Recupera o histórico de mensagens para o usuário atual, ordenado por data
-    chat_history = ChatHistory.objects.filter(user=request.user).order_by('-timestamp')
+    chat_history = ChatHistory.objects.filter(user=request.user).order_by('timestamp')
 
     # Renderiza a página do chat com a resposta e o histórico
     return render(request, 'usuarios/chat.html', {
@@ -65,13 +65,6 @@ def chat(request):
         'chat_history': chat_history
     })
 
-
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def listar_usuarios(request):
-    """Listagem de usuários (restrita a administradores)."""
-    users = CustomUser.objects.all()
-    return render(request, 'usuarios/listar.html', {'users': users})
 
 
 def logout_view(request):

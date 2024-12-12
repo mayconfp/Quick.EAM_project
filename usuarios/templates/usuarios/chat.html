@@ -1,40 +1,92 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat com a IA - QuickEAM</title>
+    <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
+     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+
+    <title>QuickEAM</title>
 </head>
 <body>
-    <h1>Chat com a IA - QuickEAM</h1>
-    <p>
-        Este projeto foi desenvolvido para demonstrar como a inteligência artificial pode revolucionar a gestão de ativos.
-        Projeto desenvolvido pelo estagiário <strong>Maycon</strong>.
-    </p>
+    <header>
+        <button id="menuToggle" class="menu-btn">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+</button>
+        <nav id="menu" class="menu hidden">
+        <ul>
+            <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="#">Serviços</a></li>
+        </ul>
+    </nav>
+        <div class="logo">
+            <a href="{% url 'home' %}" class="logo">
+                <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
+            </a>
+        </div>
+    </header>
 
-    <!-- Formulário de envio de mensagem -->
-    <form method="post">
-        {% csrf_token %}
-        <textarea name="message" placeholder="Digite sua mensagem aqui..."></textarea>
-        <button type="submit">Enviar</button>
-    </form>
 
-    <!-- Exibição do histórico -->
-    <div>
-        <h2>Histórico de Chat</h2>
-        {% for chat in chat_history %}
-            <div>
-                <p><strong>Você:</strong> {{ chat.question }}</p>
-                <p><strong>IA:</strong> {{ chat.answer }}</p>
-            </div>
-        {% empty %}
-            <p>Sem histórico ainda.</p>
-        {% endfor %}
+<div class="chat-container">
+        <!-- Histórico de mensagens -->
+        <div class="chat-history" id="chatHistory">
+            <h2>Histórico de Chat</h2>
+            <!-- Loop de mensagens no Django -->
+            {% for chat in chat_history %}
+                <div class="message_user">
+                    <p><strong>Você:</strong> {{ chat.question }}</p>
+                </div>
+                <div class="message_bot">
+                    <p><strong>IA:</strong> {{ chat.answer }}</p>
+                </div>
+            {% empty %}
+                <p>Sem histórico ainda.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Formulário de envio -->
+        <form method="post" class="chat-form">
+            {% csrf_token %}
+            <textarea name="message" placeholder="Digite sua mensagem aqui..." required></textarea>
+            <button type="submit">Enviar</button>
+        </form>
     </div>
 
-    <a href="{% url 'logout' %}">Sair</a>
+
+    <footer class="footer">
+    <div class="footer-content">
+        <p>&copy; 2024 QuickEAM. Todos os direitos reservados.</p>
+        <ul class="footer-links">
+            <li><a href="#">Termos de Uso</a></li>
+            <li><a href="#">Política de Privacidade</a></li>
+            <li><a href="#">Contato</a></li>
+        </ul>
+    </div>
+</footer>
+<script>
+    function scrollToBottom() {
+        const chatHistory = document.getElementById("chatHistory");
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    // Rola para o final ao carregar a página
+    document.addEventListener("DOMContentLoaded", scrollToBottom);
+
+    // Rola para o final sempre que o formulário for enviado
+    const chatForm = document.querySelector(".chat-form");
+    chatForm.addEventListener("submit", function (e) {
+        // Após enviar a mensagem, espera um pequeno delay e rola
+        setTimeout(scrollToBottom, 100);
+    });
+        document.getElementById("menuToggle").addEventListener("click", function () {
+            const menu = document.getElementById("menu");
+            menu.classList.toggle("hidden");
+        });
+    </script>
 </body>
 </html>

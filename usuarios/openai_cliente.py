@@ -12,7 +12,8 @@ def gerar_resposta(mensagem_usuario, user=None):
         # Chamada para a API da OpenAI
         resposta = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": mensagem_usuario}]
+            messages=[{"role": "user", "content": mensagem_usuario}],
+            temperature=0.5,
         )
         conteudo_resposta = resposta['choices'][0]['message']['content']
         print(f"Resposta da OpenAI: {conteudo_resposta}")
