@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css'  %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <title>Login - QuickEAM</title>
 </head>
 <body>
@@ -28,14 +30,20 @@
             </a>
         </div>
     </header>
+    <div class="login">
     <h1>Login</h1>
-    <p>Entre na sua conta para acessar o sistema da QuickEAM.</p>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <label for="username">Usuário:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" required>
+
         <button type="submit">Entrar</button>
     </form>
-    <p>Não tem uma conta? <a href="{% url 'register' %}">Cadastre-se aqui</a>.</p>
+    <p>Novo na QuickEAM? <a href="{% url 'register' %}">Cadastre-se aqui</a>.</p>
+    </div>
 <footer class="footer">
     <div class="footer-content">
         <p>&copy; 2024 QuickEAM. Todos os direitos reservados.</p>

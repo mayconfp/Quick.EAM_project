@@ -32,30 +32,46 @@
     </header>
 
 
+
+
 <div class="chat-container">
         <!-- Histórico de mensagens -->
         <div class="chat-history" id="chatHistory">
             <h2>Histórico de Chat</h2>
+
+
+
             <!-- Loop de mensagens no Django -->
             {% for chat in chat_history %}
                 <div class="message_user">
                     <p><strong>Você:</strong> {{ chat.question }}</p>
                 </div>
                 <div class="message_bot">
-                    <p><strong>IA:</strong> {{ chat.answer }}</p>
+
+                    <p><strong>{{ provedor_selecionado|title }}:</strong> {{ chat.answer }}</p>
                 </div>
             {% empty %}
                 <p>Sem histórico ainda.</p>
             {% endfor %}
         </div>
 
+            <label for="provedor">IA:</label>
+             <select name="provedor">
+                <option value="openai" {% if provedor_selecionado == 'openai' %}selected{% endif %}>OpenAI</option>
+                <option value="copilot" {% if provedor_selecionado == 'copilot' %}selected{% endif %}>Copilot</option>
+                </select>
+
+
         <!-- Formulário de envio -->
         <form method="post" class="chat-form">
             {% csrf_token %}
-            <textarea name="message" placeholder="Digite sua mensagem aqui..." required></textarea>
+            <textarea name="message" placeholder="Pergunte a Manuela" required></textarea>
             <button type="submit">Enviar</button>
         </form>
     </div>
+
+
+
 
 
     <footer class="footer">

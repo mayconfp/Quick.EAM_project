@@ -4,7 +4,7 @@ from usuarios.models import ChatHistory
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def gerar_resposta(mensagem_usuario, user=None):
+def gerar_resposta_openai(mensagem_usuario, user=None):
     """
     Gera uma resposta da OpenAI e salva a interação no banco de dados.
     """
