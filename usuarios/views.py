@@ -38,22 +38,22 @@ def user_login(request):
 
 @login_required
 def chat(request):
-    ai_response = None
-    provedor_selecionado = 'openai'  # Valor padrão caso o usuário não escolha nenhum
+    provedor_selecionado = 'openai'  # Valor padrão
 
     if request.method == 'POST':
-        # Obtém a mensagem e o provedor selecionado
+        # Captura a mensagem do usuário e o provedor selecionado
         user_message = request.POST.get('message')
-        provedor_selecionado = request.POST.get('copilot', 'openai')
+        provedor_selecionado = request.POST.get('provedor', 'openai')
 
-        # Chama o serviço de processamento
-        ai_response = process_chat_message(request.user, user_message, provedor_selecionado)
+        # Garante que process_chat_message é chamado apenas uma vez
+        if user_message:
+            ai_response = process_chat_message(request.user, user_message, provedor_selecionado)
 
-    # Recupera o histórico e renderiza o template
+    # Recupera o histórico completo do banco de dados
     chat_history = ChatHistory.objects.filter(user=request.user).order_by('timestamp')
 
+    # Renderiza o template com o histórico e o provedor selecionado
     return render(request, 'usuarios/chat.html', {
-        'response': ai_response,
         'chat_history': chat_history,
         'provedor_selecionado': provedor_selecionado
     })

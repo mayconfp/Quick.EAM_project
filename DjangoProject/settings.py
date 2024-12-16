@@ -85,7 +85,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [ os.path.join(BASE_DIR, "usuarios", "static"),]
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
+LLAMA_API_KEY = os.getenv("LLAMA_API_KEY")
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
