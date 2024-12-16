@@ -1,16 +1,17 @@
 import os
 from pathlib import Path
-
 from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
-# Carrega variáveis de ambiente do ..env
-_ = load_dotenv(find_dotenv())
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_URL = os.getenv("GEMINI_URL")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-secreta")
-DEBUG = True
-ALLOWED_HOSTS = []
+DEBUG = os.getenv("DEBUG", "False").lower() in ["true", "1"]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")  # Adicione domínios no .env separados por vírgulas
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -34,7 +35,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'DjangoProject.urls'
 
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -54,15 +54,13 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'quick',
-        'USER': 'postgres',
-        'PASSWORD': 'boot',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv("DB_NAME", "testes"),
+        'USER': os.getenv("DB_USER", "postgres"),
+        'PASSWORD': os.getenv("DB_PASSWORD", "admin"),
+        'HOST': os.getenv("DB_HOST", "localhost"),
+        'PORT': os.getenv("DB_PORT", "5432"),
     }
 }
-
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -82,9 +80,11 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [ os.path.join(BASE_DIR, "usuarios", "static"),]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "usuarios", "static")]
 
+# Configurações do OpenAI e Gemini
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 
 LOGGING = {
     'version': 1,

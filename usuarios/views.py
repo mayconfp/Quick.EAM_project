@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import CustomUserCreationForm, CustomLoginForm
 from .models import CustomUser, ChatHistory
 from .openai_cliente import gerar_resposta
+from .gemini_cliente import gemini_gerar_respota  # Importa a função para usar o Gemini
 
 
 def home(request):
@@ -37,23 +38,28 @@ def user_login(request):
 
 
 @login_required
+
+@login_required
 def chat(request):
-    """Página do chat com a IA."""
+    """Página do chat com a escolha entre GPT e Gemini."""
     ai_response = None  # Inicializa a variável para a resposta da IA
 
     if request.method == 'POST':
-        # Obtém a mensagem do usuário do formulário
-        user_message = request.POST.get('message')
+        user_message = request.POST.get('message')  # Mensagem do usuário
+        ia_choice = request.POST.get('ia_choice')  # Escolha da IA (GPT ou Gemini)
 
-        if user_message:
-            # Chama a função para gerar a resposta da IA
-            ai_response = gerar_resposta(user_message)
+        if user_message and ia_choice:
+            if ia_choice == 'GPT':  # Caso escolha o OpenAI
+                ai_response = gerar_resposta(user_message)
+            elif ia_choice == 'Gemini':  # Caso escolha o Gemini
+                ai_response = gemini_gerar_respota(user_message)
 
-            # Salva a pergunta e a resposta no banco de dados
+            # Salva a interação no banco de dados
             ChatHistory.objects.create(
-                user=request.user,  # Usuário autenticado
-                question=user_message,  # Mensagem do usuário
-                answer=ai_response  # Resposta da IA
+                user=request.user,
+                question=user_message,
+                answer=ai_response,
+                ia_used=ia_choice  # Registra qual IA foi usada
             )
 
     # Recupera o histórico de mensagens para o usuário atual, ordenado por data
@@ -64,7 +70,6 @@ def chat(request):
         'response': ai_response,
         'chat_history': chat_history
     })
-
 
 
 def logout_view(request):

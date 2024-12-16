@@ -5,25 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
-     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
-
     <title>QuickEAM</title>
 </head>
 <body>
     <header>
         <button id="menuToggle" class="menu-btn">
-    <span class="bar"></span>
-    <span class="bar"></span>
-    <span class="bar"></span>
-</button>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
         <nav id="menu" class="menu hidden">
-        <ul>
-            <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-            <li><a href="#">Serviços</a></li>
-        </ul>
-    </nav>
+            <ul>
+                <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="#">Serviços</a></li>
+            </ul>
+        </nav>
         <div class="logo">
             <a href="{% url 'home' %}" class="logo">
                 <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
@@ -31,8 +30,7 @@
         </div>
     </header>
 
-
-<div class="chat-container">
+    <div class="chat-container">
         <!-- Histórico de mensagens -->
         <div class="chat-history" id="chatHistory">
             <h2>Histórico de Chat</h2>
@@ -52,37 +50,43 @@
         <!-- Formulário de envio -->
         <form method="post" class="chat-form">
             {% csrf_token %}
+            <label for="ia_choice">Escolha a IA:</label>
+            <select name="ia_choice" id="ia_choice" required>
+                <option value="GPT" {% if request.POST.ia_choice == "GPT" %}selected{% endif %}>GPT</option>
+                <option value="Gemini" {% if request.POST.ia_choice == "Gemini" %}selected{% endif %}>Gemini</option>
+            </select>
             <textarea name="message" placeholder="Digite sua mensagem aqui..." required></textarea>
             <button type="submit">Enviar</button>
-        </form>
-    </div>
+    </form>
 
 
     <footer class="footer">
-    <div class="footer-content">
-        <p>&copy; 2024 QuickEAM. Todos os direitos reservados.</p>
-        <ul class="footer-links">
-            <li><a href="#">Termos de Uso</a></li>
-            <li><a href="#">Política de Privacidade</a></li>
-            <li><a href="#">Contato</a></li>
-        </ul>
-    </div>
-</footer>
-<script>
-    function scrollToBottom() {
-        const chatHistory = document.getElementById("chatHistory");
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-    }
+        <div class="footer-content">
+            <p>&copy; 2024 QuickEAM. Todos os direitos reservados.</p>
+            <ul class="footer-links">
+                <li><a href="#">Termos de Uso</a></li>
+                <li><a href="#">Política de Privacidade</a></li>
+                <li><a href="#">Contato</a></li>
+            </ul>
+        </div>
+    </footer>
 
-    // Rola para o final ao carregar a página
-    document.addEventListener("DOMContentLoaded", scrollToBottom);
+    <script>
+        function scrollToBottom() {
+            const chatHistory = document.getElementById("chatHistory");
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
 
-    // Rola para o final sempre que o formulário for enviado
-    const chatForm = document.querySelector(".chat-form");
-    chatForm.addEventListener("submit", function (e) {
-        // Após enviar a mensagem, espera um pequeno delay e rola
-        setTimeout(scrollToBottom, 100);
-    });
+        // Rola para o final ao carregar a página
+        document.addEventListener("DOMContentLoaded", scrollToBottom);
+
+        // Rola para o final sempre que o formulário for enviado
+        const chatForm = document.querySelector(".chat-form");
+        chatForm.addEventListener("submit", function (e) {
+            // Após enviar a mensagem, espera um pequeno delay e rola
+            setTimeout(scrollToBottom, 100);
+        });
+
         document.getElementById("menuToggle").addEventListener("click", function () {
             const menu = document.getElementById("menu");
             menu.classList.toggle("hidden");
