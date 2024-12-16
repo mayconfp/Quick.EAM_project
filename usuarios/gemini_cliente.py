@@ -9,9 +9,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = os.getenv("GEMINI_API_URL")
 
 def gemini_gerar_respota(user_message):
-    """
-    Envia uma mensagem para a API Gemini e retorna a resposta gerada.
-    """
+    # Envia uma mensagem para a API Gemini e retorna a resposta gerada.
     url = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"  # Monta a URL com a chave API
 
     headers = {

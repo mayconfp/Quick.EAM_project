@@ -39,6 +39,7 @@ def user_login(request):
 
 @login_required
 
+#metodos do chat para banco e etc
 @login_required
 def chat(request):
     """Página do chat com a escolha entre GPT e Gemini."""

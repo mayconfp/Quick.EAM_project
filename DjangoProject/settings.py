@@ -4,6 +4,7 @@ from dotenv import load_dotenv, find_dotenv
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
+#Carregando o .env
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_URL = os.getenv("GEMINI_URL")
 
