@@ -32,8 +32,21 @@
     <p>Crie sua conta para acessar o sistema da QuickEAM.</p>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+
+        <label for="username">Usuário:</label>
+        {{ form.username }}
+
+        <label for="email">E-mail:</label>
+        {{ form.email }}
+
+        <label for="password1">Senha:</label>
+        {{ form.password1 }}
+
+        <label for="password2">Confirmação de senha:</label>
+        {{ form.password2 }}
+
         <button type="submit">Cadastrar</button>
+        </form>
     </form>
 
 <footer class="footer">

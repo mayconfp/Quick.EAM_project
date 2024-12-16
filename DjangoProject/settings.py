@@ -4,7 +4,7 @@ from dotenv import load_dotenv, find_dotenv
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
-#Carregando o .env
+#Carregando o ..env
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_URL = os.getenv("GEMINI_URL")
 
@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-secreta")
 DEBUG = os.getenv("DEBUG", "False").lower() in ["true", "1"]
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")  # Adicione domínios no .env separados por vírgulas
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")  # Adicione domínios no ..env separados por vírgulas
 
 INSTALLED_APPS = [
     'django.contrib.admin',

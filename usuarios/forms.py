@@ -9,6 +9,7 @@ class CustomUserCreationForm(UserCreationForm):
         model = CustomUser
         fields = ['username', 'email', 'password1', 'password2']
 
+
 class CustomLoginForm(AuthenticationForm):
     """Formulário para login de usuários."""
     username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Usuário'}))

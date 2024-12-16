@@ -2,7 +2,7 @@ import os
 import requests
 from dotenv import load_dotenv, find_dotenv
 
-# Carrega variáveis do arquivo .env
+# Carrega variáveis do arquivo ..env
 load_dotenv(find_dotenv())
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
