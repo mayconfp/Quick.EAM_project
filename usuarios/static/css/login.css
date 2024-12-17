@@ -6,6 +6,7 @@ body{
 }
 
 
+
 .login{
    max-width: 300px;
     margin: 50px auto; /* Centraliza horizontalmente */
@@ -16,6 +17,11 @@ body{
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
 
+}
+
+.login .label{
+    font-weight: bold;
+    display: block;
 }
 
 .login h1 {
@@ -39,9 +45,16 @@ body{
     flex-direction: column;
     gap: 10px;
 }
-.login button{
+.login button {
     background-color: darkslategray;
     color: #e6f7ff;
+    cursor: pointer !important;
+    border: none; /* Remove bordas padrão */
+    margin: 0; /* Remove margem padrão */
+    padding: 3px;
+    box-shadow: none; /* Remove sombra padrão */
+    outline: none; /* Remove o contorno padrão ao focar */
+    transition: background-color 0.3s ease, transform 0.1s ease;
 }
 
 .login a {
@@ -57,4 +70,9 @@ body{
 .login label{
     font-weight: bold;
     display: block;
+}
+
+.login button:active {
+    /* Animação leve ao pressionar o botão */
+    transform: scale(0.95); /* Reduz o tamanho levemente */
 }

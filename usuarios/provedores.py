@@ -13,13 +13,14 @@ def gerar_resposta(provedor, mensagem):
     """
     Gerencia chamadas para provedores diferentes de IA.
     """
-
     # Verifica se o provedor está registrado
     if provedor not in PROVEDORES_DISPONIVEIS:
         raise ValueError(f"Provedor '{provedor}' não suportado.")
 
     # Chama a função correta com base no provedor
-    resposta = PROVEDORES_DISPONIVEIS[provedor](mensagem)
-
-    print(f"[DEBUG] Resposta gerada pelo provedor '{provedor}': {resposta}")
-    return resposta
+    try:
+        resposta = PROVEDORES_DISPONIVEIS[provedor](mensagem)
+        return resposta
+    except Exception as e:
+        print(f"Erro ao chamar o provedor '{provedor}': {e}")
+        return "Erro ao processar a mensagem com a IA selecionada."

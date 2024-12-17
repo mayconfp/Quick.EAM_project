@@ -1,10 +1,11 @@
+from .services import processar_pergunta_com_respostas
+from .models import ChatHistory
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import CustomUserCreationForm, CustomLoginForm
-from .models import CustomUser, ChatHistory
-from .services import process_chat_message
 
+PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
 def home(request):
     """Página inicial com informações sobre a QuickEAM."""
@@ -38,27 +39,37 @@ def user_login(request):
 
 @login_required
 def chat(request):
-    provedor_selecionado = 'openai'  # Valor padrão
+    """Função principal do chat."""
+    ai_response = None
 
     if request.method == 'POST':
-        # Captura a mensagem do usuário e o provedor selecionado
+        # Captura a mensagem do usuário e a IA escolhida
         user_message = request.POST.get('message')
-        provedor_selecionado = request.POST.get('provedor', 'openai')
+        ia_escolhida = request.POST.get('provedor', 'openai').lower()
 
-        # Garante que process_chat_message é chamado apenas uma vez
+        # Valida o provedor escolhido
+        if ia_escolhida not in PROVEDORES_VALIDOS:
+            ia_escolhida = 'openai'  # Define padrão se o valor for inválido
+
         if user_message:
-            ai_response = process_chat_message(request.user, user_message, provedor_selecionado)
+            # Gera a resposta com base no histórico e nas respostas auxiliares
+            ai_response = processar_pergunta_com_respostas(user_message, ia_escolhida)
 
-    # Recupera o histórico completo do banco de dados
+            # Salva no histórico
+            ChatHistory.objects.create(
+                user=request.user,
+                question=user_message,
+                answer=ai_response,
+                ia_used=ia_escolhida
+            )
+
+    # Recupera o histórico de chat
     chat_history = ChatHistory.objects.filter(user=request.user).order_by('timestamp')
 
-    # Renderiza o template com o histórico e o provedor selecionado
     return render(request, 'usuarios/chat.html', {
+        'response': ai_response,
         'chat_history': chat_history,
-        'provedor_selecionado': provedor_selecionado
     })
-
-
 
 def logout_view(request):
     """Efetuar logout."""

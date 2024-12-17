@@ -30,31 +30,32 @@
         </div>
     </header>
 
+<div class="registro">
     <h1>Cadastro</h1>
 
     <p>Crie sua conta para acessar o sistema da QuickEAM.</p>
         <form method="post">
             {% csrf_token %}
 
-        <label for="username">Usuário:</label>
+        <label for="username">Usuário ou CNPJ:</label>
         <input type="text" id="username" name="username">
-        {{ form.username }}
+
 
         <label for="email">E-mail:</label>
          <input type="text" id="email" name="email">
-        {{ form.email }}
+
 
         <label for="password1">Senha:</label>
         <input type="text" id="password1" name="password1">
-        {{ form.password1 }}
+
 
         <label for="password2">Confirmação de senha:</label>
         <input type="text" id="password2" name="password2">
-        {{ form.password2 }}
+
 
         <button type="submit">Cadastrar</button>
         </form>
-
+    </div>
 
 
 <footer class="footer">
