@@ -16,7 +16,8 @@ def process_chat_message(user, user_message, provedor):
         ChatHistory.objects.create(
             user=user,
             question=user_message,
-            answer=ai_response
+            answer=ai_response,
+            ia_used=provedor
         )
         return ai_response
 

@@ -9,6 +9,7 @@ class CustomUser(AbstractUser):
 class ChatHistory(models.Model):
     IA_CHOICES = [
         ('GPT', 'GPT'),
+        ('LlAMA', 'LlAMA '),
         ('Gemini', 'Gemini'),
     ]
     user = models.ForeignKey(
