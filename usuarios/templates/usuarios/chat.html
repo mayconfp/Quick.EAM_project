@@ -59,6 +59,7 @@
         <select name="provedor">
             <option value="openai" {% if provedor_selecionado == 'openai' %}selected{% endif %}>OpenAI</option>
             <option value="llama" {% if provedor_selecionado == 'llama' %}selected{% endif %}>Llama</option>
+        <option value="gemini" {% if provedor_selecionado == 'gemini' %}selected{% endif %}>Gemini</option>
         </select>
 
         <textarea name="message" placeholder="Pergunte a Manuela" required></textarea>

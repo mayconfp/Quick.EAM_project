@@ -1,6 +1,6 @@
 from .openai_cliente import gerar_resposta_openai
 from .llama_cliente import gerar_resposta_llama
-from gemini_cliente import gemini_gerar_respota
+from .gemini_cliente import gemini_gerar_respota
 
 # Registro de provedores disponíveis
 PROVEDORES_DISPONIVEIS = {
