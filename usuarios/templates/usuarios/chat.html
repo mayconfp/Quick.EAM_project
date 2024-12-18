@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
      <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
 
@@ -55,12 +56,14 @@
     <!-- Formulário de envio -->
     <form method="post" class="chat-form">
         {% csrf_token %}
-        <label for="provedor">Escolha a IA: </label>
+        <div class="form_group">
+        <p>Escolha a IA: </p>
         <select name="provedor">
             <option value="openai" {% if provedor_selecionado == 'openai' %}selected{% endif %}>OpenAI</option>
             <option value="llama" {% if provedor_selecionado == 'llama' %}selected{% endif %}>Llama</option>
         <option value="gemini" {% if provedor_selecionado == 'gemini' %}selected{% endif %}>Gemini</option>
         </select>
+    </div>
 
         <textarea name="message" placeholder="Pergunte a Manuela" required></textarea>
         <button type="submit">Enviar</button>

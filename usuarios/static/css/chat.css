@@ -5,6 +5,15 @@
     box-sizing: border-box;
     scrollbar-color: #000000 transparent;
 }
+body{
+     font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
 
 :hover {
     scrollbar-color: var(--gray-200) transparent
@@ -29,11 +38,7 @@ html, body {
     display: flex;
     flex-direction: column;
 }
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
+
 
 .container {
     flex: 1;
@@ -161,6 +166,7 @@ body {
 .chat-form {
     display: flex;
     padding: 10px;
+    align-items: center;
     background-color: gray;
     border-top: 1px solid #ccc;
 }
@@ -186,14 +192,33 @@ body {
     transition: background-color 0.3s ease;
 }
 
+.form_group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.form_group p{
+    margin-right: 10px;
+    margin-bottom: 5px;
+}
+
+.form_group select {
+    margin-right: 10px;
+    padding: 3px; /* Melhor espaçamento interno */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+
 .chat-form button:hover {
     background-color: #0056b3;
 }
 
-.chat-container p {
-    font-size:16px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
+
+
+
 
 .message_user {
     text-align: right;
