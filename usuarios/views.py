@@ -4,8 +4,40 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import CustomUserCreationForm, CustomLoginForm
+import requests
+from django.http import JsonResponse
+from django.utils import translation
+
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
+
+def set_language_by_location(request):
+    if request.method == "POST":
+        import json
+        data = json.loads(request.body)
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+
+        # Usar API de geolocalização para obter o país
+        try:
+            response = requests.get(f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={latitude}&longitude={longitude}&localityLanguage=en")
+            country = response.json().get('countryName')
+
+            # Define o idioma com base no país
+            if country in ['Brazil', 'Portugal']:
+                translation.activate('pt-br')
+                request.session[translation.LANGUAGE_SESSION_KEY] = 'pt-br'
+            else:
+                translation.activate('en')
+                request.session[translation.LANGUAGE_SESSION_KEY] = 'en'
+
+        except Exception as e:
+            print(f"Erro ao detectar localização: {e}")
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+        return JsonResponse({"status": "success"})
+    return JsonResponse({"status": "method not allowed"}, status=405)
+
 
 def home(request):
     """Página inicial com informações sobre a QuickEAM."""

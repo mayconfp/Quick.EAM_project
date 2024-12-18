@@ -85,8 +85,36 @@
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 
+    // Função para enviar a localização ao servidor
+    function sendLocationToServer() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                // Enviar localização ao servidor
+                fetch("{% url 'set_language_by_location' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({ latitude: latitude, longitude: longitude })
+                }).then(response => {
+                    if (response.ok) {
+                        console.log("Localização enviada com sucesso!");
+                        location.reload(); // Recarrega a página para ajustar o idioma
+                    }
+                }).catch(error => console.error("Erro ao enviar localização:", error));
+            });
+        }
+    }
+
     // Rola para o final ao carregar a página
-    document.addEventListener("DOMContentLoaded", scrollToBottom);
+    document.addEventListener("DOMContentLoaded", function () {
+        scrollToBottom();
+        sendLocationToServer(); // Envia a localização ao servidor
+    });
 
     // Rola para o final sempre que o formulário for enviado
     const chatForm = document.querySelector(".chat-form");
@@ -94,10 +122,13 @@
         // Após enviar a mensagem, espera um pequeno delay e rola
         setTimeout(scrollToBottom, 100);
     });
-        document.getElementById("menuToggle").addEventListener("click", function () {
-            const menu = document.getElementById("menu");
-            menu.classList.toggle("hidden");
-        });
-    </script>
+
+    // Controle de menu
+    document.getElementById("menuToggle").addEventListener("click", function () {
+        const menu = document.getElementById("menu");
+        menu.classList.toggle("hidden");
+    });
+</script>
+
 </body>
 </html>

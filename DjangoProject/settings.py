@@ -2,9 +2,21 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv, find_dotenv
+from django.utils.translation import gettext_lazy as _
+import os
+from pathlib import Path
 
-# Carrega variáveis de ambiente do ..env
-_ = load_dotenv(find_dotenv())
+from dotenv import load_dotenv, find_dotenv
+from django.utils.translation import gettext_lazy as gettext
+
+# Carrega variáveis de ambiente do .env
+load_dotenv(find_dotenv())
+
+LANGUAGES = [
+    ('en', gettext('English')),
+    ('pt-br', gettext('Portuguese')),
+]
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,6 +37,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  # Middleware para tradução
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -33,7 +46,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'DjangoProject.urls'
-
 
 TEMPLATES = [
     {
@@ -62,8 +74,6 @@ DATABASES = {
     }
 }
 
-
-
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -75,17 +85,28 @@ AUTH_USER_MODEL = 'usuarios.CustomUser'
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
 
+# Configurações de Internacionalização (i18n)
 LANGUAGE_CODE = 'pt-br'
+
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
+# Configurações estáticas
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [ os.path.join(BASE_DIR, "usuarios", "static"),]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "usuarios", "static"),]
 
+# Chaves de API
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 LLAMA_API_KEY = os.getenv("LLAMA_API_KEY")
+
+# Logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
