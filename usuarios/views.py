@@ -1,42 +1,12 @@
-from .services import processar_pergunta_com_respostas
 from .models import ChatHistory
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import CustomUserCreationForm, CustomLoginForm
-import requests
-from django.http import JsonResponse
-from django.utils import translation
+from .services import processar_comunicacao_multi_ia, recuperar_ultima_resposta
 
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
-
-def set_language_by_location(request):
-    if request.method == "POST":
-        import json
-        data = json.loads(request.body)
-        latitude = data.get("latitude")
-        longitude = data.get("longitude")
-
-        # Usar API de geolocalização para obter o país
-        try:
-            response = requests.get(f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={latitude}&longitude={longitude}&localityLanguage=en")
-            country = response.json().get('countryName')
-
-            # Define o idioma com base no país
-            if country in ['Brazil', 'Portugal']:
-                translation.activate('pt-br')
-                request.session[translation.LANGUAGE_SESSION_KEY] = 'pt-br'
-            else:
-                translation.activate('en')
-                request.session[translation.LANGUAGE_SESSION_KEY] = 'en'
-
-        except Exception as e:
-            print(f"Erro ao detectar localização: {e}")
-            return JsonResponse({"status": "error", "message": str(e)}, status=500)
-
-        return JsonResponse({"status": "success"})
-    return JsonResponse({"status": "method not allowed"}, status=405)
 
 
 def home(request):
@@ -69,39 +39,55 @@ def user_login(request):
     return render(request, 'usuarios/login.html', {'form': form})
 
 
+from .services import processar_comunicacao_multi_ia, recuperar_ultima_resposta
+
 @login_required
 def chat(request):
-    """Função principal do chat."""
     ai_response = None
+    provedor_selecionado = 'openai'  # Valor padrão
 
     if request.method == 'POST':
-        # Captura a mensagem do usuário e a IA escolhida
-        user_message = request.POST.get('message')
-        ia_escolhida = request.POST.get('provedor', 'openai').lower()
+        # Obtém a mensagem e o provedor selecionado
+        user_message = request.POST.get('message', '').strip()
+        provedor_selecionado = request.POST.get('provedor', 'openai')
 
-        # Valida o provedor escolhido
-        if ia_escolhida not in PROVEDORES_VALIDOS:
-            ia_escolhida = 'openai'  # Define padrão se o valor for inválido
+        print(f"[DEBUG] Mensagem do usuário: {user_message}")
+        print(f"[DEBUG] Provedor selecionado: {provedor_selecionado}")
 
-        if user_message:
-            # Gera a resposta com base no histórico e nas respostas auxiliares
-            ai_response = processar_pergunta_com_respostas(user_message, ia_escolhida)
+        # Detecta comandos especiais
+        if "resuma" in user_message.lower() or "traduza" in user_message.lower():
+            # Recupera a última resposta salva no banco
+            ultima_resposta = recuperar_ultima_resposta(request.user)
 
-            # Salva no histórico
-            ChatHistory.objects.create(
-                user=request.user,
-                question=user_message,
-                answer=ai_response,
-                ia_used=ia_escolhida
-            )
+            if ultima_resposta:
+                # Concatena a mensagem e a resposta anterior
+                comando_especial = f"{user_message}. O texto a ser processado é: {ultima_resposta}"
+                print(f"[DEBUG] Executando comando especial: {comando_especial}")
+                ai_response = processar_comunicacao_multi_ia(comando_especial)
+            else:
+                ai_response = "Nenhuma mensagem anterior encontrada para processar."
+        else:
+            # Processa a mensagem normalmente
+            ai_response = processar_comunicacao_multi_ia(user_message)
 
-    # Recupera o histórico de chat
+        # Salva a mensagem e a resposta no banco
+        ChatHistory.objects.create(
+            user=request.user,
+            question=user_message,
+            answer=ai_response,
+            ia_used=provedor_selecionado
+        )
+
+
+    # Recupera o histórico completo do banco de dados
     chat_history = ChatHistory.objects.filter(user=request.user).order_by('timestamp')
 
     return render(request, 'usuarios/chat.html', {
         'response': ai_response,
         'chat_history': chat_history,
+        'provedor_selecionado': provedor_selecionado
     })
+
 
 def logout_view(request):
     """Efetuar logout."""

@@ -1,4 +1,3 @@
-/* Reset Básico */
 * {
     margin: 0;
     padding: 0;
@@ -46,18 +45,8 @@ html, body {
     text-align: center;
 }
 
-.header {
-    position: fixed;
-    justify-content: space-between;
-    top: 0;
-    left: 0;
-    width: 100%;
+header {
     height: 60px;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
 }
 
 .menu-btn {
@@ -94,9 +83,10 @@ html, body {
     padding: 10px;
     border-radius: 5px;
     width: 200px;
+    z-index: 1000;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-
+#
 .menu ul {
     list-style: none;
 }
@@ -131,15 +121,18 @@ html, body {
 
 /* Contêiner principal do chat */
 .chat-container {
-    max-width: 600px;
-    height: 500px;
-    margin: 20px auto;
+    width: 300px;
+    height: calc(100vh - 100px);
+    margin-left: auto;
+    position: fixed;
     display: flex;
+    right: 20px;
     flex-direction: column;
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    top: 50px;
     background-color: #f8f8f8;
 }
 
@@ -166,6 +159,7 @@ html, body {
 .chat-form {
     display: flex;
     padding: 10px;
+    width: 100%;
     align-items: center;
     background-color: gray;
     border-top: 1px solid #ccc;
@@ -179,7 +173,7 @@ html, body {
     border-radius: 5px;
     resize: none; /* Impede o redimensionamento */
 }
-#
+
 .chat-form button {
     margin-left: 10px;
     padding: 8px 15px;
@@ -192,24 +186,6 @@ html, body {
     transition: background-color 0.3s ease;
 }
 
-.form_group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 15px;
-}
-
-.form_group p{
-    margin-right: 10px;
-    margin-bottom: 5px;
-}
-
-.form_group select {
-    margin-right: 10px;
-    padding: 3px; /* Melhor espaçamento interno */
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-}
 
 
 .chat-form button:hover {
@@ -217,7 +193,40 @@ html, body {
 }
 
 
+.form_enviar {
+    display: flex;
+    width: 100%;
+    border-top: 1px solid #ccc;
+    position: fixed; /* Fixar o formulário na parte inferior */
+    bottom: 0; /* Encostar no rodapé */
+    left: 0;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
 
+.form_enviar .textarea {
+  flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-right: 10px;
+    box-sizing: border-box;
+}
+
+.form_enviar .button {
+    padding: 8px 15px;
+    font-size: 14px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form_enviar .button:hover {
+    background-color: #0056b3;
+}
 
 
 .message_user {
