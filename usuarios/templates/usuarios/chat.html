@@ -1,85 +1,63 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
-
-    <title>QuickEAM</title>
+    <title>Chat Interface - Quick EAM</title>
 </head>
 <body>
-    <header>
-        <button id="menuToggle" class="menu-btn">
-    <span class="bar"></span>
-    <span class="bar"></span>
-    <span class="bar"></span>
-</button>
-        <nav id="menu" class="menu hidden">
-        <ul>
-            <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-            <li><a href="#">Serviços</a></li>
-        </ul>
-    </nav>
-        <div class="logo">
-            <a href="{% url 'home' %}" class="logo">
-                <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
-            </a>
-        </div>
-    </header>
+<header class="header">
+    <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
+</header>
 
+<div class="historicos">
+    <h2>Históricos de conversas</h2>
+    <div id="chatHistoryList">
+        {% for session in sessions %}
+            <div class="chat-session-item">
+                <a href="{% url 'chat' session_id=session.id %}">
+                    Chat iniciado em {{ session.created_at|date:"d/m/Y H:i" }}
+                </a>
+            </div>
+        {% empty %}
+            <p>Sem históricos ainda.</p>
+        {% endfor %}
+    </div>
+    <!-- Botão para iniciar uma nova conversa -->
+    <div class="button-chat">
+        <button id="newChatButton" onclick="window.location.href='{% url 'new_chat' %}'">Novo chat</button>
+    </div>
+</div>
 
-
-
-<div class="chat-container">
-    <!-- Histórico de mensagens -->
-    <div class="chat-history" id="chatHistory">
-        <h2>Histórico de Chat</h2>
-
-        <!-- Loop de mensagens no Django para histórico -->
+<div class="container">
+    <div class="chat-history">
+        <h4>Histórico de Chat:</h4>
         {% for chat in chat_history %}
             <div class="message_user">
-                <p><strong>Você:</strong> {{ chat.question }}</p>
+                <p><strong>Você:</strong> {{ chat.user_message }}</p>
             </div>
             <div class="message_bot">
-                <p><strong>Manuela:</strong> {{ chat.answer }}</p>
+                <p><strong>Manuela:</strong> {{ chat.bot_response }}</p>
             </div>
         {% empty %}
             <p>Sem histórico ainda.</p>
         {% endfor %}
     </div>
 
-    <!-- Formulário de envio -->
-    <form method="post" class="chat-form">
-        {% csrf_token %}
-        <div class="form_group">
-        <p>Escolha a IA: </p>
-        <select name="provedor">
-            <option value="openai" {% if provedor_selecionado == 'openai' %}selected{% endif %}>OpenAI</option>
-        </select>
+    <div class="footer">
+        <form method="post" class="chat-form">
+            {% csrf_token %}
+            <textarea name="message" placeholder="Digite sua mensagem aqui..." required></textarea>
+            <button type="submit">Enviar</button>
+        </form>
     </div>
-
-        <textarea name="message" placeholder="Pergunte a Manuela" required></textarea>
-        <button type="submit">Enviar</button>
-    </form>
 </div>
 
+<!-- Linha separadora -->
+<div class="linha"></div>
 
-
-    <footer class="footer">
-    <div class="footer-content">
-        <p>&copy; 2024 QuickEAM. Todos os direitos reservados.</p>
-        <ul class="footer-links">
-            <li><a href="#">Termos de Uso</a></li>
-            <li><a href="#">Política de Privacidade</a></li>
-            <li><a href="#">Contato</a></li>
-        </ul>
-    </div>
-</footer>
 <script>
     function scrollToBottom() {
         const chatHistory = document.getElementById("chatHistory");
@@ -124,11 +102,11 @@
         setTimeout(scrollToBottom, 100);
     });
 
-    // Controle de menu
-    document.getElementById("menuToggle").addEventListener("click", function () {
-        const menu = document.getElementById("menu");
-        menu.classList.toggle("hidden");
-    });
+    // Controle de menu (se necessário)
+    // document.getElementById("menuToggle").addEventListener("click", function () {
+    //     const menu = document.getElementById("menu");
+    //     menu.classList.toggle("hidden");
+    // });
 </script>
 
 </body>

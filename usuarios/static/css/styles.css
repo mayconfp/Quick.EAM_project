@@ -96,15 +96,13 @@ body {
     display: none;
 }
 
-.logo {
-    text-decoration: none; /* Remove o sublinhado da logo */
-    color: inherit; /* Herda a cor do elemento pai */
+.header img {
+    width: 100px; /* Define a largura da imagem */
+    height: auto; /* Ajusta automaticamente a altura para manter a proporção */
+    max-height: 60px; /* Garante que a imagem não ultrapasse a altura do header */
+    object-fit: contain; /* Faz a imagem se ajustar sem distorcer */
 }
 
-.logo img {
-    height: 80px; /* Altura máxima da logo */
-    width: auto;  /* Mantém a proporção */
-}
 
 .footer {
     background: #222;
@@ -145,3 +143,4 @@ body {
 .footer-links li a:hover {
     color: #00bcd4;
 }
+

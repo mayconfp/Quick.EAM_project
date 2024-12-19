@@ -66,9 +66,9 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'quick',
+        'NAME': 'testes',
         'USER': 'postgres',
-        'PASSWORD': 'boot',
+        'PASSWORD': 'admin',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -83,7 +83,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'usuarios.CustomUser'
 LOGIN_URL = 'login'
-LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = '/chat/'  # Redireciona para a página de chat após o login
+
 
 # Configurações de Internacionalização (i18n)
 LANGUAGE_CODE = 'pt-br'
