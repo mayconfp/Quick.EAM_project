@@ -108,7 +108,7 @@ header {
 .hidden {
     display: none;
 }
-
+#
 .logo {
     text-decoration: none; /* Remove o sublinhado da logo */
     color: inherit; /* Herda a cor do elemento pai */
