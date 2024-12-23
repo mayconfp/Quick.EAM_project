@@ -119,21 +119,55 @@ header {
     width: auto;  /* Mantém a proporção */
 }
 
-/* Contêiner principal do chat */
-.chat-container {
+.history-msg {
     width: 300px;
-    height: calc(100vh - 100px);
-    margin-left: auto;
-    position: fixed;
-    display: flex;
-    right: 20px;
-    flex-direction: column;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    top: 50px;
     background-color: #f8f8f8;
+    padding: 20px;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+    height: calc(100vh - 160px);
+    overflow-y: auto; /* Adiciona rolagem se o conteúdo for maior que a altura */
+    position: fixed; /* Fixa no lado esquerdo */
+    left: 0;
+    top: 80px;
+    z-index: 1000;
+}
+
+.history-msg h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+.history-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.history-list li {
+    font-size: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    color: #007bff;
+    transition: color 0.3s ease;
+}
+
+.history-list li:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.chat-container {
+    width: 900px;
+    height: 871px;
+    display: flex;
+    margin-left: 400px;
+    flex-direction: column;
+    overflow: hidden;
+    top: 0;
+    position: fixed;
+    background-color: #f8f8f8;
+    z-index: 1000;
 }
 
 /* Histórico de mensagens */
@@ -162,7 +196,7 @@ header {
     width: 100%;
     align-items: center;
     background-color: gray;
-    border-top: 1px solid #ccc;
+
 }
 
 .chat-form textarea {

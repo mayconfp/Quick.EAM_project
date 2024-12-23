@@ -34,6 +34,17 @@
 
 
 
+<div class ="history-msg">
+    <h2>Histórico de conversas</h2>
+    <ul class="history-list">
+        {% for chat in chat_history %}
+            <li>{{ chat.title }}</li> <!-- Exibe o título ou uma propriedade do histórico -->
+        {% empty %}
+            <li>Sem conversas ainda</li>
+        {% endfor %}
+    </ul>
+</div>
+
 
 <div class="chat-container">
     <!-- Histórico de mensagens -->
