@@ -1,61 +1,53 @@
-from .provedores import gerar_resposta
+from .openai_cliente import gerar_resposta_openai
+from .llama_cliente import gerar_resposta_llama
+from .gemini_cliente import gemini_gerar_resposta
 from .models import ChatHistory
 
-
-def processar_pergunta_com_respostas(user_message, user):
+def processar_comunicacao_multi_ia(mensagem):
     """
-    Consulta outras IAs (Llama, Gemini), combina as respostas e retorna a resposta final da OpenAI.
-
-    Inclui o histórico recente no contexto para que a IA entenda o que deve ser resumido.
+    Processa a mensagem com as 3 IAs, mas apenas a OpenAI sintetiza a resposta final.
     """
-    provedores = ['llama', 'gemini']  # IAs auxiliares
-    respostas_auxiliares = {}
-
-    # Recupera o histórico recente do usuário
-    historico = ChatHistory.objects.filter(user=user).order_by('-timestamp')[:5]  # Últimas 5 mensagens
-    historico_formatado = formatar_historico_para_contexto(historico)
-
-    # Consulta as IAs auxiliares
-    for provedor in provedores:
-        try:
-            resposta = gerar_resposta(provedor, user_message)
-            respostas_auxiliares[provedor] = resposta
-        except Exception as e:
-            respostas_auxiliares[provedor] = f"Erro ao obter resposta do {provedor}: {e}"
-
-    # Cria o contexto com as respostas das IAs auxiliares e o histórico
-    contexto = formatar_contexto_para_ia(user_message, respostas_auxiliares, historico_formatado)
-
-    # Consulta a OpenAI com o contexto
     try:
-        resposta_final = gerar_resposta('openai', contexto)
+        print(f"[DEBUG] Mensagem recebida para processar: {mensagem}")
+
+        # Obter resposta da Llama
+        resposta_llama = gerar_resposta_llama(mensagem)
+        print(f"[DEBUG] Resposta da Llama: {resposta_llama}")
+
+        # Obter resposta da Gemini
+        resposta_gemini = gemini_gerar_resposta(mensagem)
+        print(f"[DEBUG] Resposta da Gemini: {resposta_gemini}")
+
+        # Preparar contexto para OpenAI
+        respostas_adicionais = {
+            "Llama": resposta_llama,
+            "Gemini": resposta_gemini,
+        }
+        print(f"[DEBUG] Contexto enviado para OpenAI: {respostas_adicionais}")
+
+        # Obter resposta final da OpenAI
+        resposta_final = gerar_resposta_openai(mensagem, respostas_adicionais)
+        print(f"[DEBUG] Resposta final da OpenAI: {resposta_final}")
+
+        return resposta_final
+
     except Exception as e:
-        resposta_final = f"Erro ao obter resposta da OpenAI: {e}"
+        print(f"[ERROR] Erro ao processar comunicação multi-IA: {e}")
+        return "Erro ao processar as respostas entre as IAs."
 
-    return resposta_final
 
-
-def formatar_historico_para_contexto(historico):
+def recuperar_ultima_resposta(user):
     """
-    Formata o histórico de mensagens para ser incluído no contexto.
+    Recupera a última resposta registrada no banco de dados para o usuário.
     """
-    contexto = "Histórico de conversa:\n"
-    for chat in reversed(historico):  # Inverte a ordem para exibir do mais antigo para o mais recente
-        contexto += f"Você: {chat.question}\n"
-        contexto += f"Manuela: {chat.answer}\n"
-    return contexto
-
-
-def formatar_contexto_para_ia(user_message, respostas_auxiliares, historico_formatado):
-    """
-    Formata as respostas das IAs auxiliares e o histórico como contexto para a OpenAI.
-    """
-    contexto = historico_formatado  # Adiciona o histórico formatado
-    contexto += f"\nPergunta do usuário: {user_message}\n\n"
-    contexto += "Aqui estão as respostas de outras inteligências artificiais:\n"
-
-    for provedor, resposta in respostas_auxiliares.items():
-        contexto += f"- Resposta de {provedor.capitalize()}: {resposta}\n"
-
-    contexto += "\nCom base nessas informações, forneça a melhor resposta possível."
-    return contexto
+    try:
+        ultima_resposta = ChatHistory.objects.filter(user=user).order_by('-timestamp').first()
+        if ultima_resposta and ultima_resposta.answer.strip():
+            print(f"[DEBUG] Última resposta encontrada: {ultima_resposta.answer}")
+            return ultima_resposta.answer.strip()
+        else:
+            print("[DEBUG] Nenhuma resposta anterior válida encontrada.")
+            return None
+    except Exception as e:
+        print(f"[ERROR] Erro ao recuperar última resposta: {e}")
+        return None
