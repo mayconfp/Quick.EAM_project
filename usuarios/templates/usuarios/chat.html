@@ -12,7 +12,7 @@
 </head>
 <body>
 <header>
-    <button id="menuToggle" class="menu-btn" aria-label="Abrir menu">
+    <button id="menuToggle" class="menu-btn">
         <span class="bar"></span>
         <span class="bar"></span>
         <span class="bar"></span>
@@ -25,28 +25,33 @@
         </ul>
     </nav>
     <div class="logo">
-        <a href="{% url 'home' %}">
-            <img src="{% static 'images/logo_homepage.png' %}" alt="Logo QuickEAM">
+        <a href="{% url 'home' %}" class="logo">
+            <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
         </a>
     </div>
 </header>
 
-
-<div class="history-msg">
-    <h2>Histórico de Conversas</h2>
-    <button onclick="window.location.href='{% url 'chat' %}'">Novo Chat</button>
-    <ul class="history-list">
-        {% for session in sessions %}
-            <li>
-                <a href="{% url 'chat_session' session.id %}">
-                    {{ session.title }}
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-</div>
 <div class="chat-container">
+    <!-- Histórico de conversas -->
+    <div class="history-msg">
+        <h2>Histórico de Conversas</h2>
+        <!-- Botão para criar uma nova conversa -->
+        <button onclick="window.location.href='{% url 'chat' %}'">Novo Chat</button>
+        <ul class="history-list">
+            {% for session in sessions %}
+                <li>
+                    <a href="{% url 'chat_session' session.id %}"
+                       class="{% if session.id == current_session.id %}active{% endif %}">
+                        {{ session.title }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Área de chat -->
     <div class="chat-history" id="chatHistory">
+        <h2>Conversa Atual</h2>
         {% for chat in chat_history %}
             <div class="message_user">
                 <p><strong>Você:</strong> {{ chat.question }}</p>
@@ -55,18 +60,18 @@
                 <p><strong>Manuela:</strong> {{ chat.answer }}</p>
             </div>
         {% empty %}
-            <p>Sem histórico ainda.</p>
+            <p>Sem mensagens nesta conversa.</p>
         {% endfor %}
     </div>
 
-    <!-- Formulário para envio de mensagens -->
-    <form method="post" class="chat-form">
+    <!-- Formulário de envio -->
+    <form method="post" class="chat-form" action="{% url 'chat_session' current_session.id %}">
         {% csrf_token %}
-        <textarea name="message" rows="3" placeholder="Digite sua mensagem aqui..."></textarea>
-        <button type="submit" class="send-btn">Enviar</button>
+        <textarea name="message" placeholder="Digite sua mensagem aqui..." required></textarea>
+        <input type="hidden" name="session_id" value="{{ current_session.id }}">
+        <button type="submit">Enviar</button>
     </form>
 </div>
-
 
 <script>
     function scrollToBottom() {
