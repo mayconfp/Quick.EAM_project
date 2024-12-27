@@ -6,52 +6,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
-
     <title>QuickEAM</title>
 </head>
 <body>
-    <header>
-        <button id="menuToggle" class="menu-btn">
-    <span class="bar"></span>
-    <span class="bar"></span>
-    <span class="bar"></span>
-</button>
-        <nav id="menu" class="menu hidden">
+<header>
+    <button id="menuToggle" class="menu-btn" aria-label="Abrir menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+    <nav id="menu" class="menu hidden">
         <ul>
             <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
             <li><a href="{% url 'login' %}">Login</a></li>
             <li><a href="#">Serviços</a></li>
         </ul>
     </nav>
-        <div class="logo">
-            <a href="{% url 'home' %}" class="logo">
-                <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
-            </a>
-        </div>
-    </header>
+    <div class="logo">
+        <a href="{% url 'home' %}">
+            <img src="{% static 'images/logo_homepage.png' %}" alt="Logo QuickEAM">
+        </a>
+    </div>
+</header>
 
 
-
-<div class ="history-msg">
-    <h2>Histórico de conversas</h2>
+<div class="history-msg">
+    <h2>Histórico de Conversas</h2>
+    <button onclick="window.location.href='{% url 'chat' %}'">Novo Chat</button>
     <ul class="history-list">
-        {% for chat in chat_history %}
-            <li>{{ chat.title }}</li> <!-- Exibe o título ou uma propriedade do histórico -->
-        {% empty %}
-            <li>Sem conversas ainda</li>
+        {% for session in sessions %}
+            <li>
+                <a href="{% url 'chat_session' session.id %}">
+                    {{ session.title }}
+                </a>
+            </li>
         {% endfor %}
     </ul>
 </div>
-
-
 <div class="chat-container">
-    <!-- Histórico de mensagens -->
     <div class="chat-history" id="chatHistory">
-        <h2>Histórico de Chat</h2>
-
-        <!-- Loop de mensagens no Django para histórico -->
         {% for chat in chat_history %}
             <div class="message_user">
                 <p><strong>Você:</strong> {{ chat.question }}</p>
@@ -63,17 +58,14 @@
             <p>Sem histórico ainda.</p>
         {% endfor %}
     </div>
-</div>
-<div class="form_enviar">
-    <!-- Formulário de envio -->
+
+    <!-- Formulário para envio de mensagens -->
     <form method="post" class="chat-form">
         {% csrf_token %}
-
-        <textarea name="message" placeholder="Pergunte a Manuela" required></textarea>
-        <button type="submit">Enviar</button>
+        <textarea name="message" rows="3" placeholder="Digite sua mensagem aqui..."></textarea>
+        <button type="submit" class="send-btn">Enviar</button>
     </form>
-    </div>
-
+</div>
 
 
 <script>
@@ -82,20 +74,15 @@
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 
-
-    // Rola para o final ao carregar a página
     document.addEventListener("DOMContentLoaded", function () {
         scrollToBottom();
     });
 
-    // Rola para o final sempre que o formulário for enviado
     const chatForm = document.querySelector(".chat-form");
-    chatForm.addEventListener("submit", function (e) {
-        // Após enviar a mensagem, espera um pequeno delay e rola
+    chatForm.addEventListener("submit", function () {
         setTimeout(scrollToBottom, 100);
     });
 
-    // Controle de menu
     document.getElementById("menuToggle").addEventListener("click", function () {
         const menu = document.getElementById("menu");
         menu.classList.toggle("hidden");

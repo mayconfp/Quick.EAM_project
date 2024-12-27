@@ -1,26 +1,29 @@
 import openai
 import os
+from dotenv import load_dotenv, find_dotenv
+_= load_dotenv(find_dotenv())
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-from openai import ChatCompletion  # Certifique-se de usar sua configuração da OpenAI
+def gerar_resposta_openai(user_message, contexto=None):
+    if contexto is None:
+        contexto = []
 
-def gerar_resposta_openai(mensagem, respostas_adicionais=None):
-    """
-    Gera uma resposta do OpenAI, considerando respostas adicionais de outras IAs.
-    """
-    mensagens = [{"role": "user", "content": mensagem}]
-
-    if respostas_adicionais:
-        for resposta in respostas_adicionais:
-            mensagens.append({"role": "assistant", "content": resposta})
+    import openai
+    openai.api_key = os.getenv("OPENAI_API_KEY")
 
     try:
-        response = ChatCompletion.create(
+        # Combine o contexto com a mensagem atual
+        messages = contexto + [{"role": "user", "content": user_message}]
+
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages=mensagens,
-            temperature=0.5
+            messages=messages,
+            temperature=0.7,
+            max_tokens=150,
         )
-        return response['choices'][0]['message']['content']
+
+        return response['choices'][0]['message']['content'].strip()
     except Exception as e:
-        print(f"Erro com OpenAI: {e}")
-        return "Erro ao processar resposta da OpenAI."
+        print(f"Erro na API OpenAI: {e}")
+        return "Desculpe, ocorreu um erro ao processar sua mensagem."

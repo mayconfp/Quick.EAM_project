@@ -3,16 +3,28 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
-    # Adicione campos personalizados aqui, se necessário
-    pass
+    bio = models.TextField(blank=True, null=True)  # Exemplo de campo adicional
+    profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
+
+class ChatSession(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="chat_sessions"
+    )
+    title = models.CharField(max_length=100, default="Nova Conversa")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.user.username}"
+
 
 class ChatHistory(models.Model):
-    IA_CHOICES = [
-        ('GPT', 'GPT'),
-        ('Llama', 'Llama'),
-        ('Gemini', 'Gemini'),
-    ]
-
+    session = models.ForeignKey(
+        ChatSession,
+        on_delete=models.CASCADE,
+        related_name="messages"
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -22,10 +34,21 @@ class ChatHistory(models.Model):
     answer = models.TextField()
     ia_used = models.CharField(
         max_length=50,
-        choices=IA_CHOICES,
+        choices=[
+            ('GPT', 'GPT'),
+            ('Llama', 'Llama'),
+            ('Gemini', 'Gemini'),
+        ],
         default='GPT'
     )
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'timestamp']),
+        ]
+
     def __str__(self):
         return f"{self.user}: {self.question[:20]} - {self.ia_used}"
+
+

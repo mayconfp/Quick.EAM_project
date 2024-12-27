@@ -1,11 +1,8 @@
 import os
 from pathlib import Path
-
 from dotenv import load_dotenv, find_dotenv
 from django.utils.translation import gettext_lazy as _
 import os
-from pathlib import Path
-
 from dotenv import load_dotenv, find_dotenv
 from django.utils.translation import gettext_lazy as gettext
 
@@ -21,7 +18,9 @@ LANGUAGES = [
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-secreta")
-DEBUG = True
+
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
@@ -34,16 +33,20 @@ INSTALLED_APPS = [
     'usuarios',  # Aplicativo da sua aplicação
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  # Middleware para tradução
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  # Middleware de autenticação
+    'django.contrib.messages.middleware.MessageMiddleware',  # Middleware de mensagens
+    'usuarios.middleware.LocalizacaoMiddleware',  # Seu middleware customizado
 ]
+
+
+
 
 ROOT_URLCONF = 'DjangoProject.urls'
 

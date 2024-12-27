@@ -325,3 +325,97 @@ header {
 .footer-links li a:hover {
     color: #00bcd4;
 }
+
+.history-msg {
+    width: 300px;
+    background-color: #f8f8f8;
+    padding: 20px;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+    height: calc(100vh - 160px);
+    overflow-y: auto;
+    position: fixed;
+    left: 0;
+    top: 80px;
+    z-index: 1000;
+}
+
+.history-list li a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.history-list li a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px); /* Altura total menos o header */
+    margin-left: 320px; /* Espaço para o histórico */
+    padding: 20px;
+    background-color: #f8f8f8;
+}
+
+.chat-history {
+    flex: 1;
+    overflow-y: auto; /* Adiciona rolagem ao histórico */
+    margin-bottom: 10px;
+}
+
+.chat-form {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: white;
+    border-top: 1px solid #ccc;
+}
+
+.chat-form textarea {
+    flex: 1;
+    resize: none;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.chat-form button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    font-size: 14px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.chat-form button:hover {
+    background-color: #0056b3;
+}
+
+.message_user {
+    text-align: right;
+    background-color: #e6f7ff;
+    color: #0056b3;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    max-width: 70%;
+    margin-left: auto;
+}
+
+.message_bot {
+    text-align: left;
+    background-color: #f8f8f8;
+    color: #333;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    max-width: 70%;
+    margin-right: auto;
+}

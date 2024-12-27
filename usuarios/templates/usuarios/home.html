@@ -94,9 +94,44 @@
             const menu = document.getElementById("menu");
             menu.classList.toggle("hidden");
         });
+
     </script>
-</body>
-</html>
+
+    <script>
+        function solicitarLocalizacao() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    // Enviar a localização para o servidor
+                    fetch('/definir_idioma/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({latitude, longitude})
+                    }).then(response => {
+                        if (response.ok) {
+                            console.log("Idioma definido com base na localização");
+                            location.reload(); // Atualiza a página para refletir o idioma correto
+                        } else {
+                            console.error("Erro ao definir idioma");
+                        }
+                    });
+                }, function (error) {
+                    console.error("Erro ao obter localização", error);
+                });
+            } else {
+                console.error("Geolocalização não é suportada pelo navegador.");
+            }
+        }
+
+        // Solicita a localização ao carregar a página
+        document.addEventListener('DOMContentLoaded', solicitarLocalizacao);
+    </script>
+
 
 </body>
 </html>
