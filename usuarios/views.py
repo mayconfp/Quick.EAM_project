@@ -11,6 +11,12 @@ import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import activate
+from django.contrib.auth import logout
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import ChatSession, ChatHistory
+from .services import processar_comunicacao_multi_ia
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
@@ -52,10 +58,10 @@ def definir_idioma(request):
         return JsonResponse({'status': 'Método não permitido'}, status=405)
 
 
-
 def home(request):
     """Página inicial com informações sobre a QuickEAM."""
     return render(request, 'usuarios/home.html')
+
 
 def register(request):
     """Cadastro de novos usuários."""
@@ -70,6 +76,7 @@ def register(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'usuarios/register.html', {'form': form})
+
 
 def user_login(request):
     """Login de usuários."""
@@ -86,71 +93,87 @@ def user_login(request):
     return render(request, 'usuarios/login.html', {'form': form})
 
 
-from django.shortcuts import get_object_or_404
-
-@login_required
 def chat(request, session_id=None):
     ai_response = None
-    provedor_selecionado = 'openai'
+    session = None
 
-    # Recupera ou cria uma nova sessão
     if session_id:
+        # Recupera a sessão existente se o ID foi fornecido
         session = get_object_or_404(ChatSession, id=session_id, user=request.user)
-    else:
-        session = ChatSession.objects.create(user=request.user)
 
-    if request.method == 'POST':
+    elif request.method == 'POST':  # Apenas cria uma nova sessão ao enviar uma mensagem
         user_message = request.POST.get('message', '').strip()
-        provedor_selecionado = request.POST.get('provedor', 'openai')
+        if user_message:  # Garante que a sessão só será criada se houver mensagem
+            session = ChatSession.objects.create(user=request.user)
 
-        if provedor_selecionado not in PROVEDORES_VALIDOS:
-            provedor_selecionado = 'openai'
+    if session and request.method == 'POST':
+        user_message = request.POST.get('message', '').strip()
+        if user_message:
+            # Define o título da sessão com a primeira mensagem
+            if not session.title or session.title == "Nova Conversa":
+                session.title = user_message[:30]
+                session.save()
 
-        # Atualiza o título da sessão com a primeira mensagem
-        if not ChatHistory.objects.filter(session=session).exists():
-            session.title = user_message[:30]  # Usa os primeiros 30 caracteres da mensagem
-            session.save()
+            # Recupera o histórico completo da conversa
+            historico_completo = ChatHistory.objects.filter(session=session).order_by('timestamp')
 
-        # Construa o contexto com base no histórico da sessão
-        chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp')
-        contexto = [{"role": "user", "content": chat.question} if chat.user else {"role": "assistant", "content": chat.answer} for chat in chat_history]
+            # Processa a mensagem com múltiplas IAs
+            ai_response = processar_comunicacao_multi_ia(user_message, historico_completo)
 
-        # Adiciona a mensagem atual do usuário ao contexto
-        contexto.append({"role": "user", "content": user_message})
+            # Salva no histórico
+            ChatHistory.objects.create(
+                session=session,
+                user=request.user,
+                question=user_message,
+                answer=ai_response
+            )
 
-        # Processa a mensagem diretamente com o provedor selecionado
-        if provedor_selecionado == 'openai':
-            ai_response = gerar_resposta_openai(user_message, contexto)
-        elif provedor_selecionado == 'llama':
-            ai_response = gerar_resposta_llama(user_message, contexto)
-        elif provedor_selecionado == 'gemini':
-            ai_response = gemini_gerar_resposta(user_message)
-
-        # Salva no histórico
-        ChatHistory.objects.create(
-            session=session,
-            user=request.user,
-            question=user_message,
-            answer=ai_response,
-            ia_used=provedor_selecionado
-        )
-
-    # Recupera o histórico atualizado
-    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp')
+    # Recupera o histórico e sessões
+    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
     sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
+
+    # Verifica se nenhuma sessão ativa está sendo usada
+    if not session and not session_id:
+        session = None  # Garante que uma nova sessão não será criada automaticamente
 
     return render(request, 'usuarios/chat.html', {
         'response': ai_response,
         'chat_history': chat_history,
         'sessions': sessions,
         'current_session': session,
-        'provedor_selecionado': provedor_selecionado
     })
 
 
 
+
+@login_required
+def excluir_chat(request, session_id):
+    try:
+        chat_session = ChatSession.objects.get(id=session_id, user=request.user)
+        chat_session.delete()
+        messages.success(request, "Conversa excluída com sucesso.")
+    except ChatSession.DoesNotExist:
+        messages.error(request, "Conversa não encontrada ou não pertence a você.")
+    return redirect('chat')  # Não cria nova sessão automaticamente
+
+
+
 def logout_view(request):
-    """Efetuar logout."""
+    """
+    Efetua logout do usuário e redireciona para a página inicial.
+    """
     logout(request)
     messages.info(request, "Você saiu com sucesso.")
     return redirect('home')
+
+
+@login_required
+def editar_titulo(request, session_id):
+    if request.method == 'POST':
+        new_title = request.POST.get('new_title', '').strip()
+        if new_title:
+            session = get_object_or_404(ChatSession, id=session_id, user=request.user)
+            session.title = new_title[:30]  # Limita o título a 30 caracteres
+            session.save()
+            messages.success(request, "Título atualizado com sucesso!")
+    return redirect('chat_session', session_id=session_id)

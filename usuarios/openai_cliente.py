@@ -9,9 +9,6 @@ def gerar_resposta_openai(user_message, contexto=None):
     if contexto is None:
         contexto = []
 
-    import openai
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-
     try:
         # Combine o contexto com a mensagem atual
         messages = contexto + [{"role": "user", "content": user_message}]

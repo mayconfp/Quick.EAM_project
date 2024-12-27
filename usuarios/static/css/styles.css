@@ -96,7 +96,7 @@ body {
     display: none;
 }
 
-.header img {
+.logo img {
     width: 100px; /* Define a largura da imagem */
     height: auto; /* Ajusta automaticamente a altura para manter a proporção */
     max-height: 60px; /* Garante que a imagem não ultrapasse a altura do header */
