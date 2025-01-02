@@ -93,8 +93,6 @@ def user_login(request):
     return render(request, 'usuarios/login.html', {'form': form})
 
 
-
-
 def chat(request, session_id=None):
     ai_response = None
     session = None
@@ -146,8 +144,6 @@ def chat(request, session_id=None):
     })
 
 
-
-
 @login_required
 def excluir_chat(request, session_id):
     try:
@@ -157,7 +153,6 @@ def excluir_chat(request, session_id):
     except ChatSession.DoesNotExist:
         messages.error(request, "Conversa não encontrada ou não pertence a você.")
     return redirect('chat')  # Não cria nova sessão automaticamente
-
 
 
 def logout_view(request):
