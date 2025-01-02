@@ -1,78 +1,253 @@
-body{
-    font-family: 'Roboto', sans-serif;
-     font-size: 16px;
-     color: #333;
-    line-height: 1.5;
+/* Geral */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
 }
 
-
-
-.login{
-   max-width: 300px;
-    margin: 50px auto; /* Centraliza horizontalmente */
-    padding: 20px 26px;
-    background-color: #fff; /* Fundo branco para contraste */
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-
+/* Cabeçalho */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
 }
 
-.login .label{
-    font-weight: bold;
+.logo img {
+    height: 40px;
+}
+
+.menu-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.menu-btn .bar {
     display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    margin: 4px 0;
 }
 
-.login h1 {
-    font-size: 24px;
-    font-weight: 700;
-    text-align: center;
-    color: #0056b3;
+.menu {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    z-index: 1001;
+    padding: 10px 0;
+}
+
+.menu.hidden {
+    display: none;
+}
+
+.menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.menu ul li {
+    padding: 10px 20px;
+}
+
+.menu ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.menu ul li a:hover {
+    color: #007bff;
+}
+
+/* Container Principal */
+.chat-container {
+    display: flex;
+    margin: 70px 20px 20px 20px;
+}
+
+/* Histórico de Conversas */
+.history-msg {
+    flex: 1;
+    max-width: 250px;
+    border-right: 1px solid #ddd;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.history-msg h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.history-list li {
     margin-bottom: 10px;
 }
 
-.login p {
-    font-size: 12px;
-    font-weight: 700;
-    text-align: center;
-    color: #222222;
-    margin-top : 20px;
+.history-list li a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 500;
 }
 
-.login form {
+.history-list li a:hover {
+    text-decoration: underline;
+}
+
+.history-list li a.active {
+    font-weight: bold;
+    color: #0056b3;
+}
+
+/* Área de Chat */
+.chat-area {
+    flex: 3;
     display: flex;
     flex-direction: column;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-left: 20px;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.chat-header h2 {
+    font-size: 20px;
+    color: #333;
+}
+
+.chat-history {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f7f7f7;
+}
+
+.chat-history .message_user {
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+.chat-history .message_user p {
+    display: inline-block;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 15px;
+}
+
+.chat-history .message_bot {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.chat-history .message_bot p {
+    display: inline-block;
+    background-color: #f1f1f1;
+    color: #333;
+    padding: 10px 15px;
+    border-radius: 15px;
+}
+
+/* Formulário */
+.chat-form {
+    display: flex;
+    margin-top: 15px;
     gap: 10px;
 }
-.login button {
-    background-color: darkslategray;
-    color: #e6f7ff;
-    cursor: pointer !important;
-    border: none; /* Remove bordas padrão */
-    margin: 0; /* Remove margem padrão */
-    padding: 3px;
-    box-shadow: none; /* Remove sombra padrão */
-    outline: none; /* Remove o contorno padrão ao focar */
-    transition: background-color 0.3s ease, transform 0.1s ease;
+
+.chat-form textarea {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    resize: none;
+    height: 40px;
+    box-shadow: none;
 }
 
-.login a {
-    text-decoration: none;
+.chat-form button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-.login a:hover {
-    text-decoration: underline;
-    color: green;
-
+.chat-form button:hover {
+    background-color: #0056b3;
 }
 
-.login label{
-    font-weight: bold;
+/* Menu Dropdown no Chat */
+.chat-header .dropdown {
+    position: relative;
+}
+
+.chat-header .dropdown button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.chat-header .dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: none;
+    min-width: 150px;
+    z-index: 1000;
+}
+
+.chat-header .dropdown-menu.show {
     display: block;
 }
 
-.login button:active {
-    /* Animação leve ao pressionar o botão */
-    transform: scale(0.95); /* Reduz o tamanho levemente */
+.chat-header .dropdown-menu a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: #333;
+}
+
+.chat-header .dropdown-menu a:hover {
+    background-color: #f7f7f7;
 }

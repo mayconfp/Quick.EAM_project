@@ -93,6 +93,8 @@ def user_login(request):
     return render(request, 'usuarios/login.html', {'form': form})
 
 
+
+
 def chat(request, session_id=None):
     ai_response = None
     session = None

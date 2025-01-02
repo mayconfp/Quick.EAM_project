@@ -14,124 +14,36 @@
     padding: 15px;
 }
 
-.history-msg h2 {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.history-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.history-list li {
-    margin-bottom: 10px;
-}
-
-.history-list a {
-    text-decoration: none;
-    color: #007bff;
-    font-weight: 500;
-}
-
-.history-list a.active {
-    color: #0056b3;
-    font-weight: bold;
-}
-
 .chat-area {
     flex: 3;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     height: 100%;
     background-color: #fff;
-    padding: 15px;
+    padding: 0 15px;
     overflow: hidden;
 }
 
-.chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f8f8f8;
-    padding: 10px 15px;
-    border-bottom: 1px solid #ccc;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-.chat-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 0;
-    color: #333;
-}
-
-.chat-options {
+header {
     position: relative;
-    display: inline-block;
-}
-
-.options-button {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #007bff;
     display: flex;
     align-items: center;
-}
-
-.options-button:hover {
-    color: #0056b3;
-}
-
-.options-menu {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 30px;
+    justify-content: space-between; /* Alinha o conteúdo nas extremidades */
+    padding: 10px 15px; /* Espaçamento interno */
     background-color: #fff;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
-    z-index: 200;
+    border-bottom: 1px solid #ccc;
+    z-index: 999;
 }
 
-.options-menu.active {
-    display: block;
-}
-
-.options-menu button {
-    padding: 10px 15px;
-    background: none;
-    border: none;
-    color: #333;
-    width: 100%;
-    text-align: left;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.options-menu button:hover {
-    background-color: #f0f0f0;
-}
 
 .chat-history {
     flex: 1;
     overflow-y: auto;
-    margin-bottom: 15px;
+    margin: 0;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-}
-
-.chat-history h2 {
-    font-size: 16px;
-    margin-bottom: 10px;
 }
 
 .message_user {
@@ -140,6 +52,11 @@
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #007bff;
+    text-align: right;
+    float: right;
+    max-width: 70%;
+    clear: both;
+    word-wrap: break-word; /* Garante que longas palavras sejam quebradas */
 }
 
 .message_bot {
@@ -148,12 +65,19 @@
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
+    text-align: left;
+    float: left;
+    max-width: 70%;
+    clear: both;
+    word-wrap: break-word;
 }
 
 .chat-form {
     display: flex;
     flex-direction: column;
     margin-top: 10px;
+    padding: 10px 0;
+    border-top: 1px solid #ccc;
 }
 
 .chat-form textarea {
@@ -180,9 +104,11 @@
     background-color: #0056b3;
 }
 
+/* Responsividade para dispositivos menores */
 @media screen and (max-width: 768px) {
     .chat-container {
         flex-direction: column;
+        height: auto;
     }
 
     .history-msg {
@@ -195,41 +121,97 @@
         padding: 10px;
     }
 
-    .chat-title {
-        font-size: 16px;
-    }
-
-    .options-button {
-        font-size: 18px;
+    .chat-history {
+        padding: 5px;
     }
 
     .chat-form {
-        flex-direction: column;
+        padding: 5px 0;
     }
 
-    .chat-form textarea {
-        margin-bottom: 5px;
+    .message_user,
+    .message_bot {
+        max-width: 90%;
     }
 }
-.message-container {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
 
-.message_user {
-    background-color: #e9f7ff;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #007bff;
-    max-width: 48%;
-    text-align: right;
-}
-
-.message_bot {
-    background-color: #f8f8f8;
-    padding: 10px;
-    border-radius: 5px;
+/* Botão do menu (três barras) */
+.menu {
+    position: absolute;
+    top: 50px; /* Espaçamento adequado abaixo do botão */
+    right: 15px; /* Alinhado com o botão */
+    background-color: #fff;
     border: 1px solid #ccc;
-    max-width: 48%;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    display: none; /* Inicialmente escondido */
+    z-index: 1000;
+    width: 200px;
 }
+
+
+.menu-btn .bar {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    border-radius: 3px;
+}
+
+
+/* Menu de navegação */
+.menu {
+    position: absolute;
+    top: 50px;
+    right: 15px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    display: none; /* Inicialmente escondido */
+    z-index: 1000;
+    width: 200px;
+}
+
+/* Mostra o menu quando ativo */
+.menu.activate {
+    display: block;
+}
+
+/* Links no menu */
+.menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu ul li {
+    margin: 0;
+}
+
+.menu ul li a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.menu ul li a:hover {
+    background-color: #f8f8f8;
+    color: #007bff;
+}
+
+@media screen and (max-width: 768px) {
+    .menu {
+        top: 50px; /* Mantém o espaço abaixo do botão */
+        right: 10px;
+        width: 90%; /* Faz o menu ocupar quase toda a largura */
+    }
+
+    .menu ul li a {
+        text-align: center; /* Centraliza os links */
+    }
+}
+

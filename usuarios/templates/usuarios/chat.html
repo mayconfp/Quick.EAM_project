@@ -56,23 +56,25 @@
                 {{ current_session.title|default:"Conversa Atual" }}
             </h2>
             {% if current_session %}
-            <div class="menu-container">
-                <button class="menu-button">⋮</button>
-                <div class="menu-content hidden">
-                    <form method="post" action="{% url 'editar_titulo' current_session.id %}" class="edit-title-form">
-                        {% csrf_token %}
-                        <input type="text" name="new_title" placeholder="Novo título..." required>
-                        <button type="submit" class="save-btn">Salvar</button>
-                    </form>
-                    <form method="post" action="{% url 'excluir_chat' current_session.id %}" class="delete-chat-form">
-                        {% csrf_token %}
-                        <button type="submit" class="delete-btn"
-                                onclick="return confirm('Tem certeza que deseja excluir esta conversa?')">
-                            Excluir
-                        </button>
-                    </form>
+                <div class="menu-container">
+                    <button class="menu-button">⋮</button>
+                    <div class="menu-content hidden">
+                        <form method="post" action="{% url 'editar_titulo' current_session.id %}"
+                              class="edit-title-form">
+                            {% csrf_token %}
+                            <input type="text" name="new_title" placeholder="Novo título..." required>
+                            <button type="submit" class="save-btn">Salvar</button>
+                        </form>
+                        <form method="post" action="{% url 'excluir_chat' current_session.id %}"
+                              class="delete-chat-form">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-btn"
+                                    onclick="return confirm('Tem certeza que deseja excluir esta conversa?')">
+                                Excluir
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
             {% endif %}
         </div>
 
@@ -81,11 +83,11 @@
             {% if current_session %}
                 {% for chat in chat_history %}
                     <div class="message-container">
-                        <div class="message_bot">
-                            <p><strong>Manuela:</strong> {{ chat.answer }}</p>
-                        </div>
                         <div class="message_user">
                             <p><strong>Você:</strong> {{ chat.question }}</p>
+                        </div>
+                        <div class="message_bot">
+                            <p><strong>Manuela:</strong> {{ chat.answer }}</p>
                         </div>
                     </div>
                 {% empty %}
@@ -98,12 +100,15 @@
 
         <!-- Formulário para enviar mensagem -->
         {% if current_session %}
-        <form method="post" class="chat-form" action="{% url 'chat_session' current_session.id %}">
-            {% csrf_token %}
-            <textarea name="message" placeholder="Digite sua mensagem aqui..." required></textarea>
-            <button type="submit">Enviar</button>
-        </form>
+            <form method="post" class="chat-form" action="{% url 'chat_session' current_session.id %}">
+        {% else %}
+            <form method="post" class="chat-form" action="{% url 'chat' %}">
         {% endif %}
+
+        {% csrf_token %}
+        <textarea name="message" placeholder="Digite sua mensagem aqui..." required></textarea>
+        <button type="submit">Enviar</button>
+        </form>
     </div>
 </div>
 
@@ -136,7 +141,7 @@
 
     document.getElementById("menuToggle").addEventListener("click", function () {
         const menu = document.getElementById("menu");
-        menu.classList.toggle("hidden");
+        menu.classList.toggle("activate");
     });
 </script>
 
