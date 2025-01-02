@@ -1,9 +1,3 @@
-views.py
-from .gemini_cliente import gemini_gerar_resposta
-from .llama_cliente import gerar_resposta_llama
-from .models import ChatHistory, ChatSession
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .forms import CustomUserCreationForm, CustomLoginForm

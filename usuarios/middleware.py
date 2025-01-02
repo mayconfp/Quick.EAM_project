@@ -1,4 +1,3 @@
-# usuarios/middleware.py
 import requests
 from django.utils.translation import activate
 
