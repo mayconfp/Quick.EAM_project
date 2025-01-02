@@ -1,3 +1,4 @@
+views.py
 from .gemini_cliente import gemini_gerar_resposta
 from .llama_cliente import gerar_resposta_llama
 from .models import ChatHistory, ChatSession
