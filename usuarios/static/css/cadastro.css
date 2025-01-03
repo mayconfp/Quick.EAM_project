@@ -66,3 +66,24 @@ body{
     /* Animação leve ao pressionar o botão */
     transform: scale(0.95); /* Reduz o tamanho levemente */
 }
+
+
+.password-container {
+    position: relative;
+}
+
+.password-container input {
+    width: calc(100% - 40px);
+    padding-right: 40px;
+}
+
+.password-container button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
