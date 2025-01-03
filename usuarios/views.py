@@ -1,17 +1,17 @@
-from django.contrib.auth import authenticate, login, logout
-from django.contrib import messages
-from .forms import CustomUserCreationForm, CustomLoginForm
-from .openai_cliente import gerar_resposta_openai
 import requests
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.translation import activate
-from django.contrib.auth import logout
-from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import activate
+from django.views.decorators.csrf import csrf_exempt
+from .forms import CustomUserCreationForm, CustomLoginForm
+from .forms import CustomUserCreationForm, CustomLoginForm
 from .models import ChatSession, ChatHistory
 from .services import processar_comunicacao_multi_ia
+from django.contrib.auth import authenticate, login
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 

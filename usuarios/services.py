@@ -1,7 +1,8 @@
-from .openai_cliente import gerar_resposta_openai
-from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
-from .models import ChatHistory
+from .llama_cliente import gerar_resposta_llama
+from .openai_cliente import gerar_resposta_openai
+from usuarios.models import ChatHistory
+
 
 
 def processar_comunicacao_multi_ia(mensagem, historico=None):

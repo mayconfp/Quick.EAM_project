@@ -5,57 +5,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
-    <link rel="stylesheet" href="{% static 'css/styles.css'  %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/cadastro.css' %}">
     <title> Cadastro - QuickEAM</title>
 </head>
 <body>
 <header>
-        <button id="menuToggle" class="menu-btn">
-    <span class="bar"></span>
-    <span class="bar"></span>
-    <span class="bar"></span>
-</button>
-        <nav id="menu" class="menu hidden">
+    <button id="menuToggle" class="menu-btn">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+    <nav id="menu" class="menu hidden">
         <ul>
             <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
             <li><a href="{% url 'login' %}">Login</a></li>
             <li><a href="#">Serviços</a></li>
         </ul>
     </nav>
-        <div class="logo">
-            <a href="{% url 'home' %}" class="logo">
-                <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
-            </a>
-        </div>
-    </header>
+    <div class="logo">
+        <a href="{% url 'home' %}" class="logo">
+            <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
+        </a>
+    </div>
+</header>
 
 <div class="registro">
     <h1>Cadastro</h1>
 
     <p>Crie sua conta para acessar o sistema da QuickEAM.</p>
-        <form method="post">
-            {% csrf_token %}
+    <form method="post">
+        {% csrf_token %}
 
         <label for="username">Usuário ou CNPJ:</label>
         <input type="text" id="username" name="username">
 
 
         <label for="email">E-mail:</label>
-         <input type="text" id="email" name="email">
-
+        <input type="text" id="email" name="email">
 
         <label for="password1">Senha:</label>
-        <input type="text" id="password1" name="password1">
-
+        <div class="password-container">
+            <input type="password" id="password1" name="password1">
+            <button type="button" onclick="togglePassword('password1')">👁️</button>
+        </div>
 
         <label for="password2">Confirmação de senha:</label>
-        <input type="text" id="password2" name="password2">
+        <div class="password-container">
+            <input type="password" id="password2" name="password2">
+            <button type="button" onclick="togglePassword('password2')">👁️</button>
+        </div>
 
 
         <button type="submit">Cadastrar</button>
-        </form>
-    </div>
+    </form>
+
+</div>
 
 
 <footer class="footer">
@@ -69,10 +74,23 @@
     </div>
 </footer>
 <script>
-        document.getElementById("menuToggle").addEventListener("click", function () {
-            const menu = document.getElementById("menu");
-            menu.classList.toggle("hidden");
-        });
-    </script>
+    document.getElementById("menuToggle").addEventListener("click", function () {
+        const menu = document.getElementById("menu");
+        menu.classList.toggle("hidden");
+    });
+
+</script>
+
+<script>
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (field.type === "password") {
+            field.type = "text";
+        } else {
+            field.type = "password";
+        }
+    }
+</script>
+
 </body>
 </html>
