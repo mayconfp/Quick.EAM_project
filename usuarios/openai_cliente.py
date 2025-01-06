@@ -14,10 +14,10 @@ def gerar_resposta_openai(user_message, contexto=None):
         messages = contexto + [{"role": "user", "content": user_message}]
 
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="chatgpt-4o-latest",
             messages=messages,
             temperature=0.5,
-            max_tokens=1500,
+            max_tokens=200,
         )
 
         return response['choices'][0]['message']['content'].strip()
