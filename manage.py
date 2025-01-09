@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!/usr/bin/..env python
+=======
+#!/usr/bin/.env python
+>>>>>>> 5c62c5262cb475d152b0953929a6315f1ab7cbcc
 import os
 import sys
 
