@@ -1,0 +1,100 @@
+body{
+    font-family: 'Roboto', sans-serif;
+     font-size: 16px;
+     color: #333;
+    line-height: 1.5;
+}
+
+
+
+.login{
+   max-width: 300px;
+    margin: 50px auto; /* Centraliza horizontalmente */
+    padding: 20px 26px;
+    background-color: #fff; /* Fundo branco para contraste */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+
+}
+
+.login .label{
+    font-weight: bold;
+    display: block;
+}
+
+.login h1 {
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    color: #0056b3;
+    margin-bottom: 10px;
+}
+
+.login p {
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    color: #222222;
+    margin-top : 20px;
+}
+
+.login form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.login button {
+    background-color: darkslategray;
+    color: #e6f7ff;
+    cursor: pointer !important;
+    border: none; /* Remove bordas padrão */
+    margin: 0; /* Remove margem padrão */
+    padding: 3px;
+    box-shadow: none; /* Remove sombra padrão */
+    outline: none; /* Remove o contorno padrão ao focar */
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.login a {
+    text-decoration: none;
+}
+
+.login a:hover {
+    text-decoration: underline;
+    color: green;
+
+}
+
+.login label{
+    font-weight: bold;
+    display: block;
+}
+
+.login button:active {
+    /* Animação leve ao pressionar o botão */
+    transform: scale(0.95); /* Reduz o tamanho levemente */
+}
+
+
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-container input {
+    width: calc(100% - 40px);
+    padding-right: 40px;
+}
+
+.password-container button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}

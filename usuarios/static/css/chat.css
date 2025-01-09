@@ -1,0 +1,217 @@
+
+.chat-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+.history-msg {
+    flex: 1;
+    max-width: 300px;
+    background-color: #fff;
+    border-right: 1px solid #ccc;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.chat-area {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    background-color: #fff;
+    padding: 0 15px;
+    overflow: hidden;
+}
+
+header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Alinha o conteúdo nas extremidades */
+    padding: 10px 15px; /* Espaçamento interno */
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+    z-index: 999;
+}
+
+
+.chat-history {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.message_user {
+    margin-bottom: 10px;
+    background-color: #e9f7ff;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #007bff;
+    text-align: right;
+    float: right;
+    max-width: 70%;
+    clear: both;
+    word-wrap: break-word; /* Garante que longas palavras sejam quebradas */
+}
+
+.message_bot {
+    margin-bottom: 10px;
+    background-color: #f8f8f8;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    text-align: left;
+    float: left;
+    max-width: 70%;
+    clear: both;
+    word-wrap: break-word;
+}
+
+.chat-form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    padding: 10px 0;
+    border-top: 1px solid #ccc;
+}
+
+.chat-form textarea {
+    resize: none;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.chat-form button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.chat-form button:hover {
+    background-color: #0056b3;
+}
+
+/* Responsividade para dispositivos menores */
+@media screen and (max-width: 768px) {
+    .chat-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .history-msg {
+        max-width: none;
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .chat-header {
+        padding: 10px;
+    }
+
+    .chat-history {
+        padding: 5px;
+    }
+
+    .chat-form {
+        padding: 5px 0;
+    }
+
+    .message_user,
+    .message_bot {
+        max-width: 90%;
+    }
+}
+
+/* Botão do menu (três barras) */
+.menu {
+    position: absolute;
+    top: 50px; /* Espaçamento adequado abaixo do botão */
+    right: 15px; /* Alinhado com o botão */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    display: none; /* Inicialmente escondido */
+    z-index: 1000;
+    width: 200px;
+}
+
+
+.menu-btn .bar {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    border-radius: 3px;
+}
+
+
+/* Menu de navegação */
+.menu {
+    position: absolute;
+    top: 50px;
+    right: 15px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    display: none; /* Inicialmente escondido */
+    z-index: 1000;
+    width: 200px;
+}
+
+/* Mostra o menu quando ativo */
+.menu.activate {
+    display: block;
+}
+
+/* Links no menu */
+.menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu ul li {
+    margin: 0;
+}
+
+.menu ul li a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.menu ul li a:hover {
+    background-color: #f8f8f8;
+    color: #007bff;
+}
+
+@media screen and (max-width: 768px) {
+    .menu {
+        top: 50px; /* Mantém o espaço abaixo do botão */
+        right: 10px;
+        width: 90%; /* Faz o menu ocupar quase toda a largura */
+    }
+
+    .menu ul li a {
+        text-align: center; /* Centraliza os links */
+    }
+}

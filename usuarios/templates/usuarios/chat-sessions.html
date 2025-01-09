@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Sessões de Chat</title>
+</head>
+<body>
+    <h1>Sessões de Chat</h1>
+    <ul>
+        {% for session in sessions %}
+            <li>
+                <a href="{% url 'chat' session.id %}">{{ session.title }}</a>
+                - Criado em {{ session.created_at|date:"d/m/Y H:i" }}
+            </li>
+        {% empty %}
+            <p>Você ainda não possui sessões de chat.</p>
+        {% endfor %}
+    </ul>
+    <form action="{% url 'chat_new' %}" method="get">
+        <button type="submit">Iniciar Nova Sessão</button>
+    </form>
+</body>
+</html>

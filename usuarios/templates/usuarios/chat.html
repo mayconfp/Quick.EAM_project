@@ -1,0 +1,148 @@
+{% load static %}
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+    <title>QuickEAM</title>
+</head>
+<body>
+<header>
+    <button id="menuToggle" class="menu-btn">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+    <nav id="menu" class="menu hidden">
+        <ul>
+            <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </nav>
+    <div class="logo">
+        <a href="{% url 'home' %}" class="logo">
+            <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
+        </a>
+    </div>
+</header>
+
+<div class="chat-container">
+    <!-- Histórico de Conversas -->
+    <div class="history-msg">
+        <h2>Histórico de Conversas</h2>
+        <button onclick="window.location.href='{% url 'chat' %}'">Novo Chat</button>
+        <ul class="history-list">
+            {% for session in sessions %}
+                <li>
+                    <a href="{% url 'chat_session' session.id %}"
+                       class="{% if current_session and current_session.id == session.id %}active{% endif %}">
+                        {{ session.title|default:"Nova Conversa" }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Área de Chat -->
+    <div class="chat-area">
+        <!-- Cabeçalho do Chat -->
+        <div class="chat-header">
+            <h2 class="chat-title">
+                {{ current_session.title|default:"Conversa Atual" }}
+            </h2>
+            {% if current_session %}
+                <div class="menu-container">
+                    <button class="menu-button">⋮</button>
+                    <div class="menu-content hidden">
+                        <form method="post" action="{% url 'editar_titulo' current_session.id %}"
+                              class="edit-title-form">
+                            {% csrf_token %}
+                            <input type="text" name="new_title" placeholder="Novo título..." required>
+                            <button type="submit" class="save-btn">Salvar</button>
+                        </form>
+                        <form method="post" action="{% url 'excluir_chat' current_session.id %}"
+                              class="delete-chat-form">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-btn"
+                                    onclick="return confirm('Tem certeza que deseja excluir esta conversa?')">
+                                Excluir
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Histórico de Mensagens -->
+        <div class="chat-history" id="chatHistory">
+            {% if current_session %}
+                {% for chat in chat_history %}
+                    <div class="message-container">
+                        <div class="message_user">
+                            <p><strong>Você:</strong> {{ chat.question }}</p>
+                        </div>
+                        <div class="message_bot">
+                            <p><strong>Manuela:</strong> {{ chat.answer }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>Sem mensagens nesta conversa.</p>
+                {% endfor %}
+            {% else %}
+                <p>Inicie uma nova conversa ou selecione uma existente.</p>
+            {% endif %}
+        </div>
+
+        <!-- Formulário para enviar mensagem -->
+        {% if current_session %}
+            <form method="post" class="chat-form" action="{% url 'chat_session' current_session.id %}">
+        {% else %}
+            <form method="post" class="chat-form" action="{% url 'chat' %}">
+        {% endif %}
+
+        {% csrf_token %}
+        <textarea name="message" placeholder="Digite sua mensagem aqui..." required></textarea>
+        <button type="submit">Enviar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function scrollToBottom() {
+        const chatHistory = document.getElementById("chatHistory");
+        if (chatHistory) {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        scrollToBottom();
+    });
+
+    const menuButton = document.querySelector(".menu-button");
+    const menuContent = document.querySelector(".menu-content");
+
+    if (menuButton && menuContent) {
+        menuButton.addEventListener("click", function () {
+            menuContent.classList.toggle("hidden");
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!menuButton.contains(event.target) && !menuContent.contains(event.target)) {
+                menuContent.classList.add("hidden");
+            }
+        });
+    }
+
+    document.getElementById("menuToggle").addEventListener("click", function () {
+        const menu = document.getElementById("menu");
+        menu.classList.toggle("activate");
+    });
+</script>
+
+</body>
+</html>
