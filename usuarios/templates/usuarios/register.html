@@ -33,29 +33,38 @@
 <div class="registro">
     <h1>Cadastro</h1>
 
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <p>Crie sua conta para acessar o sistema da QuickEAM.</p>
-    <form method="post">
+    <form method="post" autocomplete="off">
         {% csrf_token %}
 
         <label for="username">Usuário ou CNPJ:</label>
-        <input type="text" id="username" name="username">
+        <input type="text" id="username" name="username" autocomplete="off">
 
 
         <label for="email">E-mail:</label>
-        <input type="text" id="email" name="email">
+        <input type="text" id="email" name="email" autocomplete="off">
 
-        <label for="password1">Senha:</label>
+        <label for="password1">Senha:</label >
         <div class="password-container">
-            <input type="password" id="password1" name="password1">
-            <button type="button" onclick="togglePassword('password1')">👁️</button>
+            <input type="password" id="password1" name="password1" autocomplete="off">
+            <button type="button" onclick="togglePassword('password1')" >👁️</button>
         </div>
 
         <label for="password2">Confirmação de senha:</label>
         <div class="password-container">
-            <input type="password" id="password2" name="password2">
+            <input type="password" id="password2" name="password2" autocomplete="off">
             <button type="button" onclick="togglePassword('password2')">👁️</button>
         </div>
-
 
         <button type="submit">Cadastrar</button>
     </form>

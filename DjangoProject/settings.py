@@ -6,11 +6,8 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from django.utils.translation import gettext_lazy as gettext
 
-<<<<<<< HEAD
-# Carrega variáveis de ambiente do ..env
-=======
-# Carrega variáveis de ambiente do .env
->>>>>>> 5c62c5262cb475d152b0953929a6315f1ab7cbcc
+
+
 load_dotenv(find_dotenv())
 
 LANGUAGES = [

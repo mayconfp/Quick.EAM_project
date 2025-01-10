@@ -32,14 +32,14 @@
 </header>
 <div class="login">
     <h1>Login</h1>
-    <form method="post">
+    <form method="post" autocomplete="off">
         {% csrf_token %}
         <label for="username">Usuário:</label>
-        <input type="text" id="username" name="username" required>
+        <input type="text" id="username" name="username" required autocomplete="off">
 
         <label for="password">Senha:</label>
         <div class="password-container">
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" required autocomplete="off">
             <button type="button" onclick="togglePassword('password')">🔒</button>
         </div>
         <button type="submit">Entrar</button>

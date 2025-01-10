@@ -63,11 +63,13 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            login(request, user)
             messages.success(request, "Cadastro realizado com sucesso. Faça login.")
             return redirect('login')
         else:
             messages.error(request, "Erro ao realizar o cadastro. Verifique os dados.")
+
     else:
         form = CustomUserCreationForm()
     return render(request, 'usuarios/register.html', {'form': form})
