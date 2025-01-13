@@ -15,7 +15,6 @@ from django.contrib.auth import authenticate, login
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
-
 @csrf_exempt
 def definir_idioma(request):
     """
@@ -28,7 +27,8 @@ def definir_idioma(request):
             latitude = dados.get('latitude')
             longitude = dados.get('longitude')
 
-            # Use uma API de geocodificação para determinar o país
+            # Use uma API de geocodificação para determinar o país3
+
             url = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={latitude}&longitude={longitude}&localityLanguage=en"
             response = requests.get(url)
             dados_localizacao = response.json()
@@ -84,7 +84,7 @@ def user_login(request):
             login(request, user)
             return redirect('chat')
         else:
-            messages.error(request, "Login falhou. Verifique suas credenciais.")
+            messages.error(request, "Falha verifique Usuário ou Senha.")
     else:
         form = CustomLoginForm()
     return render(request, 'usuarios/login.html', {'form': form})
@@ -146,7 +146,6 @@ def excluir_chat(request, session_id):
     try:
         chat_session = ChatSession.objects.get(id=session_id, user=request.user)
         chat_session.delete()
-        messages.success(request, "Conversa excluída com sucesso.")
     except ChatSession.DoesNotExist:
         messages.error(request, "Conversa não encontrada ou não pertence a você.")
     return redirect('chat')  # Não cria nova sessão automaticamente
@@ -157,7 +156,6 @@ def logout_view(request):
     Efetua logout do usuário e redireciona para a página inicial.
     """
     logout(request)
-    messages.info(request, "Você saiu com sucesso.")
     return redirect('home')
 
 
@@ -169,5 +167,4 @@ def editar_titulo(request, session_id):
             session = get_object_or_404(ChatSession, id=session_id, user=request.user)
             session.title = new_title[:30]  # Limita o título a 30 caracteres
             session.save()
-            messages.success(request, "Título atualizado com sucesso!")
     return redirect('chat_session', session_id=session_id)

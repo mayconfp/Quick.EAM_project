@@ -61,7 +61,7 @@
                         <form method="post" action="{% url 'editar_titulo' current_session.id %}"
                               class="edit-title-form">
                             {% csrf_token %}
-                            <input type="text" name="new_title" placeholder="Novo título..." required>
+                            <input type="text" name="new_title" placeholder="Novo título..." required autocomplete="off">
                             <button type="submit" class="save-btn">Salvar</button>
                         </form>
                         <form method="post" action="{% url 'excluir_chat' current_session.id %}"
@@ -70,6 +70,8 @@
                             <button type="submit" class="delete-btn"
                                     onclick="return confirm('Tem certeza que deseja excluir esta conversa?')">
                                 Excluir
+
+
                             </button>
                         </form>
                     </div>

@@ -1,36 +1,28 @@
-body{
+body {
     font-family: 'Roboto', sans-serif;
-     font-size: 16px;
-     color: #333;
+    font-size: 16px;
+    color: #333;
     line-height: 1.5;
 }
 
-
-
-.registro{
-   max-width: 300px;
-    margin: 50px auto; /* Centraliza horizontalmente */
+.registro {
+    max-width: 300px;
+    margin: 50px auto;
     padding: 20px 26px;
-    background-color: #fff; /* Fundo branco para contraste */
+    background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-
 }
 
-
-
-.registro label{
+.registro label {
     font-weight: bold;
     display: block;
 }
 
-
-
-
-.registro h1{
-     font-size: 24px;
+.registro h1 {
+    font-size: 24px;
     font-weight: 700;
     text-align: center;
     color: #0056b3;
@@ -43,7 +35,7 @@ body{
     font-weight: 700;
     text-align: center;
     color: #222222;
-    margin-top : 20px;
+    margin-top: 20px;
 }
 
 .registro form {
@@ -52,8 +44,7 @@ body{
     gap: 10px;
 }
 
-
-.registro button{
+.registro button {
     background-color: darkslategray;
     color: #e6f7ff;
     cursor: pointer;
@@ -63,10 +54,8 @@ body{
 }
 
 .registro button:active {
-    /* Animação leve ao pressionar o botão */
-    transform: scale(0.95); /* Reduz o tamanho levemente */
+    transform: scale(0.95);
 }
-
 
 .password-container {
     position: relative;
@@ -109,4 +98,59 @@ body{
     background-color: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .registro {
+        max-width: 90%;
+        padding: 15px;
+        margin: 20px auto;
+    }
+
+    .registro h1 {
+        font-size: 20px;
+    }
+
+    .registro p {
+        font-size: 12px;
+    }
+
+    .registro button {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+
+    .registro {
+        max-width: 95%;
+        padding: 10px;
+    }
+
+    .registro h1 {
+        font-size: 18px;
+    }
+
+    .registro p {
+        font-size: 11px;
+    }
+
+    .registro button {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .password-container input {
+        width: calc(100% - 35px);
+        padding-right: 35px;
+    }
+
+    .password-container button {
+        font-size: 16px;
+    }
 }
