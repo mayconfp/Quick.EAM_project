@@ -1,0 +1,20 @@
+<button id="menuToggle" class="menu-btn">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+</button>
+
+<div id="mobileHistory" class="mobile-history hidden">
+    <h3>Histórico de Conversas</h3>
+    <ul>
+        {% for session in sessions %}
+        <li>
+            <a href="?session={{ session.id }}">{{ session.title }}</a>
+            <form action="{% url 'deletar_conversa' session.id %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="delete-btn">🗑️</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+</div>

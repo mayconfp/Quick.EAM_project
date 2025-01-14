@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+
+    <title>QuickEAM</title>
+</head>
+<body>
+<header>
+    <button id="menuToggle" class="menu-btn">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+    <nav id="menu" class="menu hidden">
+        <ul>
+            <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </nav>
+    <div class="logo">
+        <a href="{% url 'home' %}" class="logo">
+            <img src="{% static 'images/MARCA VERTICAL BRANCA.png' %}" alt="Logo">
+        </a>
+    </div>
+</header>
+
+<div>
+
+    {% include 'usuarios/partials/_desktop_history.html' %}
+
+
+    {% include 'usuarios/partials/_mobile_history.html' %}
+</div>
+
+<div class="chat-container">
+    <div class="chat-history" id="chatHistory">
+        {% for chat in chat_history %}
+        <div class="message_user">
+            <p><strong>Você:</strong> {{ chat.question }}</p>
+        </div>
+        <div class="message_bot">
+            <p><strong>Manuela:</strong> {{ chat.answer }}</p>
+        </div>
+        {% empty %}
+        <p>Sem mensagens ainda nesta conversa.</p>
+        {% endfor %}
+    </div>
+    <div class="chat-form">
+            <form method="post">
+                {% csrf_token %}
+                <textarea id="message_area" name="message" placeholder="Fale com a Manuela..."></textarea>
+                <button id="submitbutton" type="submit">
+                    <i class="arrow-up">↑</i>
+                </button>
+            </form>
+    </div>
+</div>
+
+<script src="{% static "js/scripts.js" %}"></script>
+<script src="{% static "js/chat.js" %}"></script>
+</body>
+</html>
