@@ -10,8 +10,12 @@ from django.views.decorators.csrf import csrf_exempt
 from .forms import CustomUserCreationForm, CustomLoginForm
 from .forms import CustomUserCreationForm, CustomLoginForm
 from .models import ChatSession, ChatHistory
+from .provedores import gerar_contexto_completo
 from .services import processar_comunicacao_multi_ia
 from django.contrib.auth import authenticate, login
+from usuarios.provedores import processar_comunicacao_multi_ia
+from usuarios.provedores import gerar_resposta
+
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
@@ -95,43 +99,43 @@ def chat(request, session_id=None):
     session = None
 
     if session_id:
-        # Recupera a sessão existente se o ID foi fornecido
         session = get_object_or_404(ChatSession, id=session_id, user=request.user)
-
-    elif request.method == 'POST':  # Apenas cria uma nova sessão ao enviar uma mensagem
+    elif request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
-        if user_message:  # Garante que a sessão só será criada se houver mensagem
+        if user_message:
             session = ChatSession.objects.create(user=request.user)
 
     if session and request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
         if user_message:
-            # Define o título da sessão com a primeira mensagem
             if not session.title or session.title == "Nova Conversa":
                 session.title = user_message[:40]
                 session.save()
 
-            # Recupera o histórico completo da conversa
             historico_completo = ChatHistory.objects.filter(session=session).order_by('timestamp')
+            contexto = gerar_contexto_completo(historico_completo)
 
-            # Processa a mensagem com múltiplas IAs
-            ai_response = processar_comunicacao_multi_ia(user_message, historico_completo)
+            respostas = {}
+            for provedor in PROVEDORES_VALIDOS:
+                resposta = gerar_resposta(provedor, user_message, contexto)
+                respostas[provedor] = resposta
 
-            # Salva no histórico
+            melhor_resposta = max(respostas.values(), key=lambda x: len(x))
+
             ChatHistory.objects.create(
                 session=session,
                 user=request.user,
                 question=user_message,
-                answer=ai_response
+                answer=melhor_resposta
             )
 
-    # Recupera o histórico e sessões
+            ai_response = melhor_resposta
+
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
     sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
 
-    # Verifica se nenhuma sessão ativa está sendo usada
     if not session and not session_id:
-        session = None  # Garante que uma nova sessão não será criada automaticamente
+        session = None
 
     return render(request, 'usuarios/chat.html', {
         'response': ai_response,
@@ -139,6 +143,8 @@ def chat(request, session_id=None):
         'sessions': sessions,
         'current_session': session,
     })
+
+
 
 
 @login_required

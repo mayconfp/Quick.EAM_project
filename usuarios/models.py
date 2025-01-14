@@ -52,4 +52,3 @@ class ChatHistory(models.Model):
     def __str__(self):
         return f"{self.user}: {self.question[:20]} - {self.ia_used}"
 
-

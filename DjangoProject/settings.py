@@ -22,7 +22,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-secreta")
 
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
