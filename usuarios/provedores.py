@@ -8,32 +8,31 @@ def processar_comunicacao_multi_ia(user_message, historico_completo):
     """
     respostas = {}
 
-    # 🔄 1️⃣ Chamada para o Llama API
+    # 1️⃣ Chamada para o Llama API
     try:
-        resposta_llama = gerar_resposta_llama(user_message, historico_completo)
-        respostas['Llama'] = resposta_llama
+        respostas['Llama'] = gerar_resposta_llama(user_message, historico_completo)
     except Exception as e:
         respostas['Llama'] = f"Erro ao se comunicar com a API do Llama: {e}"
 
-    # 🔄 2️⃣ Chamada para o Gemini API
+    # 2️⃣ Chamada para o Gemini API
     try:
-        resposta_gemini = gemini_gerar_resposta(user_message, historico_completo)
-        respostas['Gemini'] = resposta_gemini
+        respostas['Gemini'] = gemini_gerar_resposta(user_message, historico_completo)
     except Exception as e:
         respostas['Gemini'] = f"Erro ao se comunicar com a IA Gemini: {e}"
 
-    # 🔄 3️⃣ Consolidação de respostas para o OpenAI
+    # 3️⃣ Preparar contexto completo
     contexto_para_openai = gerar_contexto_completo(historico_completo)
 
+    # Adicionar respostas das IAs ao contexto
     for provedor, resposta in respostas.items():
         contexto_para_openai.append({"role": "assistant", "content": f"{provedor} disse: {resposta}"})
 
-    # Adiciona a mensagem do usuário no contexto
+    # Adicionar mensagem do usuário
     contexto_para_openai.append({"role": "user", "content": user_message})
 
-    # 🔄 4️⃣ Chamada para o OpenAI para gerar a melhor resposta
+    # 4️⃣ Chamada para o OpenAI
     try:
-        resposta_final = gerar_resposta_openai(user_message, contexto_para_openai)
+        resposta_final = gerar_resposta_openai("Baseado nas respostas das outras IAs, forneça a melhor resposta.", contexto_para_openai)
         return resposta_final
     except Exception as e:
         return f"Erro ao processar a mensagem com o OpenAI: {e}"

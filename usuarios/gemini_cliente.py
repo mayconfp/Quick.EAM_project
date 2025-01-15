@@ -11,7 +11,7 @@ load_dotenv(find_dotenv())
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = os.getenv("GEMINI_API_URL")
 
-def gemini_gerar_resposta(user_message):
+def gemini_gerar_resposta(user_message, contexto=None):
     url = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"
 
     headers = {
