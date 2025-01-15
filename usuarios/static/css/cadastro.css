@@ -1,28 +1,46 @@
-body {
+body{
     font-family: 'Roboto', sans-serif;
-    font-size: 16px;
-    color: #333;
+     font-size: 16px;
+     color: #333;
     line-height: 1.5;
 }
 
-.registro {
-    max-width: 300px;
-    margin: 50px auto;
+
+
+.registro{
+   max-width: 300px;
+    margin: 50px auto; /* Centraliza horizontalmente */
     padding: 20px 26px;
-    background-color: #fff;
+    background-color: #fff; /* Fundo branco para contraste */
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
+
 }
 
-.registro label {
+
+
+.registro label{
     font-weight: bold;
     display: block;
 }
 
-.registro h1 {
-    font-size: 24px;
+
+.error-list {
+    color: red;
+    font-size: 14px;
+    margin: 10px 0;
+    padding-left: 20px;
+    list-style-type: none;
+}
+
+.error-list li {
+    margin-bottom: 5px;
+}
+
+.registro h1{
+     font-size: 24px;
     font-weight: 700;
     text-align: center;
     color: #0056b3;
@@ -35,16 +53,47 @@ body {
     font-weight: 700;
     text-align: center;
     color: #222222;
-    margin-top: 20px;
+    margin-top : 20px;
 }
 
 .registro form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
-.registro button {
+
+.requerimentos-senha{
+list-style: none; /* Remove os marcadores padrão */
+    padding: 0;
+    margin: 10px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.requerimentos-senha li{
+margin-bottom: 8px; /* Espaçamento entre os itens */
+    display: flex;
+    align-items: center;
+     line-height: 1.5;
+}
+
+.requirement-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    background-color: #4CAF50; /* Cor do ícone (verde) */
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px; /* Espaçamento entre o ícone e o texto */
+}
+#
+.requerimentos-senha li:hover {
+    color: #333; /* Cor do texto ao passar o mouse */
+    font-weight: bold; /* Destacar ao passar o mouse */
+}
+
+.registro button{
     background-color: darkslategray;
     color: #e6f7ff;
     cursor: pointer;
@@ -54,103 +103,28 @@ body {
 }
 
 .registro button:active {
-    transform: scale(0.95);
+    /* Animação leve ao pressionar o botão */
+    transform: scale(0.95); /* Reduz o tamanho levemente */
 }
 
-.password-container {
+
+
+.input-container {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
-.password-container input {
-    width: calc(100% - 40px);
-    padding-right: 40px;
+.input-container input {
+    flex: 1;
+    padding-right: 40px; /* Espaço para o botão */
 }
 
-.password-container button {
+.input-container button {
     position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
+    left: 245px;
     background: none;
     border: none;
     cursor: pointer;
     font-size: 18px;
-}
-
-.messages {
-    margin-bottom: 20px;
-}
-
-.message {
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
-.message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.message.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .registro {
-        max-width: 90%;
-        padding: 15px;
-        margin: 20px auto;
-    }
-
-    .registro h1 {
-        font-size: 20px;
-    }
-
-    .registro p {
-        font-size: 12px;
-    }
-
-    .registro button {
-        padding: 10px;
-        font-size: 14px;
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        font-size: 14px;
-    }
-
-    .registro {
-        max-width: 95%;
-        padding: 10px;
-    }
-
-    .registro h1 {
-        font-size: 18px;
-    }
-
-    .registro p {
-        font-size: 11px;
-    }
-
-    .registro button {
-        padding: 8px;
-        font-size: 12px;
-    }
-
-    .password-container input {
-        width: calc(100% - 35px);
-        padding-right: 35px;
-    }
-
-    .password-container button {
-        font-size: 16px;
-    }
 }

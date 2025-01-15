@@ -5,91 +5,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css'  %}">
     <link rel="stylesheet" href="{% static 'css/cadastro.css' %}">
     <title> Cadastro - QuickEAM</title>
 </head>
 <body>
 <header>
-    <button id="menuToggle" class="menu-btn">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-    <nav id="menu" class="menu hidden">
+        <button id="menuToggle" class="menu-btn">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+</button>
+        <nav id="menu" class="menu hidden">
         <ul>
             <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
             <li><a href="{% url 'login' %}">Login</a></li>
             <li><a href="#">Serviços</a></li>
         </ul>
     </nav>
-    <div class="logo">
-        <a href="{% url 'home' %}" class="logo">
-            <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
-        </a>
-    </div>
-</header>
+        <div class="logo">
+            <a href="{% url 'home' %}" class="logo">
+                <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
+            </a>
+        </div>
+    </header>
 
 <div class="registro">
     <h1>Cadastro</h1>
-
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <p>Crie sua conta para acessar o sistema da QuickEAM.</p>
+
     <form method="post" autocomplete="off">
         {% csrf_token %}
 
-        <label for="username">Usuário ou CNPJ:</label>
-        <input type="text" id="username" name="username" autocomplete="off">
+        <!-- Exibir erros gerais do formulário -->
+        {% if form.non_field_errors %}
+            <ul class="error-list">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
+        <!-- Campo de usuário -->
+                <label for="username">Usuário ou CNPJ:</label>
+        <input type="text" id="username" name="username" value="{{ form.username.value|default:'' }}" autocomplete="off">
+        {% if form.username.errors %}
+            <ul class="error-list">
+                {% for error in form.username.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
+        <!-- Campo de e-mail -->
         <label for="email">E-mail:</label>
-        <input type="text" id="email" name="email" autocomplete="off">
+        <input type="text" id="email" name="email" value="{{ form.email.value|default:'' }}" autocomplete="off">
+        {% if form.email.errors %}
+            <ul class="error-list">
+                {% for error in form.email.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
-        <label for="password1">Senha:</label >
-        <div class="password-container">
-            <input type="password" id="password1" name="password1" autocomplete="off">
-            <button type="button" onclick="togglePassword('password1')" >👁️</button>
-        </div>
+    <!-- Campo de senha -->
+    <label for="password1">Senha:</label>
+    <div class="input-container">
+        <input type="password" id="password1" name="password1" autocomplete="off">
+        <button type="button" onclick="togglePassword('password1')">👁️</button>
+    </div>
+    <ul class="requerimentos-senha">
+        <li><i class="requirement-icon"></i>A Senha deve conter pelo menos um número.</li>
+        <li><i class="requirement-icon"></i>A Senha deve conter pelo menos um caractere especial.</li>
+        <li><i class="requirement-icon"></i>Essa senha deve conter pelo menos uma Letra Maiúscula.</li>
+        <li><i class="requirement-icon"></i>Essa senha deve conter pelo menos uma Letra Maiúscula.</li>
+    </ul>
 
-        <label for="password2">Confirmação de senha:</label>
-        <div class="password-container">
-            <input type="password" id="password2" name="password2" autocomplete="off">
-            <button type="button" onclick="togglePassword('password2')">👁️</button>
-        </div>
+    <!-- Campo de confirmação de senha -->
+    <label for="password2">Confirmação de senha:</label>
+    <div class="input-container">
+        <input type="password" id="password2" name="password2" autocomplete="off">
+        <button type="button" onclick="togglePassword('password2')">👁️</button>
+    </div>
+
 
         <button type="submit">Cadastrar</button>
     </form>
-
 </div>
 
-
-<footer class="footer">
-    <div class="footer-content">
-        <p>&copy; 2024 QuickEAM. Todos os direitos reservados.</p>
-        <ul class="footer-links">
-            <li><a href="#">Termos de Uso</a></li>
-            <li><a href="#">Política de Privacidade</a></li>
-            <li><a href="#">Contato</a></li>
-        </ul>
-    </div>
-</footer>
 <script>
-    document.getElementById("menuToggle").addEventListener("click", function () {
-        const menu = document.getElementById("menu");
-        menu.classList.toggle("hidden");
+        document.getElementById("menuToggle").addEventListener("click", function () {
+            const menu = document.getElementById("menu");
+            menu.classList.toggle("hidden");
+        });
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const passwordInput = document.getElementById("password1");
+    const requirements = document.querySelectorAll(".requerimentos-senha li"); // Atualizado para "requerimentos-senha"
+
+    passwordInput.addEventListener("input", function () {
+        const password = passwordInput.value;
+
+        // Valida os requisitos
+        requirements.forEach((item, index) => {
+            let valid = false;
+            switch (index) {
+                case 0: valid = /\d/.test(password); break; // Número
+                case 1: valid = /[!@#$%^&*]/.test(password); break; // Caractere especial
+                case 2: valid = /[A-Z]/.test(password); break; // Letra maiúscula
+                case 3: valid = password.length >= 8; break; // Mínimo de 8 caracteres
+            }
+
+            // Atualiza o estilo dos ícones
+            const icon = item.querySelector(".requirement-icon");
+            if (valid) {
+                icon.style.backgroundColor = "#4CAF50"; // Verde para válido
+            } else {
+                icon.style.backgroundColor = "#f44336"; // Vermelho para inválido
+            }
+        });
     });
-
-</script>
-
+});
+    </script>
 <script>
     function togglePassword(fieldId) {
         const field = document.getElementById(fieldId);
@@ -100,6 +137,5 @@
         }
     }
 </script>
-
 </body>
 </html>
