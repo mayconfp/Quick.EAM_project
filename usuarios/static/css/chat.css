@@ -174,11 +174,11 @@ height: 60px;
 /* Histórico de mensagens */
 .chat-history {
     flex: 1;
+    margin-top:60px;
     padding: 10px;
     overflow-y: auto;
     background-color: #1e1e2e;
     color: #e0e0e0;
-    margin: 0;
     border-bottom: 1px solid #3b3b5e;
 }
 

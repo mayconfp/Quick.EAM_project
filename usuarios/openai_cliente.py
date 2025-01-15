@@ -9,18 +9,14 @@ def gerar_resposta_openai(user_message, contexto=None):
     if contexto is None:
         contexto = []
 
-    # Converta o contexto de dicionário para lista de mensagens, se necessário
-    if isinstance(contexto, dict):
-        contexto = [
-            {"role": "assistant", "content": f"Llama: {contexto.get('Llama', '')}"},
-            {"role": "assistant", "content": f"Gemini: {contexto.get('Gemini', '')}"}
-        ]
+    # Certifique-se de que o contexto é uma lista de dicionários
+    if not isinstance(contexto, list):
+        contexto = [{"role": "assistant", "content": str(contexto)}]
 
     try:
         # Combine o contexto com a mensagem do usuário
         messages = contexto + [{"role": "user", "content": user_message}]
 
-        # Chamada para a API da OpenAI
         response = openai.ChatCompletion.create(
             model="chatgpt-4o-latest",
             messages=messages,
