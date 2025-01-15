@@ -6,7 +6,8 @@ from .forms import CustomUserCreationForm, CustomLoginForm
 from .services import processar_comunicacao_multi_ia
 from django.shortcuts import get_object_or_404
 from usuarios.provedores import processar_comunicacao_multi_ia, gerar_contexto_completo
-
+from django.utils.safestring import mark_safe
+from usuarios.provedores import formatar_texto_para_html
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
@@ -46,6 +47,7 @@ def user_login(request):
     return render(request, 'usuarios/login.html', {'form': form, 'errormessage': errormessage })
 
 
+
 def chat(request):
     ai_response = None
     session_id = request.GET.get('session')
@@ -76,24 +78,36 @@ def chat(request):
             # 🧠 Chama a função que processa a mensagem com múltiplas IAs
             ai_response = processar_comunicacao_multi_ia(user_message, contexto_para_openai)
 
+            # 🔄 Formata a resposta para HTML antes de salvar e exibir
+            ai_response_formatado = formatar_texto_para_html(ai_response)
+
             # Salva a mensagem e a resposta no histórico
             ChatHistory.objects.create(
                 session=session,
                 user=request.user,
                 question=user_message,
-                answer=ai_response
+                answer=ai_response_formatado
             )
 
     # Recupera o histórico da sessão atual
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
     sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
 
+    # Marcar como seguro para renderizar no template
+    chat_history = [
+        {
+            'question': mensagem.question,
+            'answer': mark_safe(mensagem.answer),  # Permite renderizar HTML seguro
+        }
+        for mensagem in chat_history
+    ]
+
     return render(request, 'usuarios/chat.html', {
         'response': ai_response,
         'chat_history': chat_history,
         'sessions': sessions,
         'current_session': session,
-})
+    })
 
 @login_required
 def nova_conversa(request):

@@ -21,7 +21,7 @@ def gerar_resposta_openai(user_message, contexto=None):
             model="chatgpt-4o-latest",
             messages=messages,
             temperature=0.7,
-            max_tokens=150,
+            max_tokens=200,
         )
 
         return response['choices'][0]['message']['content'].strip()

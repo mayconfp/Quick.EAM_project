@@ -42,17 +42,17 @@
 
 <div class="chat-container">
     <div class="chat-history" id="chatHistory">
-        {% for chat in chat_history %}
-        <div class="message_user">
-            <p><strong>Você:</strong> {{ chat.question }}</p>
-        </div>
-        <div class="message_bot">
-            <p><strong>Manuela:</strong> {{ chat.answer }}</p>
-        </div>
-        {% empty %}
-        <p>Sem mensagens ainda nesta conversa.</p>
-        {% endfor %}
+    {% for chat in chat_history %}
+    <div class="message_user">
+        <p><strong>Você:</strong> {{ chat.question }}</p>
     </div>
+    <div class="message_bot">
+        <p><strong>Manuela:</strong> {{ chat.answer|safe }}</p> <!-- Permite HTML formatado -->
+    </div>
+    {% empty %}
+    <p>Sem mensagens ainda nesta conversa.</p>
+    {% endfor %}
+</div>
     <div class="chat-form">
             <form method="post">
                 {% csrf_token %}

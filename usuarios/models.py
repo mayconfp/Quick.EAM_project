@@ -6,6 +6,8 @@ class CustomUser(AbstractUser):
     bio = models.TextField(blank=True, null=True)  # Exemplo de campo adicional
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
 
+
+
 class ChatSession(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
