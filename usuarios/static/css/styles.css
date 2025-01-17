@@ -99,6 +99,44 @@ body {
         display: none;
     }
 
+
+    .messages {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    
+    .message {
+        padding: 8px;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+    }
+    
+    .message.success {
+        background-color: #4CAF50;
+        color: white;
+    }
+    
+    .message.error {
+        background-color: #F44336;
+        color: white;
+    }
+
+
+    .user-info {
+        background-color: #f4f4f4;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+    }
+    
+    .user-info p {
+        font-size: 16px;
+        margin: 5px 0;
+    }
+
+
     .logo {
         text-decoration: none; /* Remove o sublinhado da logo */
         color: inherit; /* Herda a cor do elemento pai */

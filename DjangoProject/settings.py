@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 import os
 from dotenv import load_dotenv, find_dotenv
 from django.utils.translation import gettext_lazy as gettext
+from django.contrib.messages import constants as messages
 
 # Carrega variáveis de ambiente do .env
 load_dotenv(find_dotenv())
@@ -14,6 +15,7 @@ LANGUAGES = [
     ('pt-br', gettext('Portuguese')),
 ]
 
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

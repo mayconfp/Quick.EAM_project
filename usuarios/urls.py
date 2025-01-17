@@ -10,5 +10,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('', views.home, name='home'),
     path('deletar_conversa/<int:session_id>/', views.deletar_conversa, name='deletar_conversa'),
+    path('perfil/', views.perfil, name='perfil'),
+    path('deletar_conta/', views.deletar_conta, name='deletar_conta'),
 
 ]

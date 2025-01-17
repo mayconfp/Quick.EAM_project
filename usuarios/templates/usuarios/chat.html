@@ -1,37 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
-
-    <title>QuickEAM</title>
-</head>
+    <head>
+        <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
+         <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+    <head>
 <body>
-<header>
-    <button id="menuToggle" class="menu-btn">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-    <nav id="menu" class="menu hidden">
-        <ul>
-            <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-            <li><a href="{% url 'logout' %}">Logout</a></li>
-        </ul>
-    </nav>
-    <div class="logo">
-        <a href="{% url 'home' %}" class="logo">
-            <img src="{% static 'images/MARCA VERTICAL BRANCA.png' %}" alt="Logo">
-        </a>
-    </div>
-</header>
 
+    <title>{% block title %}Chat - QuickEAM{% endblock %}</title>    
+
+    {% include 'usuarios/partials/nav.html' %}
 <div>
 
     {% include 'usuarios/partials/_desktop_history.html' %}

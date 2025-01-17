@@ -8,13 +8,14 @@ from django.shortcuts import get_object_or_404
 from usuarios.provedores import processar_comunicacao_multi_ia, gerar_contexto_completo
 from django.utils.safestring import mark_safe
 from usuarios.provedores import formatar_texto_para_html
-
+from .forms import CustomUserUpdateForm
+from django.contrib import messages
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
 
 def home(request):
     """Página inicial com informações sobre a QuickEAM."""
-    return render(request, 'usuarios/home.html')
+    return render(request, 'usuarios/home.html', {'pagina_atual': 'home'})
 
 
 def register(request):
@@ -28,7 +29,8 @@ def register(request):
             print(form.errors)
     else:
         form = CustomUserCreationForm()
-    return render(request, 'usuarios/register.html', {'form': form})
+        
+    return render(request, 'usuarios/register.html', {'form': form, 'pagina_atual': 'register'})
 
 
 def user_login(request):
@@ -44,7 +46,7 @@ def user_login(request):
             errormessage ="Usuário ou senha incorretos"
     else:
         form = CustomLoginForm()
-    return render(request, 'usuarios/login.html', {'form': form, 'errormessage': errormessage })
+    return render(request, 'usuarios/login.html', {'form': form, 'errormessage': errormessage , 'pagina_atual': 'login'})
 
 
 
@@ -107,6 +109,7 @@ def chat(request):
         'chat_history': chat_history,
         'sessions': sessions,
         'current_session': session,
+        'pagina_atual': 'chat'
     })
 
 @login_required
@@ -134,6 +137,35 @@ def deletar_conversa(request, session_id):
     session = get_object_or_404(ChatSession, id=session_id, user=request.user)
     session.delete()
     return redirect('chat')
+
+
+@login_required
+def perfil(request):
+    """Exibe e permite atualizar os dados do usuário logado com mensagens de feedback"""
+    
+    if request.method == 'POST':
+        form = CustomUserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            
+            # Adiciona mensagens de feedback
+            messages.success(request, "Seu perfil foi atualizado com sucesso!")
+
+            return redirect('perfil')  # Redireciona para a página do perfil após salvar
+    else:
+        form = CustomUserUpdateForm(instance=request.user)
+
+    return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
+
+
+@login_required
+def deletar_conta(request):
+    """Exclui a conta do usuário logado"""
+    user = request.user
+    user.delete()
+    return redirect('home') # Redireciona para a página inicial após excluir
+
+
 
 def logout_view(request):
     """Efetuar logout."""
