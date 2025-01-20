@@ -137,53 +137,223 @@ body {
     }
 
 
-    .logo {
-        text-decoration: none; /* Remove o sublinhado da logo */
-        color: inherit; /* Herda a cor do elemento pai */
-    }
+#sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100vh;
+    background-color: #e3e9f7;
+    border-radius: 0 18px 18px 0;
+    position: fixed;
+    left: 0;
+    top: 60px;
+    transition: all .5s;
+    width: 82px;
+    z-index: 1000;
+    transform: translateX(0);
+}
+    
+.left-sidebar{
+    border-radius: 18px 0 0 18px;
+    
+}
 
-    .logo img {
-        height: 80px; /* Altura máxima da logo */
-        width: auto;  /* Mantém a proporção */
-    }
+#sidebar_content{
+    padding: 12px;
+}
 
-    .footer {
-        background: #222;
-        color: white;
-        text-align: center;
-        padding: 20px 0;
-        width: 100%;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-    }
+#user{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20PX;
+}
 
-    .footer-content {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
+#user_infos{
+    display: flex;
+}
 
-    .footer p {
-        font-size: 14px;
-        margin-bottom: 10px;
-    }
+#user_infos span:last-child {
+    color: #000000;
+    font-size: 15px;
+}
 
-    .footer-links {
-        list-style: none;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-    }
 
-    .footer-links li a {
-        color: white;
-        text-decoration: none;
-        font-size: 14px;
-        transition: color 0.3s;
-    }
+#user_avatar{
+    width: 50px ;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 20px;
+}
 
-    .footer-links li a:hover {
-        color: #00bcd4;
-    }
+#side_items{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    list-style: none;
+    
+}
+.side_item{
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.side_item:hover:not(.active),
+#logout_btn:hover {
+    background-color: #ffffff;
+}
+
+.side_item.active {
+    background-color: #4f46e5;
+}
+
+.side_item a i{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+    width: 20px;
+}
+
+.side_item.active a {
+    color: #e3e9f7;
+}
+.side_item a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0a0a0a;
+    
+}
+
+#logout{
+    border-top: 1px solid #e3e9f7;
+    padding: 12px;
+}
+
+
+#logout_btn{
+    border: none;
+    padding: 12px;
+    font-size: 14px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    border-radius: 8px;
+    text-align: start;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+#open_btn{
+    border: none;
+    position: absolute;
+    top: 30px;
+    right: -10px;
+    cursor: pointer;
+    border-radius: 100%;
+    height: 20px;
+    width: 20px;
+    color: #e3e9f7;
+    background-color: #4f46e5;
+}
+
+#open_btn_icon{
+    transition: transform .3s ease;
+}
+
+.open_sidebar #open_btn_icon{
+    transform: rotate(180deg);
+}
+
+.item_description{
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    transition: width .6s;
+    height: 0;
+}
+
+#sidebar.open_sidebar {
+    width: 250px;
+    transform: translateX(0);
+}
+
+#sidebar.open_sidebar .item_description{
+    width: 150px;
+    height: auto;
+}
+
+#sidebar.open_sidebar .side_item{
+    justify-content: flex-start;
+    gap: 14px;
+}
+
+
+
+
+.logo {
+    position: relative; /* Remove a possibilidade de sobreposição */
+    width: auto; /* Mantém o tamanho natural */
+    height: auto; 
+    z-index: 5; /* Mantém a logo acima de outros elementos */
+}
+
+.logo a {
+    display: inline-block;
+    width: fit-content;
+    height: fit-content;
+}
+
+.logo img {
+    display: block;
+    max-width: 100%;
+    height: 70px;
+    pointer-events: auto; /* Permite interação apenas dentro da imagem */
+}
+
+.footer {
+    background: #222;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer p {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.footer-links li a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+.footer-links li a:hover {
+    color: #00bcd4;
+}
 

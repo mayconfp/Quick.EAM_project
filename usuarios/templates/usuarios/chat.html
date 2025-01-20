@@ -1,37 +1,40 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
-    <head>
-        <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
-         <link rel="stylesheet" href="{% static 'css/chat.css' %}">
-    <head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - QuickEAM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
 <body>
+    
+    {% include 'usuarios/partials/sidebar.html' %}
+    {% include 'usuarios/partials/nav.html'%}
 
-    <title>{% block title %}Chat - QuickEAM{% endblock %}</title>    
-
-    {% include 'usuarios/partials/nav.html' %}
-<div>
-
-    {% include 'usuarios/partials/_desktop_history.html' %}
-
-
-    {% include 'usuarios/partials/_mobile_history.html' %}
-</div>
-
-<div class="chat-container">
-    <div class="chat-history" id="chatHistory">
-    {% for chat in chat_history %}
-    <div class="message_user">
-        <p><strong>Você:</strong> {{ chat.question }}</p>
+    <div>
+        
+        {% include 'usuarios/partials/_mobile_history.html' %}
     </div>
-    <div class="message_bot">
-        <p><strong>Manuela:</strong> {{ chat.answer|safe }}</p> <!-- Permite HTML formatado -->
-    </div>
-    {% empty %}
-    <p>Sem mensagens ainda nesta conversa.</p>
-    {% endfor %}
-</div>
-    <div class="chat-form">
+
+    <div class="chat-container">
+        <div class="chat-history" id="chatHistory">
+            {% for chat in chat_history %}
+                <div class="message_user">
+                    <p><strong>Você:</strong> {{ chat.question }}</p>
+                </div>
+                <div class="message_bot">
+                    <p><strong>Manuela:</strong> {{ chat.answer|safe }}</p>
+                </div>
+            {% empty %}
+                <p>Sem mensagens ainda nesta conversa.</p>
+            {% endfor %}
+        </div>
+
+        <div class="chat-form">
             <form method="post">
                 {% csrf_token %}
                 <textarea id="message_area" name="message" placeholder="Fale com a Manuela..."></textarea>
@@ -39,10 +42,8 @@
                     <i class="arrow-up">↑</i>
                 </button>
             </form>
+        </div>
     </div>
-</div>
-
-<script src="{% static "js/scripts.js" %}"></script>
-<script src="{% static "js/chat.js" %}"></script>
+    <script src="{% static 'js/chat.js' %}"></script>
 </body>
 </html>

@@ -46,10 +46,9 @@ def user_login(request):
             errormessage ="Usuário ou senha incorretos"
     else:
         form = CustomLoginForm()
-    return render(request, 'usuarios/login.html', {'form': form, 'errormessage': errormessage , 'pagina_atual': 'login'})
+    return render(request, 'usuarios/login.html', {'form': form, 'errormessage': errormessage, 'pagina_atual': 'login'})
 
-
-
+@login_required
 def chat(request):
     ai_response = None
     session_id = request.GET.get('session')

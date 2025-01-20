@@ -1,0 +1,44 @@
+{% load static %}
+<div class="container">
+    <nav id="sidebar" class="left-sidebar">
+        <div id="sidebar_content">
+            <div id="user">
+                <a href="{% url 'perfil' %}"><img src="{% static 'images/exemploimg.avif' %}" id="user_avatar" alt="Avatar"></a>
+                <p id="user_infos">
+                    <span class="item_description">
+                        {{ request.user.username }}
+                    </span>
+                </p>
+            </div>
+            <ul id="side_items">
+                <li class="side_item">
+                    <a href="#">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="item_description">Notificações</span>
+                    </a>
+                </li>
+                <li class="side_item active">
+                    <a href="#">
+                        <i class="fa-solid fa-gear"></i>
+                        <span class="item_description">Configurações</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Novo contêiner para o botão de logout -->
+            <div id="logout_container">
+                <form method="POST" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button id="logout_btn">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="item_description">Logout</span>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        <button id="open_btn">
+            <i id="open_btn_icon" class="fa-solid fa-chevron-right"></i>
+        </button>
+    </nav>
+</div>

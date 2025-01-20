@@ -62,10 +62,3 @@ const mobileHistory = document.getElementById("mobileHistory");
 toggleHistory.addEventListener("click", () => {
     mobileHistory.classList.toggle("hidden");
 });
-
-// Fecha o menu ao clicar fora
-document.addEventListener("click", (event) => {
-    if (!mobileHistory.contains(event.target) && !toggleHistory.contains(event.target)) {
-        mobileHistory.classList.add("hidden");
-    }
-});
