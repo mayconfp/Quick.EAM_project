@@ -11,6 +11,10 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('', views.home, name='home'),
     path('chat/<int:session_id>/editar_titulo/', editar_titulo, name='editar_titulo'),
+    path('perfil/', views.perfil, name='perfil_usuario'),
+    path('deletar_conta/', views.deletar_conta, name='deletar_conta'),
+
+
 
 ]
 

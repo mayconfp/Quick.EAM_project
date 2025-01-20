@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>Perfil - QuickEAM</title>
+</head>
+<body>
+    <h1>Editar Perfil</h1>
+
+    <!-- Exibir informações do usuário -->
+    <div class="user-info">
+        <p><strong>Nome de Usuário:</strong> <span id="username-display">{{ request.user.username }}</span></p>
+        <p><strong>E-mail:</strong> <span id="email-display">{{ request.user.email }}</span></p>
+        {% if request.user.cnpj %}
+            <p><strong>CNPJ:</strong> <span id="cnpj-display">{{ request.user.cnpj }}</span></p>
+        {% endif %}
+    </div>
+
+    <!-- Exibir mensagens de feedback -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Formulário para atualizar informações -->
+    <form method="POST" action="{% url 'perfil_usuario' %}" id="profile-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Salvar Alterações</button>
+    </form>
+
+    <!-- Botão para excluir conta -->
+    <form method="POST" action="{% url 'deletar_conta' %}" onsubmit="return confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita!');">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger">Excluir Conta</button>
+    </form>
+
+    <!-- Script para atualização dinâmica -->
+    <script>
+        document.getElementById("profile-form").addEventListener("submit", function(event) {
+            let username = document.querySelector("input[name='username']").value;
+            let email = document.querySelector("input[name='email']").value;
+            let cnpj = document.querySelector("input[name='cnpj']").value;
+
+            // Atualiza os valores no frontend
+            document.getElementById("username-display").textContent = username;
+            document.getElementById("email-display").textContent = email;
+
+            if (cnpj) {
+                let cnpjDisplay = document.getElementById("cnpj-display");
+                if (!cnpjDisplay) {
+                    cnpjDisplay = document.createElement("p");
+                    cnpjDisplay.innerHTML = `<strong>CNPJ:</strong> <span id="cnpj-display"></span>`;
+                    document.querySelector(".user-info").appendChild(cnpjDisplay);
+                }
+                document.getElementById("cnpj-display").textContent = cnpj;
+            }
+        });
+    </script>
+</body>
+</html>

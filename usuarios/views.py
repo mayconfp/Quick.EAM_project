@@ -1,25 +1,21 @@
-import requests
 from django.contrib import messages
-from django.contrib.auth import login
-from django.contrib.auth import logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.translation import activate
-from django.views.decorators.csrf import csrf_exempt
-from .forms import CustomUserCreationForm, CustomLoginForm
-from .forms import CustomUserCreationForm, CustomLoginForm
-from .models import ChatSession, ChatHistory
-from .provedores import gerar_contexto_completo
+from django.http import JsonResponse
+from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm
+from .models import CustomUser, ChatSession, ChatHistory
+from .provedores import gerar_contexto_completo, gerar_resposta
 from .services import processar_comunicacao_multi_ia
 from django.contrib.auth import authenticate, login
-from usuarios.provedores import processar_comunicacao_multi_ia
-from usuarios.provedores import gerar_resposta
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import CustomLoginForm
+from .models import CustomUser
 
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
-@csrf_exempt
 def definir_idioma(request):
     """
     Define o idioma com base na localização enviada pelo cliente.
@@ -67,16 +63,17 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, "Cadastro realizado com sucesso. Faça login.")
+            form.save()
+            messages.success(request,'Cadastro realizado com sucesso! Agora você pode fazer login')
             return redirect('login')
         else:
             messages.error(request, "Erro ao realizar o cadastro. Verifique os dados.")
-
     else:
         form = CustomUserCreationForm()
     return render(request, 'usuarios/register.html', {'form': form})
+
+
+
 
 
 def user_login(request):
@@ -92,6 +89,7 @@ def user_login(request):
     else:
         form = CustomLoginForm()
     return render(request, 'usuarios/login.html', {'form': form})
+
 
 
 def chat(request, session_id=None):
@@ -174,3 +172,41 @@ def editar_titulo(request, session_id):
             session.title = new_title[:30]  # Limita o título a 30 caracteres
             session.save()
     return redirect('chat_session', session_id=session_id)
+
+
+def perfil(request):
+    """Exibe e permite atualizar os dados do usuário logado com mensagens de feedback."""
+    if request.method == 'POST':
+        form = CustomUserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Seu perfil foi atualizado com sucesso!")
+            return redirect('perfil')
+        else:
+            messages.error(request, "Erro ao atualizar o perfil. Verifique os dados.")
+    else:
+        form = CustomUserUpdateForm(instance=request.user)
+
+    return render(request, 'usuarios/perfil.html', {'form': form})
+
+
+@login_required
+def deletar_conta(request):
+    """Exclui a conta do usuário logado."""
+    user = request.user
+    user.delete()
+    messages.success(request, "Sua conta foi excluída com sucesso.")
+    return redirect('home')
+
+
+
+
+
+
+
+
+
+
+
+
+

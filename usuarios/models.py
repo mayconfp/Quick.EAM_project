@@ -7,6 +7,7 @@ class CustomUser(AbstractUser):
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
     cnpj = models.CharField(max_length=18, blank=True, null=True, unique=True)
 
+
 class ChatSession(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
