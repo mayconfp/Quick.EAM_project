@@ -7,8 +7,8 @@
 body{
      font-family: 'Inter', sans-serif;
     font-size: 16px;
-     background-color: #1e1e2e;
-    color: #e0e0e0;
+    background-color: #F8F9FA;
+    color: #2B2D42;
     line-height: 1.6;
     display: flex;
     flex-direction: column;
@@ -37,8 +37,8 @@ height: 60px;
     top: 0;
     left: 0;
     z-index: 1000;
-    background-color: #ffffff;
-    color: #e0e0e0;
+    background-color: #FFFFFF;
+    color: #2B2D42;
     display: flex;
     align-items: center;
     padding: 0 20px;
@@ -53,98 +53,87 @@ height: 60px;
     transition: all 0.3s ease;
 }
 
-
-
-
 .history-msg {
-    width: 400px;
-    height: calc(100vh - 60px);
-    display: block;
-    background-color: #1e1e2e;
-    color: #e0e0e0;
-    padding: 20px;
-    border-right: 1px solid #262641;
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+    display: none; /* 🔥 Esconde o histórico quando a sidebar estiver fechada */
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 250px;
     overflow-y: auto;
-    position: fixed;
-    left: 0;
-    top: 60px;
-    z-index: 1000;
+    margin-top: 20px;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    opacity: 0;
+    transform: translateX(-20px);
 }
 
-.history-msg h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: #e0e0e0;
+#sidebar.open_sidebar .history-msg {
+    display: block; /* 🔥 Exibe o histórico apenas quando a sidebar estiver aberta */
+    opacity: 1;
+    transform: translateX(0);
 }
-.history-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
+
+.history-msg h3 {
+    font-size: 16px;
+    color: #333;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 .history-msg ul {
-    list-style: none; /* Remove marcadores */
+    list-style: none;
     padding: 0;
     margin: 0;
 }
 
-/* Estilo para cada item da lista */
 .history-msg ul li {
-    display: flex; /* Coloca os elementos lado a lado */
-    align-items: center; /* Alinha os itens verticalmente */
-    justify-content: space-between; /* Espaço entre o link e o botão */
-    margin-bottom: 10px; /* Espaçamento entre os itens */
-    padding: 5px;
-    background-color: #3a3a3a; /* Fundo do item */
-    border-radius: 5px; /* Arredondamento */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background-color: #f1f1f1; /* Cinza claro */
+    border-radius: 5px;
+    margin-bottom: 5px;
+    transition: background 0.3s ease;
 }
 
-/* Estilo do link da conversa */
+.history-msg ul li:hover {
+    background-color: #e0e0e0;
+}
+
 .history-msg ul li a {
-    flex-grow: 1; /* O link ocupa o espaço disponível */
-    text-decoration: none; /* Remove sublinhado */
-    color: #aaa; /* Cor inicial */
-    font-size: 1rem;
-    padding-right: 10px;
+    text-decoration: none;
+    color: #333;
+    flex-grow: 1;
 }
 
-.history-msg ul li a:hover {
-    color: #fff; /* Altera a cor ao passar o mouse */
-}
-
-/* Estilo do botão de exclusão */
 .history-msg ul li .delete-btn {
-    background: none; /* Remove fundo padrão */
-    border: none; /* Remove borda */
-    cursor: pointer; /* Cursor de clique */
-    font-size: 1.2rem;
-    color: #bbb; /* Cor inicial */
-    transition: color 0.2s ease, transform 0.2s ease; /* Adiciona transições */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: red;
+    transition: color 0.3s ease;
 }
 
 .history-msg ul li .delete-btn:hover {
-    color: red; /* Altera a cor ao passar o mouse */
-    transform: scale(1.2); /* Aplica efeito de zoom */
+    color: darkred;
 }
 
-/* Estilo do botão "Nova Conversa" */
-.history-msg form button {
-    background-color: #333; /* Fundo */
-    color: white; /* Cor do texto */
-    border: 1px solid #555; /* Borda */
-    padding: 8px 12px; /* Espaçamento interno */
-    border-radius: 5px; /* Bordas arredondadas */
-    cursor: pointer; /* Cursor de clique */
-    font-size: 1rem; /* Tamanho do texto */
+#new-chat-btn {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
     margin-top: 10px;
-    transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave */
 }
 
-.history-msg form button:hover {
-    background-color: #555; /* Fundo ao passar o mouse */
-    color: #fff; /* Texto ao passar o mouse */
+#new-chat-btn:hover {
+    background-color: #3730a3;
 }
 
 .chat-container {
@@ -167,8 +156,8 @@ height: 60px;
     margin-top:60px;
     padding: 10px;
     overflow-y: auto;
-    background-color: #1e1e2e;
-    color: #e0e0e0;
+    background-color: #F8F9FA;
+    color: #2B2D42;
     border-bottom: 1px solid #3b3b5e;
 }
 
@@ -179,7 +168,7 @@ height: 60px;
 }
 
 .chat-history .message strong {
-    color: #333;
+    color: #000000;
 }
 
 .chat-history::-webkit-scrollbar {
@@ -187,19 +176,19 @@ height: 60px;
 }
 
 .chat-history::-webkit-scrollbar-track {
-    background: #1e1e1e;
+    background: #E9ECEF;
     margin-top: 13px;
     margin-bottom: 13px;
     border-radius: 5px;
 }
 
 .chat-history::-webkit-scrollbar-thumb {
-    background: #555555;
+    background: #B0B3B8;
     border-radius: 3px;
 }
 
 .chat-history::-webkit-scrollbar-thumb:hover {
-    background: #777777;
+    background: #888;
 }
 
 .chat-history p{
@@ -210,8 +199,8 @@ height: 60px;
     display: flex;
     align-items: center; /* Centraliza verticalmente */
     padding: 10px;
-    background-color: #2a2a40;
-    border-top: 1px solid #3b3b5e;
+    background-color: #E9ECEF;
+    border-top: 1px solid #DEE2E6;
     position: fixed;
     bottom: 0;
     left: 400px; /* Ajusta alinhamento com o histórico */
@@ -231,8 +220,8 @@ height: 60px;
     font-size: 14px;
     border: 1px solid #3b3b5e;
     border-radius: 8px;
-    background-color: #1e1e2e;
-    color: #e0e0e0;
+    background-color: #FFFFFF;
+    color: #2B2D42;
     resize: none;
     margin-left: 200px;
     overflow: auto;
@@ -265,8 +254,8 @@ height: 60px;
 
 .message_user {
     text-align: right;
-    background-color: #3b3b5e; /* Fundo azul claro */
-    color: #e0e0e0; /* Texto azul escuro */
+    background-color: #007BFF; /* Fundo azul claro */
+    color: #FFFFFF; /* Texto azul escuro */
     padding: 10px 15px;
      max-width: 70%;
      word-wrap: break-word;
@@ -277,10 +266,10 @@ height: 60px;
 
 .message_bot {
     text-align: left;
-     max-width: 70%;
-    background-color:  #2a2a40; /* Fundo cinza claro */
-    word-wrap: break-word;
-    color: #e0e0e0; /* Texto cinza escuro */
+    max-width: 70%;
+    background-color: #E9ECEF;
+    color: #2B2D42; /* Fundo cinza claro */
+    word-wrap: break-word;/* Texto cinza escuro */
     padding: 10px 15px;
     margin-bottom: 15px;
     border-radius: 10px;
@@ -293,20 +282,20 @@ height: 60px;
 
 
 .side-menu {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 70%; /* O menu cobre 70% da tela */
-    max-width: 300px; /* Limita a largura máxima */
-    height: 100%;
-    background-color: #1e1e2e;
-    color: #e0e0e0;
-    z-index: 1500;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    transform: translateX(-100%); /* Esconde o menu fora da tela */
-    transition: transform 0.3s ease-in-out;
-    padding: 20px;
-    overflow-y: auto; /* Adiciona rolagem caso o conteúdo exceda a altura */
+position: fixed;
+top: 0;
+left: 0;
+width: 70%; /* O menu cobre 70% da tela */
+max-width: 300px; /* Limita a largura máxima */
+height: 100%;
+background-color: #1e1e2e;
+color: #e0e0e0;
+z-index: 1500;
+box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+transform: translateX(-100%); /* Esconde o menu fora da tela */
+transition: transform 0.3s ease-in-out;
+padding: 20px;
+overflow-y: auto; /* Adiciona rolagem caso o conteúdo exceda a altura */
 }
 
 /* Exibe o menu quando ativo */
@@ -461,7 +450,7 @@ header {
 /* Configuração do botão */
 .chat-form button {
     padding: 10px 15px;
-    background-color: #3b3b5e;
+    background-color: #007BFF;
     color: #fff;
     border: none;
     border-radius: 5px;

@@ -2,14 +2,16 @@
 <div class="container">
     <nav id="sidebar" class="left-sidebar">
         <div id="sidebar_content">
+            
             <div id="user">
-                <a href="{% url 'perfil' %}"><img src="{% static 'images/exemploimg.avif' %}" id="user_avatar" alt="Avatar"></a>
+                <img src="{% static 'images/exemploimg.avif' %}" id="user_avatar" alt="Avatar">
                 <p id="user_infos">
                     <span class="item_description">
                         {{ request.user.username }}
                     </span>
                 </p>
             </div>
+    
             <ul id="side_items">
                 <li class="side_item">
                     <a href="#">
@@ -24,8 +26,30 @@
                     </a>
                 </li>
             </ul>
-
-            <!-- Novo contêiner para o botão de logout -->
+    
+            <!-- 🔥 MOVENDO O HISTÓRICO PARA A SIDEBAR -->
+            <div class="history-msg"> 
+                <h3>Sessões de Conversa</h3>
+                <ul>
+                    {% for session in sessions %}
+                    <li>
+                        <a href="?session={{ session.id }}">{{ session.title|default:"Nova Conversa" }}</a>
+                        <form action="{% url 'deletar_conversa' session.id %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-btn">🗑️</button>
+                        </form>
+                    </li>
+                    {% empty %}
+                    <li>Sem histórico de conversas</li>
+                    {% endfor %}
+                </ul>
+                <form method="post" action="{% url 'nova_conversa' %}">
+                    {% csrf_token %}
+                    <button type="submit" id="new-chat-btn">+ Nova Conversa</button>
+                </form>
+            </div>
+            <!-- 🔥 FIM DO HISTÓRICO -->
+    
             <div id="logout_container">
                 <form method="POST" action="{% url 'logout' %}">
                     {% csrf_token %}
@@ -35,10 +59,11 @@
                     </button>
                 </form>
             </div>
-
+    
         </div>
         <button id="open_btn">
             <i id="open_btn_icon" class="fa-solid fa-chevron-right"></i>
         </button>
     </nav>
+    
 </div>
