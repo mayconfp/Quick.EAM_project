@@ -3,10 +3,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
-    bio = models.TextField(blank=True, null=True)  # Exemplo de campo adicional
-    profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
-    cnpj = models.CharField(max_length=18, blank=True, null=True, unique=True)
-
+    cnpj = models.CharField(
+        max_length=18, 
+        blank=True, 
+        null=True, 
+        unique=True, 
+        help_text="CNPJ do usuário (opcional)."
+    )
 
 class ChatSession(models.Model):
     user = models.ForeignKey(

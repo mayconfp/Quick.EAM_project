@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
@@ -73,21 +74,24 @@ def register(request):
 
 
 
+
 def user_login(request):
-    """Login de usuários."""
-    errormessage = None
     if request.method == 'POST':
         form = CustomLoginForm(data=request.POST)
         if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect('chat')
-        else:
-            errormessage = "Usuário ou senha incorretos"
+            username_or_cnpj = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+
+            user = authenticate(request, username=username_or_cnpj, password=password)
+            if user:
+                login(request, user)
+                return redirect('chat')
+            else:
+                messages.error(request, "Usuário ou CNPJ e senha inválidos.")
     else:
         form = CustomLoginForm()
-    return render(request, 'usuarios/login.html', {'form': form, 'errormessage': errormessage, 'pagina_atual': 'login'})
 
+    return render(request, 'usuarios/login.html', {'form': form})
 
 
 

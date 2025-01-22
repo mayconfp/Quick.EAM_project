@@ -2,11 +2,38 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
 
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from .models import CustomUser
+
 class CustomUserCreationForm(UserCreationForm):
-    """Formulário para registro de novos usuários."""
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'cnpj', 'password1', 'password2']
+
+    def save(self, commit=True):
+        # Chama a implementação padrão do método save
+        user = super().save(commit=False)
+
+        # Obtém o CNPJ do formulário
+        cnpj = self.cleaned_data.get('cnpj')
+
+        # Se o CNPJ for fornecido, salva no campo correto do modelo
+        if cnpj:
+            user.cnpj = cnpj
+
+        if commit:
+            user.save()
+        return user
+
+    def clean_cnpj(self):
+        cnpj = self.cleaned_data.get('cnpj')
+        if cnpj:
+            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
+            if CustomUser.objects.filter(cnpj=cnpj).exists():
+                raise ValidationError("Este CNPJ já está cadastrado.")
+        return cnpj
+
 
     def clean(self):
         """Validações customizadas para o formulário."""
@@ -19,21 +46,16 @@ class CustomUserCreationForm(UserCreationForm):
 
         return cleaned_data
 
-
 class CustomLoginForm(AuthenticationForm):
-    """Formulário para login de usuários."""
     username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Digite seu nome de usuário ou CNPJ'
-        })
+        widget=forms.TextInput(attrs={'placeholder': 'Usuário ou CNPJ'}),
+        label="Usuário ou CNPJ"
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Digite sua senha'
-        })
+        widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}),
+        label="Senha"
     )
+
 
 
 class CustomUserUpdateForm(forms.ModelForm):
