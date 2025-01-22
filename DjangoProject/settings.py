@@ -109,6 +109,9 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "usuarios", "static"),]
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 LLAMA_API_KEY = os.getenv("LLAMA_API_KEY")
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Logging
 LOGGING = {
     'version': 1,

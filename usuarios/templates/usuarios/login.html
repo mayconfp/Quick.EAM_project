@@ -7,29 +7,11 @@
     <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <title>Login - QuickEAM</title>
 </head>
 <body>
-<header>
-    <button id="menuToggle" class="menu-btn">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-    <nav id="menu" class="menu hidden">
-        <ul>
-            <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-            <li><a href="#">Serviços</a></li>
-        </ul>
-    </nav>
-    <div class="logo">
-        <a href="{% url 'home' %}" class="logo">
-            <img src="{% static 'images/logo_homepage.png' %}" alt="Logo">
-        </a>
-    </div>
-</header>
+    {% include 'usuarios/partials/nav.html'%}
+
 <div class="login">
     <h1>Login</h1>
     <form method="post">
@@ -59,7 +41,5 @@
         </ul>
     </div>
 </footer>
-<script src="{% static "js/scripts.js" %}"></script>
-
 </body>
 </html>

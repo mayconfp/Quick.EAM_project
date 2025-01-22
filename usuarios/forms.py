@@ -39,7 +39,7 @@ class CustomLoginForm(AuthenticationForm):
 
 
 class CustomUserUpdateForm(forms.ModelForm):
-    """Formulário para atualização de dados do usuário logado."""
+    """Formulário para atualização de dados do usuário logado, incluindo upload de imagem."""
     
     username = forms.CharField(
         max_length=150,
@@ -59,9 +59,14 @@ class CustomUserUpdateForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'placeholder': 'CNPJ (Opcional)'}),
     )
 
+    profile_picture = forms.ImageField(
+        required=False,  # Permite que o usuário não envie uma imagem
+        widget=forms.ClearableFileInput(attrs={'class': 'custom-file-input'})
+    )
+
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'cnpj']
+        fields = ['username', 'email', 'cnpj', 'profile_picture']
 
     def clean_username(self):
         username = self.cleaned_data.get('username')

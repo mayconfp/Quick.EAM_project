@@ -1,40 +1,56 @@
-
-{%include 'usuarios/partials/nav.html'%}
-
-
+{% load static %}
+{% include 'usuarios/partials/nav.html' %}
 
 {% block content %}
-<h2>Editar Perfil</h2>
-
-<!-- Exibir Nome de Usuário e E-mail atuais -->
-<div class="user-info">
-    <p><strong>Nome de Usuário:</strong> <span id="username-display">{{ request.user.username }}</span></p>
-    <p><strong>E-mail:</strong> <span id="email-display">{{ request.user.email }}</span></p>
-</div>
-
-<!-- Exibir mensagens de feedback -->
-{% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-            <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-                {{ message }}
-            </p>
-        {% endfor %}
+<div class="profile-container">
+    <h2>Editar Perfil</h2>
+    
+    <!-- Exibir Nome de Usuário, E-mail e Imagem de Perfil -->
+    <div class="user-info">
+        <p><strong>Nome de Usuário:</strong> <span id="username-display">{{ request.user.username }}</span></p>
+        <p><strong>E-mail:</strong> <span id="email-display">{{ request.user.email }}</span></p>
+        <p><strong>Imagem de Perfil:</strong></p>
+        
+        <div class="profile-image-container">
+            {% if request.user.profile_picture %}
+                <img src="{{ request.user.profile_picture.url }}" alt="Imagem de Perfil" class="profile-image">
+            {% else %}
+                <img src="{% static 'images/exemploimg.avif' %}" alt="Imagem Padrão" class="profile-image">
+            {% endif %}
+        </div>
     </div>
-{% endif %}
+    
+    <!-- Exibir mensagens de feedback -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Formulário de Atualização de Perfil -->
+    <form method="POST" enctype="multipart/form-data" id="profile-form">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.username.label_tag }} {{ form.username }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label_tag }} {{ form.email }}
+        </div>
+        <div class="form-group">
+            <label for="id_profile_picture">Alterar Foto de Perfil:</label>
+            <input type="file" name="profile_picture" id="id_profile_picture">
+        </div>
+        <button type="submit" class="save-button">Salvar Alterações</button>
+    </form>
 
-<!-- Formulário para Atualizar Nome, E-mail e CNPJ -->
-<form method="POST" id="profile-form">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Salvar Alterações</button>
-</form>
-
-<!-- Botão para excluir a conta -->
-<form action="{% url 'deletar_conta' %}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir sua conta? Esta ação é irreversível!');">
-    {% csrf_token %}
-    <button type="submit" style="background-color: red; color: white;">Excluir Conta</button>
-</form>
+    <!-- Botão para excluir a conta -->
+    <form action="{% url 'deletar_conta' %}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir sua conta? Esta ação é irreversível!');">
+        {% csrf_token %}
+        <button type="submit" style="background-color: red; color: white;">Excluir Conta</button>
+    </form>
+</div>
 
 <!-- Script para Atualizar Nome e E-mail Dinamicamente -->
 <script>
@@ -49,6 +65,5 @@
 </script>
 
 {% endblock %}
-
-{%include 'usuarios/partials/footer.html'%}
-<title> {% block title %}Perfil - QuickEAM{% endblock %}</title> 
+{% include 'usuarios/partials/footer.html' %}
+<title>{% block title %}Perfil - QuickEAM{% endblock %}</title>

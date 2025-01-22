@@ -143,14 +143,11 @@ def perfil(request):
     """Exibe e permite atualizar os dados do usuário logado com mensagens de feedback"""
     
     if request.method == 'POST':
-        form = CustomUserUpdateForm(request.POST, instance=request.user)
+        form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user)  # Adicionamos request.FILES
         if form.is_valid():
             form.save()
-            
-            # Adiciona mensagens de feedback
             messages.success(request, "Seu perfil foi atualizado com sucesso!")
-
-            return redirect('perfil')  # Redireciona para a página do perfil após salvar
+            return redirect('perfil')
     else:
         form = CustomUserUpdateForm(instance=request.user)
 
