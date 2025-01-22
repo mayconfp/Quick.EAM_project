@@ -109,32 +109,32 @@ def chat(request):
     session_id = request.GET.get('session')
     session = None
 
-    # Carrega ou cria uma nova sessão
+    # Carrega a sessão atual se o session_id for fornecido
     if session_id:
         session = get_object_or_404(ChatSession, id=session_id, user=request.user)
     else:
+        # Busca a última sessão criada para o usuário
         session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
 
     if not session:
-        return redirect('nova_conversa')
+        return redirect('nova_conversa')  # Redireciona para criar uma nova conversa
 
     # Processa a mensagem do usuário
     if request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
         if user_message:
             if not session.title or session.title == "Nova Conversa":
-                session.title = user_message[:30]
+                session.title = user_message[:35]  # Define o título da sessão com base na primeira mensagem
                 session.save()
 
-            # 🔄 Gera o contexto completo com base no histórico
+            # Gera o contexto completo com base no histórico
             historico_completo = ChatHistory.objects.filter(session=session).order_by('timestamp')
-
             contexto_para_openai = gerar_contexto_completo(historico_completo)
 
-            # 🧠 Chama a função que processa a mensagem com múltiplas IAs
+            # Processa a mensagem com múltiplas IAs
             ai_response = processar_comunicacao_multi_ia(user_message, contexto_para_openai)
 
-            # 🔄 Formata a resposta para HTML antes de salvar e exibir
+            # Formata a resposta para HTML antes de salvar e exibir
             ai_response_formatado = formatar_texto_para_html(ai_response)
 
             # Salva a mensagem e a resposta no histórico
@@ -149,11 +149,11 @@ def chat(request):
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
     sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
 
-    # Marcar como seguro para renderizar no template
+    # Formata o histórico para renderização segura
     chat_history = [
         {
             'question': mensagem.question,
-            'answer': mark_safe(mensagem.answer),  # Permite renderizar HTML seguro
+            'answer': mark_safe(mensagem.answer),
         }
         for mensagem in chat_history
     ]
@@ -168,23 +168,17 @@ def chat(request):
 
 
 
+@login_required
 def nova_conversa(request):
-    if request.method == 'POST':
-        # Cria uma nova sessão de conversa
-        new_session = ChatSession.objects.create(user=request.user, title="Nova Conversa")
-        return redirect(f"/chat/?session={new_session.id}")
+    
+    ultima_sessao = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
+    if ultima_sessao and not ChatHistory.objects.filter(session=ultima_sessao).exists():
+        # Redireciona para a sessão existente se estiver "vazia"
+        return redirect(f"/chat/?session={ultima_sessao.id}")
 
-    # Garante que a criação da sessão funcione corretamente
-    if not ChatSession.objects.filter(user=request.user).exists():
-        new_session = ChatSession.objects.create(user=request.user, title="Nova Conversa")
-        return redirect(f"/chat/?session={new_session.id}")
-
-    # Se houver uma sessão existente, redireciona para a última
-    last_session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
-    if last_session:
-        return redirect(f"/chat/?session={last_session.id}")
-
-    return redirect('chat')
+    
+    new_session = ChatSession.objects.create(user=request.user, title="Nova Conversa")
+    return redirect(f"/chat/?session={new_session.id}")
 
 
 
