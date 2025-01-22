@@ -1,45 +1,76 @@
-from .gemini_cliente import gemini_gerar_resposta
-from .llama_cliente import gerar_resposta_llama
 from .openai_cliente import gerar_resposta_openai
-from usuarios.models import ChatHistory
+from .llama_cliente import gerar_resposta_llama
+from .gemini_cliente import gemini_gerar_resposta
+from .models import ChatHistory
+import json
+from .provedores import processar_comunicacao_multi_ia
+
+def gerar_resposta(user_message, historico):
+    """Gera uma resposta consolidada das IAs."""
+    return processar_comunicacao_multi_ia(user_message, historico)
 
 
 
 def processar_comunicacao_multi_ia(mensagem, historico=None):
-    """
-    Processa a mensagem com as 3 IAs e retorna uma resposta final da OpenAI.
-    """
     try:
+        # Log da mensagem recebida
         print(f"[DEBUG] Mensagem recebida para processar: {mensagem}")
+        if historico:
+            print(f"[DEBUG] Histórico recebido: {list(historico)}")
+
+        # Inicializar dicionário para armazenar respostas de cada IA
+        respostas_adicionais = {
+            "Llama": None,
+            "Gemini": None,
+            "Historico": [msg.question for msg in historico] if historico else []
+        }
 
         # Obter resposta da Llama
-        resposta_llama = gerar_resposta_llama(mensagem)
-        print(f"[DEBUG] Resposta da Llama: {resposta_llama}")
+        try:
+            resposta_llama = gerar_resposta_llama(mensagem)
+            respostas_adicionais["Llama"] = resposta_llama
+            print(f"[DEBUG] Resposta da Llama: {resposta_llama}")
+        except Exception as e:
+            print(f"[ERROR] Erro ao obter resposta da Llama: {e}")
+            respostas_adicionais["Llama"] = "Erro ao processar com Llama."
 
         # Obter resposta da Gemini
-        resposta_gemini = gemini_gerar_resposta(mensagem)
-        print(f"[DEBUG] Resposta da Gemini: {resposta_gemini}")
+        try:
+            resposta_gemini = gemini_gerar_resposta(mensagem)
+            respostas_adicionais["Gemini"] = resposta_gemini
+            print(f"[DEBUG] Resposta da Gemini: {resposta_gemini}")
+        except Exception as e:
+            print(f"[ERROR] Erro ao obter resposta da Gemini: {e}")
+            respostas_adicionais["Gemini"] = "Erro ao processar com Gemini."
 
-        # Criar o contexto inicial com respostas das outras IAs
-        contexto = []
-        if historico:
-            contexto.extend([
-                {"role": "user", "content": chat.question} if chat.question else {"role": "assistant", "content": chat.answer}
-                for chat in historico
-            ])
-
-        contexto.extend([
-            {"role": "assistant", "content": f"Llama disse: {resposta_llama}"},
-            {"role": "assistant", "content": f"Gemini disse: {resposta_gemini}"}
-        ])
+        # Preparar contexto para OpenAI
+        print(f"[DEBUG] Contexto enviado para OpenAI: {respostas_adicionais}")
 
         # Obter resposta final da OpenAI
-        print(f"[DEBUG] Contexto enviado para OpenAI: {contexto}")
-        resposta_final = gerar_resposta_openai(mensagem, contexto)
+        resposta_final = gerar_resposta_openai(mensagem, respostas_adicionais)
         print(f"[DEBUG] Resposta final da OpenAI: {resposta_final}")
 
-        return resposta_final
+        # Certificar-se de que a resposta está em formato JSON e codificada corretamente
+        return json.dumps(resposta_final, ensure_ascii=False)
 
     except Exception as e:
         print(f"[ERROR] Erro ao processar comunicação multi-IA: {e}")
-        return "Erro ao processar as respostas entre as IAs."
+        return json.dumps({"erro": "Erro ao processar as respostas entre as IAs."}, ensure_ascii=False)
+
+
+
+def recuperar_ultima_resposta(user):
+    """
+    Recupera a última resposta registrada no banco de dados para o usuário.
+    """
+    try:
+        ultima_resposta = ChatHistory.objects.filter(user=user).order_by('-timestamp').first()
+        if ultima_resposta and ultima_resposta.answer.strip():
+            print(f"[DEBUG] Última resposta encontrada: {ultima_resposta.answer}")
+            return ultima_resposta.answer.strip()
+        else:
+            print("[DEBUG] Nenhuma resposta anterior válida encontrada.")
+            return None
+    except Exception as e:
+        print(f"[ERROR] Erro ao recuperar última resposta: {e}")
+        return None

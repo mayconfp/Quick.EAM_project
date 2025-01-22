@@ -2,8 +2,7 @@ import openai
 import os
 from dotenv import load_dotenv, find_dotenv
 
-_= load_dotenv(find_dotenv())
-
+_ = load_dotenv(find_dotenv())
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def gerar_resposta_openai(user_message, contexto=None):
@@ -11,17 +10,14 @@ def gerar_resposta_openai(user_message, contexto=None):
         contexto = []
 
     try:
-        # Combine o contexto com a mensagem atual
         messages = contexto + [{"role": "user", "content": user_message}]
-
         response = openai.ChatCompletion.create(
             model="chatgpt-4o-latest",
             messages=messages,
-            temperature=0.5,
+            temperature=0.7,
             max_tokens=200,
         )
-
         return response['choices'][0]['message']['content'].strip()
     except Exception as e:
         print(f"Erro na API OpenAI: {e}")
-        return "Desculpe, ocorreu um erro ao processar sua mensagem."
+        return "Erro ao processar a mensagem com a OpenAI."

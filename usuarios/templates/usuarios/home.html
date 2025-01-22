@@ -2,153 +2,59 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns="http://www.w3.org/1999/html">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/x-icon">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <title>QuickEAM</title>
+    <title>{% block title %}QuickEAM{% endblock %}</title>
 </head>
 <body>
-<header>
-    <button id="menuToggle" class="menu-btn">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-    <nav id="menu" class="menu hidden">
-        <ul>
-            <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-        </ul>
-    </nav>
+    {% include  'usuarios/partials/nav.html'%}
+    <main class="container">
 
-        <a href="{% url 'home' %}" class="logo">
-            <img src="{% static 'images/logo_homepage.png' %}" alt="logo">
-        </a>
-    </div>
+            <div class="sobre" content="center">
+                <h1> Bem-vindo ao QuickEAM</h1>
+                <h2> Aqui você encontra soluções inovadoras para a gestão de ativos industriais.</h2>
+            </div>
+            <h3> <br> Sobre a QuickEAM
+             A QuickEAM é uma empresa especializada em soluções inovadoras para a gestão de ativos industriais,
+            combinando consultoria estratégica, tecnologias de ponta e a expertise da Indústria 4.0. Com mais de 15 anos de experiência,
+            nossa missão é otimizar processos, reduzir custos e aumentar a eficiência operacional
+            das empresas, sempre focando em resultados rápidos e mensuráveis. <
+            </h3>
 
-    </div>
-</header>
-
-<main class="container">
-
-    <div class="sobre" content="center">
-        <h1> Bem-vindo ao QuickEAM</h1>
-        <h2> Aqui você encontra soluções inovadoras para a gestão de ativos industriais.</h2>
-    </div>
-    <h3><br> Sobre a QuickEAM
-        A QuickEAM é uma empresa especializada em soluções inovadoras para a gestão de ativos industriais,
-        combinando consultoria estratégica, tecnologias de ponta e a expertise da Indústria 4.0. Com mais de 15 anos de
-        experiência,
-        nossa missão é otimizar processos, reduzir custos e aumentar a eficiência operacional
-        das empresas, sempre focando em resultados rápidos e mensuráveis. <
-    </h3>
-
-    <h2>O que Fazemos:</h2>
-    <h3> Consultoria em Gestão de Ativos
-        Oferecemos serviços personalizados de consultoria para empresas que buscam modernizar e alinhar seus processos
-        de manutenção com as melhores práticas globais.
-    </h3>
+            <h2>O que Fazemos:</h2>
+            <h3> Consultoria em Gestão de Ativos
+            Oferecemos serviços personalizados de consultoria para empresas que buscam modernizar e alinhar seus processos de manutenção com as melhores práticas globais.
+            </h3>
 
 
-    <h2><br>Atuamos em áreas como:</h2>
+            <h2> <br>Atuamos em áreas como:</h2>
 
-    <h3>Revisão de planos de manutenção com metodologias avançadas como RCM (Reliability-Centered Maintenance) e WCM
-        (World Class Manufacturing).
-        Integração de sistemas corporativos, como SAP/PM, para uma gestão de manutenção eficiente.
-        Capacitação de equipes para a aplicação das melhores práticas em gestão de ativos.
-        Soluções Digitais
-        Desenvolvemos plataformas tecnológicas que combinam inteligência artificial, machine learning e análise
-        preditiva para a gestão avançada de ativos.
-    </h3>
+            <h3>Revisão de planos de manutenção com metodologias avançadas como RCM (Reliability-Centered Maintenance) e WCM (World Class Manufacturing).
+            Integração de sistemas corporativos, como SAP/PM, para uma gestão de manutenção eficiente.
+            Capacitação de equipes para a aplicação das melhores práticas em gestão de ativos.
+            Soluções Digitais
+            Desenvolvemos plataformas tecnológicas que combinam inteligência artificial, machine learning e análise preditiva para a gestão avançada de ativos.
+            </h3>
 
-    <h2><br>Nossas ferramentas oferecem:</h2>
-    <h3> Diagnósticos preditivos para antecipar falhas e evitar paradas não planejadas.
-        Dashboards para monitoramento de indicadores-chave, como OEE (Overall Equipment Effectiveness), MTBF (Mean Time
-        Between Failures) e MTTR (Mean Time to Repair).
-        Estratégias de Quick Wins
-        Apoiamos empresas na obtenção de melhorias rápidas e práticas, proporcionando ganhos imediatos com ações
-        pontuais de alto impacto.
-    </h3>
+            <h2> <br>Nossas ferramentas oferecem:</h2>
+            <h3> Diagnósticos preditivos para antecipar falhas e evitar paradas não planejadas.
+            Dashboards para monitoramento de indicadores-chave, como OEE (Overall Equipment Effectiveness), MTBF (Mean Time Between Failures) e MTTR (Mean Time to Repair).
+            Estratégias de Quick Wins
+            Apoiamos empresas na obtenção de melhorias rápidas e práticas, proporcionando ganhos imediatos com ações pontuais de alto impacto.
+            </h3>
 
-    <h2><br>Nossos Diferenciais: </h2>
+            <h2> <br>Nossos Diferenciais: </h2>
 
-    <h3> Inovação e Tecnologia: Integramos as mais recentes tecnologias da Indústria 4.0 em nossos projetos.
-        Resultados Mensuráveis: Utilizamos metodologias como análise de indicadores e gerenciamento de performance para
-        garantir resultados concretos.
-        Foco no Cliente: Cada solução é personalizada para atender às necessidades específicas de nossos clientes.
-    </h3>
+            <h3>  Inovação e Tecnologia: Integramos as mais recentes tecnologias da Indústria 4.0 em nossos projetos.
+            Resultados Mensuráveis: Utilizamos metodologias como análise de indicadores e gerenciamento de performance para garantir resultados concretos.
+            Foco no Cliente: Cada solução é personalizada para atender às necessidades específicas de nossos clientes.
+            </h3>
 
-    <h2><br>Nossa Visão:</h2>
-    <h3> Ser referência global em soluções inteligentes e sustentáveis para a gestão de ativos industriais, promovendo
-        excelência e criando valor para nossos parceiros.
-        Visite nosso site e descubra como a QuickEAM pode transformar a gestão de ativos da sua empresa.
-    </h3>
-    </div>
-</main>
-<footer class="footer">
-    <div class="footer-content">
-        <p>&copy; 2024 QuickEAM. Todos os direitos reservados.</p>
-        <ul class="footer-links">
-            <li><a href="#">Termos de Uso</a></li>
-            <li><a href="#">Política de Privacidade</a></li>
-            <li><a href="#">Contato</a></li>
-        </ul>
-    </div>
-</footer>
-<script>
-    const menuToggle = document.getElementById("menuToggle");
-    const menu = document.getElementById("menu");
-
-    menuToggle.addEventListener("click", function (event) {
-        menu.classList.toggle("hidden");
-        event.stopPropagation();
-    });
-
-
-    document.addEventListener("click", function (event) {
-        if (!menu.contains(event.target) && !menuToggle.contains(event.target)) {
-            menu.classList.add("hidden");
-        }
-    });
-
-</script>
-
-<script>
-    function solicitarLocalizacao() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-
-                // Enviar a localização para o servidor
-                fetch('/definir_idioma/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({latitude, longitude})
-                }).then(response => {
-                    if (response.ok) {
-                        console.log("Idioma definido com base na localização");
-                        location.reload(); // Atualiza a página para refletir o idioma correto
-                    } else {
-                        console.error("Erro ao definir idioma");
-                    }
-                });
-            }, function (error) {
-                console.error("Erro ao obter localização", error);
-            });
-        } else {
-            console.error("Geolocalização não é suportada pelo navegador.");
-        }
-    }
-
-    // Solicita a localização ao carregar a página
-    document.addEventListener('DOMContentLoaded', solicitarLocalizacao);
-</script>
-
-
+            <h2> <br>Nossa Visão:</h2>
+            <h3>  Ser referência global em soluções inteligentes e sustentáveis para a gestão de ativos industriais, promovendo excelência e criando valor para nossos parceiros.
+            Visite nosso site e descubra como a QuickEAM pode transformar a gestão de ativos da sua empresa.
+            </h3>
+        </div>
+    </main>
+    {% include 'usuarios/partials/footer.html'%}
 </body>
 </html>

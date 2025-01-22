@@ -27,4 +27,3 @@ def gerar_resposta_llama(user_message, contexto=None):
     except Exception as e:
         print(f"Erro ao se comunicar com a API do Llama: {e}")
         return "Erro ao processar sua mensagem com o Llama API."
-

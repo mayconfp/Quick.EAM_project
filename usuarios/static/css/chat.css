@@ -1,218 +1,498 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 
-.chat-container {
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    background-color: #f0f0f0;
 }
-
-.history-msg {
-    flex: 1;
-    max-width: 300px;
-    background-color: #fff;
-    border-right: 1px solid #ccc;
-    overflow-y: auto;
-    padding: 15px;
-}
-
-.chat-area {
-    flex: 3;
+body{
+     font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    background-color: #F8F9FA;
+    color: #2B2D42;
+    line-height: 1.6;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    min-height: 100vh;
+}
+
+
+html, body {
     height: 100%;
-    background-color: #fff;
-    padding: 0 15px;
-    overflow: hidden;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.container {
+    flex: 1;
+    padding: 80px 20px;
+    text-align: center;
 }
 
 header {
-    position: relative;
+height: 60px;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: #FFFFFF;
+    color: #2B2D42;
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Alinha o conteúdo nas extremidades */
-    padding: 10px 15px; /* Espaçamento interno */
-    background-color: #fff;
-    border-bottom: 1px solid #ccc;
-    z-index: 999;
+    padding: 0 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-
-
-.chat-history {
-    flex: 1;
-    overflow-y: auto;
-    margin: 0;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.message_user {
-    margin-bottom: 10px;
-    background-color: #e9f7ff;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #007bff;
-    text-align: right;
-    float: right;
-    max-width: 70%;
-    clear: both;
-    word-wrap: break-word; /* Garante que longas palavras sejam quebradas */
-}
-
-.message_bot {
-    margin-bottom: 10px;
-    background-color: #f8f8f8;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    text-align: left;
-    float: left;
-    max-width: 70%;
-    clear: both;
-    word-wrap: break-word;
-}
-
-.chat-form {
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
-    padding: 10px 0;
-    border-top: 1px solid #ccc;
-}
-
-.chat-form textarea {
-    resize: none;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-size: 14px;
-    margin-bottom: 10px;
-    width: 100%;
-}
-
-.chat-form button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 15px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.chat-form button:hover {
-    background-color: #0056b3;
-}
-
-/* Responsividade para dispositivos menores */
-@media screen and (max-width: 768px) {
-    .chat-container {
-        flex-direction: column;
-        height: auto;
-    }
-
-    .history-msg {
-        max-width: none;
-        border-right: none;
-        border-bottom: 1px solid #ccc;
-    }
-
-    .chat-header {
-        padding: 10px;
-    }
-
-    .chat-history {
-        padding: 5px;
-    }
-
-    .chat-form {
-        padding: 5px 0;
-    }
-
-    .message_user,
-    .message_bot {
-        max-width: 90%;
-    }
-}
-
-/* Botão do menu (três barras) */
-.menu {
-    position: absolute;
-    top: 50px; /* Espaçamento adequado abaixo do botão */
-    right: 15px; /* Alinhado com o botão */
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 10px 0;
-    display: none; /* Inicialmente escondido */
-    z-index: 1000;
-    width: 200px;
-}
-
-
 .menu-btn .bar {
-    width: 25px;
-    height: 3px;
-    background-color: #333;
-    border-radius: 3px;
-}
-
-
-/* Menu de navegação */
-.menu {
-    position: absolute;
-    top: 50px;
-    right: 15px;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 10px 0;
-    display: none; /* Inicialmente escondido */
-    z-index: 1000;
-    width: 200px;
-}
-
-/* Mostra o menu quando ativo */
-.menu.activate {
     display: block;
+    width: 100%;
+    height: 4px;
+    background-color: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
 }
 
-/* Links no menu */
-.menu ul {
+.history-msg {
+    display: none; /* 🔥 Esconde o histórico quando a sidebar estiver fechada */
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+    margin-top: 20px;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+#sidebar.open_sidebar .history-msg {
+    display: block; /* 🔥 Exibe o histórico apenas quando a sidebar estiver aberta */
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.history-msg h3 {
+    font-size: 16px;
+    color: #333;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.history-msg ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.menu ul li {
+.history-msg ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background-color: #f1f1f1; /* Cinza claro */
+    border-radius: 5px;
+    margin-bottom: 5px;
+    transition: background 0.3s ease;
+}
+
+.history-msg ul li:hover {
+    background-color: #e0e0e0;
+}
+
+.history-msg ul li a {
+    text-decoration: none;
+    color: #333;
+    flex-grow: 1;
+}
+
+.history-msg ul li .delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: red;
+    transition: color 0.3s ease;
+}
+
+.history-msg ul li .delete-btn:hover {
+    color: darkred;
+}
+
+#new-chat-btn {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+#new-chat-btn:hover {
+    background-color: #3730a3;
+}
+
+.chat-container {
+    display: flex;
+    width: calc(100% - 400px);
+    height: calc(100vh - 70px);
+    display: flex;
+    margin-left: 400px;
+    flex-direction: column;
+    overflow: hidden;
+    top: 0;
+    position: fixed;
+    background-color: #f8f8f8;
+
+}
+
+/* Histórico de mensagens */
+.chat-history {
+    flex: 1;
+    margin-top:60px;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #F8F9FA;
+    color: #2B2D42;
+    border-bottom: 1px solid #3b3b5e;
+}
+
+/* Mensagens do histórico */
+.chat-history .message {
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.chat-history .message strong {
+    color: #000000;
+}
+
+.chat-history::-webkit-scrollbar {
+    width: 10px;
+}
+
+.chat-history::-webkit-scrollbar-track {
+    background: #E9ECEF;
+    margin-top: 13px;
+    margin-bottom: 13px;
+    border-radius: 5px;
+}
+
+.chat-history::-webkit-scrollbar-thumb {
+    background: #B0B3B8;
+    border-radius: 3px;
+}
+
+.chat-history::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+.chat-history p{
+    margin-top: 20px;
+}
+
+.chat-form {
+    display: flex;
+    align-items: center; /* Centraliza verticalmente */
+    padding: 10px;
+    background-color: #E9ECEF;
+    border-top: 1px solid #DEE2E6;
+    position: fixed;
+    bottom: 0;
+    left: 400px; /* Ajusta alinhamento com o histórico */
+    right: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+}
+.chat-form form {
+    display: flex;
+    width: 100%;
+}
+
+.chat-form textarea {
+    flex: 0.8;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #3b3b5e;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    color: #2B2D42;
+    resize: none;
+    margin-left: 200px;
+    overflow: auto;
+    min-height: 60px;
+    max-height: 300px;
+}
+
+.chat-form button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    background-color: #3b3b5e;
+    color: #e0e0e0;
+    border: none;
+    border-radius: 50%;
+    height: 50px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    transition: background-color 0.3s ease;
+}
+
+.chat-form .arrow-up{
+    font-size: 20px;
+}
+
+.chat-form button:hover {
+    background-color: #4c4c7f;
+}
+
+.message_user {
+    text-align: right;
+    background-color: #007BFF; /* Fundo azul claro */
+    color: #FFFFFF; /* Texto azul escuro */
+    padding: 10px 15px;
+     max-width: 70%;
+     word-wrap: break-word;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    margin-left: auto; /* Empurra para a direita */
+}
+
+.message_bot {
+    text-align: left;
+    max-width: 70%;
+    background-color: #E9ECEF;
+    color: #2B2D42; /* Fundo cinza claro */
+    word-wrap: break-word;/* Texto cinza escuro */
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    margin-right: auto; /* Empurra para a esquerda */
+}
+
+.mobile-history{
+    display: none;
+}
+
+
+.side-menu {
+position: fixed;
+top: 0;
+left: 0;
+width: 70%; /* O menu cobre 70% da tela */
+max-width: 300px; /* Limita a largura máxima */
+height: 100%;
+background-color: #1e1e2e;
+color: #e0e0e0;
+z-index: 1500;
+box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+transform: translateX(-100%); /* Esconde o menu fora da tela */
+transition: transform 0.3s ease-in-out;
+padding: 20px;
+overflow-y: auto; /* Adiciona rolagem caso o conteúdo exceda a altura */
+}
+
+/* Exibe o menu quando ativo */
+.side-menu.active {
+    transform: translateX(0); /* Mostra o menu */
+}
+
+/* Títulos e listas no menu */
+.side-menu h3 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #ffffff;
+}
+
+.side-menu ul {
+    list-style: none;
+    padding: 0;
     margin: 0;
 }
 
-.menu ul li a {
-    display: block;
-    padding: 10px 15px;
+.side-menu ul li {
+    margin-bottom: 15px;
+}
+
+.side-menu ul li a {
     text-decoration: none;
-    color: #333;
-    font-weight: 500;
+    color: #e0e0e0;
+    font-size: 1.2rem;
+    transition: color 0.3s;
 }
 
-.menu ul li a:hover {
-    background-color: #f8f8f8;
-    color: #007bff;
+.side-menu ul li a:hover {
+    color: #ffffff;
+}
+.hidden {
+    transform: translateX(-100%); /* Mantém o menu escondido */
 }
 
-@media screen and (max-width: 768px) {
-    .menu {
-        top: 50px; /* Mantém o espaço abaixo do botão */
-        right: 10px;
-        width: 90%; /* Faz o menu ocupar quase toda a largura */
+
+
+@media (max-width: 768px) {
+
+header {
+    display: flex; /* Ativa o flexbox */
+    align-items: center; /* Centraliza verticalmente os itens */
+    justify-content: space-between; /* Espaça os itens: botão à esquerda, logo ao centro */
+    padding: 10px 20px; /* Adiciona espaçamento interno */
+    background-color: #1e1e2e; /* Cor de fundo do header */
+    color: #e0e0e0; /* Cor do texto */
+    height: 60px; /* Altura do header */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Sombra para destaque */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+.menu {
+    position: absolute;
+    top: 40px;
+    left: 15px;
+    background: white;
+    color: black;
+    padding: 10px;
+    border-radius: 5px;
+    width: 160px;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo do botão hambúrguer */
+.menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    left: 0;
+    margin-left: 10px;
+}
+
+/* Estilo das barras do botão hambúrguer */
+.menu-btn .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #e0e0e0;
+    margin: 4px 0; /* Espaçamento entre as barras */
+    transition: all 0.3s ease;
+}
+
+/* Estilo do logo */
+.logo {
+    flex: 1; /* Faz com que o logo ocupe o espaço central */
+    text-align: center; /* Centraliza o logo no centro */
+    font-size: 18px;
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+.history-msg {
+    display: none; /* Esconde o histórico para dispositivos móveis */
+}
+
+.mobile-history {
+    display: none; /* Esconde o menu móvel por padrão */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #1e1e2e;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mobile-history.hidden {
+    display: none;
+}
+
+.chat-form {
+    display: flex;
+    align-items: center; /* Centraliza os itens verticalmente */
+    padding: 10px;
+    background-color: #1e1e2e;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2); /* Sombra para destaque */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%; /* O formulário ocupa toda a largura */
+    z-index: 1000; /* Certifica que está sobre outros elementos */
+}
+
+.chat-form textarea {
+    flex: 1; /* O textarea ocupa o espaço disponível */
+    margin-right: 10px; /* Espaço entre o textarea e o botão */
+    padding: 10px;
+    border: 1px solid #3b3b5e;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-left: 0;
+    background-color: #2a2a40;
+    color: #e0e0e0;
+    resize: none; /* Desativa o redimensionamento */
+    height: 40px; /* Altura do textarea */
+}
+
+/* Configuração do botão */
+.chat-form button {
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    height: 60px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.mobile-history h3 {
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        color: #e0e0e0;
     }
 
-    .menu ul li a {
-        text-align: center; /* Centraliza os links */
+    .mobile-history ul li {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #2a2a40;
+        border-radius: 5px;
+        width: 90%;
+        text-align: center;
     }
+
+    .chat-container {
+        margin-left: 0;
+        width: 100%;
+    }
+
+.message_user,
+    .message_bot {
+        max-width: 90%;
+    }
+
+
 }
 
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none; /* Esconde o histórico desktop */
+    }
+
+
+}

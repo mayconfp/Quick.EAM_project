@@ -32,27 +32,22 @@
 </header>
 <div class="login">
     <h1>Login</h1>
-    <form method="post" autocomplete="off">
+    <form method="post">
         {% csrf_token %}
         <label for="username">Usuário:</label>
-        <input type="text" id="username" name="username" required autocomplete="off">
+        <input type="text" id="username" name="username" required>
 
         <label for="password">Senha:</label>
-        <div class="password-container">
-            <input type="password" id="password" name="password" required autocomplete="off">
-            <button type="button" onclick="togglePassword('password')">🔒</button>
-        </div>
+        <input type="password" id="password" name="password" required>
+
         <button type="submit">Entrar</button>
     </form>
-    <p>Novo na QuickEAM? <a href="{% url 'register' %}">Cadastre-se aqui</a>.</p>
-    {% if messages %}
-        <div class="alert-messages">
-            {% for message in messages %}
-                <div class="alert {{ message.tags }}">{{ message }}</div>
-            {% endfor %}
+    {% if errormessage %}
+        <div class="senha-errada">
+            {{ errormessage }}
         </div>
     {% endif %}
-
+    <p>Novo na QuickEAM? <a href="{% url 'register' %}">Cadastre-se aqui</a>.</p>
 </div>
 <footer class="footer">
     <div class="footer-content">
@@ -64,24 +59,7 @@
         </ul>
     </div>
 </footer>
-<script>
-    document.getElementById("menuToggle").addEventListener("click", function () {
-        const menu = document.getElementById("menu");
-        menu.classList.toggle("hidden");
-    });
-
-
-    function togglePassword(fieldId) {
-        const field = document.getElementById(fieldId);
-        if (field.type === "password") {
-            field.type = "text";
-        } else {
-            field.type = "password";
-        }
-    }
-
-</script>
-
+<script src="{% static 'js/scripts.js' %}"></script>
 
 </body>
 </html>

@@ -1,14 +1,12 @@
-
-
 from django.core.exceptions import ValidationError
-
+import re
 
 class SenhaPersonalizada:
     def validate (self , password , user = None):
         if len(password) < 8:
             raise ValidationError("Essa senha deve conter pelo menos uma Letra Maiúscula.")
         if not any(char.isupper() for char in password):
-            raise ValidationError("Essa senha deve conter pelo menos uma Letra Maiúscula.")
+            raise ValidationError("Sua senha deve conter pelo menos 8 caracteres.")
         if not any(char in "!@#$%^&*" for char in password):
             raise ValidationError("A Senha deve conter pelo menos um caractere especial.")
         if not any(char.isdigit() for char in password):
@@ -26,4 +24,3 @@ def validate_custom_username(username):
         raise ValidationError("O nome de usuário deve conter apenas letras e números.")
     if username.lower() == "admin":
         raise ValidationError("Este nome de usuário não é permitido.")
-
