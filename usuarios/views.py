@@ -209,7 +209,7 @@ def excluir_chat(request, session_id):
 def perfil(request):
     """Exibe e permite atualizar os dados do usuário logado."""
     if request.method == 'POST':
-        form = CustomUserUpdateForm(request.POST, instance=request.user)
+        form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Seu perfil foi atualizado com sucesso!")
