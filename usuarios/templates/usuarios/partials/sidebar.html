@@ -1,11 +1,14 @@
-
 {% load static %}
 <div class="container">
     <nav id="sidebar" class="left-sidebar">
         <div id="sidebar_content">
             
             <div id="user">
-                <img src="{% static 'images/do-utilizador.png' %}" id="user_avatar" alt="Avatar">
+                <a href="{% url 'perfil' %}">
+                    <img src="{% if request.user.profile_picture %}{{ request.user.profile_picture.url }}{% else %}{% static 'images/do-utilizador.png' %}{% endif %}" 
+                         id="user_avatar" 
+                         alt="Avatar">
+                </a>
                 <p id="user_infos">
                     <span class="item_description">
                         {{ request.user.username }}

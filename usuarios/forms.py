@@ -1,15 +1,13 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
-
-from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from django.core.exceptions import ValidationError
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'cnpj', 'password1', 'password2']
+        fields = ['username', 'email', 'cnpj', 'password1', 'password2', 'profile_picture']
 
     def save(self, commit=True):
         # Chama a implementação padrão do método save
@@ -74,6 +72,14 @@ class CustomUserUpdateForm(forms.ModelForm):
         required=False,
         widget=forms.TextInput(attrs={'placeholder': 'CNPJ (Opcional)'}),
     )
+
+    profile_picture = forms.ImageField(
+        required=False,  # Permite que o usuário não envie uma imagem
+        widget=forms.ClearableFileInput(attrs={'class': 'custom-file-input'}),
+        label="Foto de Perfil"
+    )
+
+
 
     class Meta:
         model = CustomUser

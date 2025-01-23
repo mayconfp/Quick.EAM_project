@@ -1,6 +1,20 @@
+import os
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils.timezone import now
+
+
+def user_profile_picture_path(instance, filename):
+    """
+    Renomeia os arquivos de imagem para evitar nomes longos.
+    Exemplo: 'profile_pics/user_1_20250122.webp'
+    """
+    ext = filename.split('.')[-1]  # Obtém a extensão do arquivo
+    filename = f"user_{instance.id}_{now().strftime('%Y%m%d')}.{ext}"  # Novo nome
+    return os.path.join('profile_pics/', filename)
+
+
 
 class CustomUser(AbstractUser):
     cnpj = models.CharField(
@@ -10,6 +24,15 @@ class CustomUser(AbstractUser):
         unique=True, 
         help_text="CNPJ do usuário (opcional)."
     )
+    profile_picture = models.ImageField(
+        upload_to=user_profile_picture_path,
+        blank=True,
+        null=True,
+        help_text="Foto do perfil do usuário."
+    )
+
+
+
 
 class ChatSession(models.Model):
     user = models.ForeignKey(

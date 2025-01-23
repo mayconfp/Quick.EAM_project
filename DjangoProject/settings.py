@@ -116,13 +116,21 @@ LOGGING = {
             'class': 'logging.StreamHandler',
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
     },
 }
+
 
 AUTHENTICATION_BACKENDS = [
     'usuarios.authentication_backends.UsernameOrCNPJBackend',  # Caminho correto para o backend
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
