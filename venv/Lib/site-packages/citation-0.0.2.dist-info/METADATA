@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: citation
+Version: 0.0.2
+Summary: Python library for managing package dependencies
+Home-page: https://github.com/idin/citations
+Author: Idin
+Author-email: py@idin.ca
+License: MIT
+Keywords: encryption decryption
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: ~=3.6
+Description-Content-Type: text/markdown
+Requires-Dist: dill
+Requires-Dist: base32hex
+Requires-Dist: route
+
+# Citations
+
+

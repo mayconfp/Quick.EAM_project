@@ -11,9 +11,44 @@ from .provedores import formatar_texto_para_html
 from django.utils.translation import activate
 from django.utils.safestring import mark_safe
 import requests
+import logging
 
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
+
+logger = logging.getLogger(__name__)  # Cria um logger para este módulo
+
+@login_required
+def perfil(request):
+    """Exibe e permite atualizar os dados do usuário logado."""
+    if request.method == 'POST':
+        form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user)
+        
+        # Logging de depuração dos arquivos recebidos
+        logger.debug(f"Arquivo recebido no POST: {request.FILES.get('profile_picture')}")
+        
+        if form.is_valid():
+            user = form.save(commit=False)
+            
+            # Logging do usuário antes de salvar
+            logger.debug(f"Usuário antes de salvar: {user}")
+            logger.debug(f"Imagem de perfil antes de salvar: {user.profile_picture}")
+            
+            user.save()  # Salva o usuário com os novos dados
+            
+            # Logging após salvar
+            logger.debug(f"Imagem de perfil salva: {user.profile_picture}")
+            
+            messages.success(request, "Seu perfil foi atualizado com sucesso!")
+            return redirect('perfil')
+        else:
+            logger.error("Erro ao salvar o formulário: {}".format(form.errors))
+            messages.error(request, "Erro ao atualizar o perfil. Verifique os dados.")
+    else:
+        form = CustomUserUpdateForm(instance=request.user)
+
+    return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
+
 
 
 
@@ -201,25 +236,6 @@ def excluir_chat(request, session_id):
         messages.error(request, "Conversa não encontrada ou não pertence a você.")
     return redirect('chat')
 
-
-
-
-
-@login_required
-def perfil(request):
-    """Exibe e permite atualizar os dados do usuário logado."""
-    if request.method == 'POST':
-        form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Seu perfil foi atualizado com sucesso!")
-            return redirect('chat')
-        else:
-            messages.error(request, "Erro ao atualizar o perfil. Verifique os dados.")
-    else:
-        form = CustomUserUpdateForm(instance=request.user)
-
-    return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
 
 
 

@@ -79,6 +79,38 @@ class CustomUserUpdateForm(forms.ModelForm):
         label="Foto de Perfil"
     )
 
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'cnpj', 'profile_picture']  # Certifique-se de incluir 'profile_picture' aqui
+
+    def clean_cnpj(self):
+        """Valida e normaliza o campo CNPJ."""
+        cnpj = self.cleaned_data.get('cnpj')
+        if cnpj:
+            # Remove formatações como ., / e -
+            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
+            # Verifica se o CNPJ já está em uso, exceto para o próprio usuário
+            if CustomUser.objects.filter(cnpj=cnpj).exclude(pk=self.instance.pk).exists():
+                raise forms.ValidationError("Este CNPJ já está em uso.")
+        return cnpj
+
+    def clean_username(self):
+        """Valida se o nome de usuário é único, exceto para o próprio usuário."""
+        username = self.cleaned_data.get('username')
+        if CustomUser.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("Este nome de usuário já está em uso.")
+        return username
+
+    def save(self, commit=True):
+        """Sobrescreve o método save para lidar com o arquivo de imagem."""
+        user = super().save(commit=False)  # Salva os dados principais do formulário, mas não no banco ainda
+        if 'profile_picture' in self.files:  # Verifica se há uma imagem no POST
+            user.profile_picture = self.files['profile_picture']  # Atribui o arquivo enviado ao campo do modelo
+        if commit:
+            user.save()  # Salva no banco de dados
+        return user
+
+
 
 
     class Meta:
