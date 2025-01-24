@@ -106,6 +106,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "usuarios", "static"),]
 # Chaves de API
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 LLAMA_API_KEY = os.getenv("LLAMA_API_KEY")
+BRASIL_API_URL = os.getenv("BRASIL_API_URL", "https://brasilapi.com.br/api/cnpj/v1/")
+
 
 LOGGING = {
     'version': 1,

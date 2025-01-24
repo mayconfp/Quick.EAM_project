@@ -138,7 +138,7 @@ def logout_view(request):
 
 
 
-
+@login_required
 def chat(request):
     ai_response = None
     session_id = request.GET.get('session')

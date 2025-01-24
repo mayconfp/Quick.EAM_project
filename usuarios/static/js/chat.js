@@ -37,7 +37,7 @@ messageArea.addEventListener("input", function () {
         this.style.height = "100px"; // Limita a altura máxima
     }
 
-    // Rola o chat para o final
+// Rola o chat para o final
     scrollToBottom();
 });
 
