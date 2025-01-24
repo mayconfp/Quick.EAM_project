@@ -26,6 +26,7 @@ def validate_custom_username(username):
         raise ValidationError("Este nome de usuário não é permitido.")
     
     
+    
 def validate_cnpj(cnpj):
     """
     Valida um CNPJ brasileiro.

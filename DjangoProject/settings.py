@@ -121,7 +121,7 @@ LOGGING = {
     },
 }
 
-
+#
 
 AUTHENTICATION_BACKENDS = [
     'usuarios.authentication_backends.UsernameOrCNPJBackend',  # Caminho correto para o backend

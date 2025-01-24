@@ -49,7 +49,7 @@ def perfil(request):
 
     return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
 
-
+#
 
 
 def definir_idioma(request):

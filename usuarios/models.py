@@ -31,7 +31,7 @@ class CustomUser(AbstractUser):
         help_text="Foto do perfil do usuário."
     )
 
-
+#
 
 
 class ChatSession(models.Model):

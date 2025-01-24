@@ -4,7 +4,7 @@ document.getElementById('open_btn').addEventListener('click', function(){
 
 
 
-// Fechar a sidebar ao clicar fora dela
+    // Fechar a sidebar ao clicar fora dela
 document.addEventListener('click', function(event) {
     const sidebar = document.getElementById('sidebar');
     const isClickInside = sidebar.contains(event.target);
