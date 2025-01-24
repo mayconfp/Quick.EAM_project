@@ -8,8 +8,17 @@ from django.shortcuts import get_object_or_404
 from usuarios.provedores import processar_comunicacao_multi_ia, gerar_contexto_completo
 from django.utils.safestring import mark_safe
 from usuarios.provedores import formatar_texto_para_html
+from django.contrib.auth import get_user_model
+User = get_user_model() 
+from django.urls import reverse
 from .forms import CustomUserUpdateForm
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib import messages
+from django.conf import settings
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
 
@@ -163,6 +172,59 @@ def deletar_conta(request):
     user = request.user
     user.delete()
     return redirect('home') # Redireciona para a página inicial após excluir
+
+
+def password_reset_request(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            # Gera o ID do usuário e o token
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Gera o link de redefinição
+            reset_link = request.build_absolute_uri(reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token}))
+
+            # Enviar e-mail com o link
+            subject = "Redefinição de Senha - QuickEAM"
+            message = f"Clique no link para redefinir sua senha: {reset_link}"
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+
+            messages.success(request, "Um e-mail foi enviado com instruções para redefinir sua senha.")
+            return redirect("password_reset_request")
+
+        else:
+            messages.error(request, "Nenhuma conta encontrada com este e-mail.")
+    
+    return render(request, "usuarios/password_reset_request.html")
+
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        if request.method == "POST":
+            new_password = request.POST["password"]
+            confirm_password = request.POST["confirm_password"]
+
+            if new_password == confirm_password:
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, "Senha redefinida com sucesso! Faça login com a nova senha.")
+                return redirect("login")
+            else:
+                messages.error(request, "As senhas não coincidem.")
+
+        return render(request, "usuarios/password_reset_confirm.html", {"valid_link": True})
+    
+    return render(request, "usuarios/password_reset_confirm.html", {"valid_link": False})
+
+
 
 
 

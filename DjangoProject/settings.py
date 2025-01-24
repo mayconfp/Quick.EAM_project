@@ -131,3 +131,11 @@ AUTHENTICATION_BACKENDS = [
     'usuarios.authentication_backends.UsernameOrCNPJBackend',  # Caminho correto para o backend
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "julio.santos@quickeam.com"  # Substitua pelo seu e-mail
+EMAIL_HOST_PASSWORD = "zpdj lvos ffow fusg"  # Use uma senha de aplicativo, se for Gmail
+DEFAULT_FROM_EMAIL = "QuickEAM <seu-email@gmail.com>"
