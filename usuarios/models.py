@@ -3,7 +3,8 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.timezone import now
-
+from .validators import validar_cnpj_existente  # Importa o validador que consulta a API
+import re  # Para normalização do CNPJ
 
 def user_profile_picture_path(instance, filename):
     """
@@ -14,15 +15,14 @@ def user_profile_picture_path(instance, filename):
     filename = f"user_{instance.id}_{now().strftime('%Y%m%d')}.{ext}"  # Novo nome
     return os.path.join('profile_pics/', filename)
 
-
-
 class CustomUser(AbstractUser):
     cnpj = models.CharField(
         max_length=18, 
         blank=True, 
         null=True, 
         unique=True, 
-        help_text="CNPJ do usuário (opcional)."
+        help_text="CNPJ do usuário (opcional).",
+        validators=[validar_cnpj_existente]  # Adiciona a validação com API
     )
     profile_picture = models.ImageField(
         upload_to=user_profile_picture_path,
@@ -31,9 +31,13 @@ class CustomUser(AbstractUser):
         help_text="Foto do perfil do usuário."
     )
 
-#
+    def save(self, *args, **kwargs):
+        # Normaliza o CNPJ antes de salvar
+        if self.cnpj:
+            self.cnpj = re.sub(r'\D', '', self.cnpj)  # Remove . / -
+        super().save(*args, **kwargs)
 
-
+# Mantém as classes abaixo inalteradas
 class ChatSession(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -45,7 +49,6 @@ class ChatSession(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.user.username}"
-
 
 class ChatHistory(models.Model):
     session = models.ForeignKey(
@@ -78,4 +81,3 @@ class ChatHistory(models.Model):
 
     def __str__(self):
         return f"{self.user}: {self.question[:20]} - {self.ia_used}"
-

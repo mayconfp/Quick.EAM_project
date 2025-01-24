@@ -1,5 +1,26 @@
 from django.core.exceptions import ValidationError
 import re
+import requests
+from django.core.exceptions import ValidationError
+from django.conf import settings
+
+
+def validar_cnpj_existente(cnpj):
+    """
+    Consulta o CNPJ na API BrasilAPI e verifica se é válido e ativo.
+    """
+    url = f"{settings.BRASIL_API_URL}{cnpj}"
+    response = requests.get(url)
+
+    if response.status_code == 404:
+        raise ValidationError("CNPJ não encontrado ou empresa inexistente.")
+    elif response.status_code != 200:
+        raise ValidationError("Erro ao validar o CNPJ. Tente novamente mais tarde.")
+
+    data = response.json()
+    if data.get("situacao_cadastral") != 2:  # 2 significa 'Ativa'
+        raise ValidationError("CNPJ encontrado, mas a empresa não está ativa.")
+
 
 class SenhaPersonalizada:
     def validate (self , password , user = None):
@@ -25,7 +46,7 @@ def validate_custom_username(username):
     if username.lower() == "admin":
         raise ValidationError("Este nome de usuário não é permitido.")
     
-    
+
     
 def validate_cnpj(cnpj):
     """

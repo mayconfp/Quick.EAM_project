@@ -9,20 +9,21 @@ class CustomUserCreationForm(UserCreationForm):
         model = CustomUser
         fields = ['username', 'email', 'cnpj', 'password1', 'password2', 'profile_picture']
 
-    def save(self, commit=True):
-        # Chama a implementação padrão do método save
-        user = super().save(commit=False)
-
-        # Obtém o CNPJ do formulário
+    def clean_cnpj(self):
         cnpj = self.cleaned_data.get('cnpj')
-
-        # Se o CNPJ for fornecido, salva no campo correto do modelo
         if cnpj:
-            user.cnpj = cnpj
+            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")  # Normaliza o CNPJ
+            validar_cnpj_existente(cnpj)  # Valida com API
+        return cnpj
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if self.cleaned_data.get('cnpj'):
+            user.cnpj = self.cleaned_data.get('cnpj').strip()
         if commit:
             user.save()
         return user
+
 
     def clean_cnpj(self):
         cnpj = self.cleaned_data.get('cnpj')
@@ -53,6 +54,13 @@ class CustomLoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}),
         label="Senha"
     )
+
+    def clean_username(self):
+        username_or_cnpj = self.cleaned_data.get('username')
+        if username_or_cnpj:
+            username_or_cnpj = username_or_cnpj.strip()  # Remove espaços extras
+        return username_or_cnpj
+
 
 
 
