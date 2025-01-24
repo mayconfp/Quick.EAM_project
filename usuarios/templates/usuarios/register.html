@@ -49,6 +49,16 @@
             </ul>
         {% endif %}
 
+        <label for="cnpj">CNPJ (Opcional):</label>
+        <input type="text" id="cnpj" name="cnpj" value="{{ form.cnpj.value|default:'' }}">
+        {% if form.cnpj.errors %}
+            <ul class="error-list">
+                {% for error in form.cnpj.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
         <!-- Campo de senha -->
             <label for="password1">Senha:</label>
         <input type="password" id="password1" name="password1">

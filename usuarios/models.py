@@ -17,10 +17,19 @@ def user_profile_picture_path(instance, filename):
 
 
 class CustomUser(AbstractUser):
-    profile_picture = models.ImageField(upload_to=user_profile_picture_path, null=True, blank=True, max_length=255)
-
-    def __str__(self):
-        return self.username
+    cnpj = models.CharField(
+        max_length=18, 
+        blank=True, 
+        null=True, 
+        unique=True, 
+        help_text="CNPJ do usuário (opcional)."
+    )
+    profile_picture = models.ImageField(
+        upload_to=user_profile_picture_path,
+        blank=True,
+        null=True,
+        help_text="Foto do perfil do usuário."
+    )
 
 
 class ChatSession(models.Model):

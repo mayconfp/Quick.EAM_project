@@ -126,3 +126,8 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
+
+AUTHENTICATION_BACKENDS = [
+    'usuarios.authentication_backends.UsernameOrCNPJBackend',  # Caminho correto para o backend
+    'django.contrib.auth.backends.ModelBackend',
+]

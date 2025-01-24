@@ -1,7 +1,7 @@
 from .models import ChatHistory , ChatSession
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout , authenticate
 from .forms import CustomUserCreationForm, CustomLoginForm
 from .services import processar_comunicacao_multi_ia
 from django.shortcuts import get_object_or_404
@@ -37,13 +37,16 @@ def user_login(request):
     errormessage = None
     if request.method == 'POST':
         form = CustomLoginForm(data=request.POST)
-
         if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect('chat')
-        else:
-            errormessage ="Usuário ou senha incorretos"
+            username_or_cnpj = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+
+            user = authenticate(request, username=username_or_cnpj, password=password)
+            if user:
+                login(request, user)
+                return redirect('chat')
+            else:
+                messages.error(request, "Usuário ou CNPJ e senha inválidos.")
     else:
         form = CustomLoginForm()
     return render(request, 'usuarios/login.html', {'form': form, 'errormessage': errormessage, 'pagina_atual': 'login'})

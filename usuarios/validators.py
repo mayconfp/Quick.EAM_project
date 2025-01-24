@@ -27,3 +27,30 @@ def validate_custom_username(username):
 
 
 
+def validate_cnpj(cnpj):
+    """
+    Valida um CNPJ brasileiro.
+    """
+    cnpj = re.sub(r'\D', '', cnpj)  # Remove caracteres não numéricos
+
+    if len(cnpj) != 14:
+        raise ValidationError("O CNPJ deve conter exatamente 14 números.")
+
+    if cnpj in ("00000000000000", "11111111111111", "22222222222222",
+                "33333333333333", "44444444444444", "55555555555555",
+                "66666666666666", "77777777777777", "88888888888888",
+                "99999999999999"):
+        raise ValidationError("CNPJ inválido.")
+
+    def calculate_digit(cnpj, weights):
+        soma = sum(int(a) * b for a, b in zip(cnpj, weights))
+        resto = soma % 11
+        return '0' if resto < 2 else str(11 - resto)
+
+    weights_first_digit = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    weights_second_digit = [6] + weights_first_digit
+
+    # Verifica os dois dígitos verificadores
+    if calculate_digit(cnpj[:12], weights_first_digit) != cnpj[12] or \
+       calculate_digit(cnpj[:13], weights_second_digit) != cnpj[13]:
+        raise ValidationError("CNPJ inválido.")

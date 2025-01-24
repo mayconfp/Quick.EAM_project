@@ -38,17 +38,18 @@
         <div class="form-group">
             {{ form.email.label_tag }} {{ form.email }}
         </div>
+
+        <div class="form-group">
+            <label for="id_cnpj">CNPJ:</label>
+            <input type="text" name="cnpj" value="{{ user.cnpj }}" placeholder="CNPJ" maxlength="18" id="id_cnpj">
+        </div>
+    
+
         <div class="form-group">
             <label for="id_profile_picture">Alterar Foto de Perfil:</label>
             <input type="file" name="profile_picture" id="id_profile_picture">
         </div>
         <button type="submit" class="save-button">Salvar Alterações</button>
-    </form>
-
-    <!-- Botão para excluir a conta -->
-    <form action="{% url 'deletar_conta' %}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir sua conta? Esta ação é irreversível!');">
-        {% csrf_token %}
-        <button type="submit" style="background-color: red; color: white;">Excluir Conta</button>
     </form>
 </div>
 
