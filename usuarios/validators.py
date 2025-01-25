@@ -4,22 +4,38 @@ import requests
 from django.core.exceptions import ValidationError
 from django.conf import settings
 
+import logging
 
 def validar_cnpj_existente(cnpj):
-    """
-    Consulta o CNPJ na API BrasilAPI e verifica se é válido e ativo.
-    """
-    url = f"{settings.BRASIL_API_URL}{cnpj}"
-    response = requests.get(url)
+    """Valida o CNPJ usando a API configurada."""
+    if not cnpj:
+        return
 
-    if response.status_code == 404:
-        raise ValidationError("CNPJ não encontrado ou empresa inexistente.")
-    elif response.status_code != 200:
+    # Normaliza o CNPJ
+    cnpj = re.sub(r'\D', '', cnpj)
+    url = f"{settings.RECEITA_API_URL}{cnpj}"
+    logging.info(f"Validando CNPJ: {cnpj} com URL {url}")
+
+    try:
+        response = requests.get(url, timeout=10)
+        logging.info(f"Resposta da API: {response.status_code} - {response.text}")
+    except requests.RequestException as e:
+        logging.error(f"Erro ao validar o CNPJ: {e}")
         raise ValidationError("Erro ao validar o CNPJ. Tente novamente mais tarde.")
 
+    # carregando a resposta da api
     data = response.json()
-    if data.get("situacao_cadastral") != 2:  # 2 significa 'Ativa'
-        raise ValidationError("CNPJ encontrado, mas a empresa não está ativa.")
+    situacao_cadastral = data.get("situacao", None) 
+
+    if situacao_cadastral is None:
+        raise ValidationError("Erro: não foi possível obter a situação cadastral do CNPJ.")
+
+    logging.info(f"Situação do CNPJ {cnpj}: {situacao_cadastral}")
+    
+    # Validando o cadastro
+    if situacao_cadastral.upper() != "ATIVA":
+        raise ValidationError(f"CNPJ encontrado, mas com situação: {situacao_cadastral}")
+
 
 
 class SenhaPersonalizada:

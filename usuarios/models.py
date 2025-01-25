@@ -15,14 +15,14 @@ def user_profile_picture_path(instance, filename):
     filename = f"user_{instance.id}_{now().strftime('%Y%m%d')}.{ext}"  # Novo nome
     return os.path.join('profile_pics/', filename)
 
+
 class CustomUser(AbstractUser):
     cnpj = models.CharField(
         max_length=18, 
         blank=True, 
         null=True, 
         unique=True, 
-        help_text="CNPJ do usuário (opcional).",
-        validators=[validar_cnpj_existente]  # Adiciona a validação com API
+        help_text="CNPJ do usuário (opcional)."
     )
     profile_picture = models.ImageField(
         upload_to=user_profile_picture_path,
@@ -36,6 +36,8 @@ class CustomUser(AbstractUser):
         if self.cnpj:
             self.cnpj = re.sub(r'\D', '', self.cnpj)  # Remove . / -
         super().save(*args, **kwargs)
+
+
 
 # Mantém as classes abaixo inalteradas
 class ChatSession(models.Model):

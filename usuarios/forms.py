@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
+from .validators import validar_cnpj_existente
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
@@ -10,13 +11,29 @@ class CustomUserCreationForm(UserCreationForm):
         fields = ['username', 'email', 'cnpj', 'password1', 'password2', 'profile_picture']
 
     def clean_cnpj(self):
+        """Valida e normaliza o campo CNPJ."""
         cnpj = self.cleaned_data.get('cnpj')
         if cnpj:
-            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")  # Normaliza o CNPJ
-            validar_cnpj_existente(cnpj)  # Valida com API
+            # Normaliza o CNPJ
+            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
+            # Valida com API e verifica unicidade
+            validar_cnpj_existente(cnpj)
+            if CustomUser.objects.filter(cnpj=cnpj).exists():
+                raise ValidationError("Este CNPJ já está cadastrado.")
         return cnpj
 
+    def clean(self):
+        """Validações gerais."""
+        cleaned_data = super().clean()
+        email = cleaned_data.get("email")
+        cnpj = cleaned_data.get("cnpj")
+
+        if not email and not cnpj:
+            raise forms.ValidationError("Você deve fornecer um e-mail ou CNPJ.")
+        return cleaned_data
+
     def save(self, commit=True):
+        """Salva os dados normalizados."""
         user = super().save(commit=False)
         if self.cleaned_data.get('cnpj'):
             user.cnpj = self.cleaned_data.get('cnpj').strip()
@@ -24,26 +41,6 @@ class CustomUserCreationForm(UserCreationForm):
             user.save()
         return user
 
-
-    def clean_cnpj(self):
-        cnpj = self.cleaned_data.get('cnpj')
-        if cnpj:
-            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
-            if CustomUser.objects.filter(cnpj=cnpj).exists():
-                raise ValidationError("Este CNPJ já está cadastrado.")
-        return cnpj
-
-
-    def clean(self):
-        """Validações customizadas para o formulário."""
-        cleaned_data = super().clean()
-        email = cleaned_data.get("email")
-        cnpj = cleaned_data.get("cnpj")
-
-        if not email and not cnpj:
-            raise forms.ValidationError("Você deve fornecer um e-mail ou CNPJ")
-
-        return cleaned_data
 
 class CustomLoginForm(AuthenticationForm):
     username = forms.CharField(
@@ -63,7 +60,6 @@ class CustomLoginForm(AuthenticationForm):
 
 
 
-
 class CustomUserUpdateForm(forms.ModelForm):
     """Formulário para atualização de dados do usuário."""
     username = forms.CharField(
@@ -80,65 +76,46 @@ class CustomUserUpdateForm(forms.ModelForm):
         required=False,
         widget=forms.TextInput(attrs={'placeholder': 'CNPJ (Opcional)'}),
     )
-
     profile_picture = forms.ImageField(
-        required=False,  # Permite que o usuário não envie uma imagem
+        required=False,
         widget=forms.ClearableFileInput(attrs={'class': 'custom-file-input'}),
-        label="Foto de Perfil"
+        label="Foto do Perfil",
     )
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'cnpj', 'profile_picture']  # Certifique-se de incluir 'profile_picture' aqui
+        fields = ['username', 'email', 'cnpj', 'profile_picture']
 
     def clean_cnpj(self):
-        """Valida e normaliza o campo CNPJ."""
         cnpj = self.cleaned_data.get('cnpj')
-        if cnpj:
-            # Remove formatações como ., / e -
-            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
-            # Verifica se o CNPJ já está em uso, exceto para o próprio usuário
+        if cnpj and cnpj != self.instance.cnpj:
+            validar_cnpj_existente(cnpj)  # Valida com a API apenas se necessário
             if CustomUser.objects.filter(cnpj=cnpj).exclude(pk=self.instance.pk).exists():
-                raise forms.ValidationError("Este CNPJ já está em uso.")
+                raise ValidationError("Este CNPJ já está em uso.")
         return cnpj
 
+
     def clean_username(self):
-        """Valida se o nome de usuário é único, exceto para o próprio usuário."""
+        """Valida a unicidade do nome de usuário apenas se ele foi alterado."""
         username = self.cleaned_data.get('username')
-        if CustomUser.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
-            raise forms.ValidationError("Este nome de usuário já está em uso.")
+        if username and username != self.instance.username:
+            if CustomUser.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+                raise ValidationError("Este nome de usuário já está em uso.")
         return username
+
+    def clean_email(self):
+        """Valida a unicidade do e-mail apenas se ele foi alterado."""
+        email = self.cleaned_data.get('email')
+        if email and email != self.instance.email:
+            if CustomUser.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+                raise ValidationError("Este e-mail já está em uso.")
+        return email
 
     def save(self, commit=True):
-        """Sobrescreve o método save para lidar com o arquivo de imagem."""
-        user = super().save(commit=False)  # Salva os dados principais do formulário, mas não no banco ainda
-        if 'profile_picture' in self.files:  # Verifica se há uma imagem no POST
-            user.profile_picture = self.files['profile_picture']  # Atribui o arquivo enviado ao campo do modelo
+        """Salva os dados normalizados."""
+        user = super().save(commit=False)
+        if 'profile_picture' in self.files:
+            user.profile_picture = self.files['profile_picture']
         if commit:
-            user.save()  # Salva no banco de dados
+            user.save()
         return user
-
-
-#
-
-    class Meta:
-        model = CustomUser
-        fields = ['username', 'email', 'cnpj']
-
-    def clean_cnpj(self):
-        """Valida e normaliza o campo CNPJ."""
-        cnpj = self.cleaned_data.get('cnpj')
-        if cnpj:
-            # Remove formatações como ., / e -
-            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
-            # Verifica se o CNPJ já está em uso, exceto para o próprio usuário
-            if CustomUser.objects.filter(cnpj=cnpj).exclude(pk=self.instance.pk).exists():
-                raise forms.ValidationError("Este CNPJ já está em uso.")
-        return cnpj
-
-    def clean_username(self):
-        """Valida se o nome de usuário é único, exceto para o próprio usuário."""
-        username = self.cleaned_data.get('username')
-        if CustomUser.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
-            raise forms.ValidationError("Este nome de usuário já está em uso.")
-        return username
