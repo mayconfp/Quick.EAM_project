@@ -200,6 +200,8 @@ def password_reset_request(request):
     
     return render(request, "usuarios/password_reset_request.html")
 
+
+
 def password_reset_confirm(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
