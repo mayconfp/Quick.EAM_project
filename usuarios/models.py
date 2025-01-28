@@ -5,6 +5,10 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.timezone import now
 from .validators import validar_cnpj_existente  # Importa o validador que consulta a API
 import re  # Para normalização do CNPJ
+from django.contrib.auth import get_user_model
+from datetime import timedelta
+import random
+import string
 
 def user_profile_picture_path(instance, filename):
     """
@@ -83,3 +87,29 @@ class ChatHistory(models.Model):
 
     def __str__(self):
         return f"{self.user}: {self.question[:20]} - {self.ia_used}"
+
+
+
+User = get_user_model()
+
+class PasswordResetCode(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6, unique=True)
+    created_at = models.DateTimeField(default=now)  # 🔥 Usa o timezone do Django corretamente
+
+    def generate_code(self):
+        """Gera um código aleatório de 6 dígitos e atualiza o timestamp"""
+        self.code = ''.join(random.choices(string.digits, k=6))
+        self.created_at = now()  # 🔥 Atualiza o horário de criação corretamente
+        self.save()
+
+    def is_expired(self):
+        """Verifica se o código expirou após 5 minutos"""
+        expiration_time = self.created_at + timedelta(minutes=5)
+        current_time = now()  # 🔥 Obtém o horário correto do Django
+        is_expired = current_time > expiration_time
+
+        print(f"📌 Verificando expiração do código: {self.code} "
+              f"(Expira em {expiration_time}, Agora: {current_time}) -> Expirado? {is_expired}")
+
+        return is_expired
