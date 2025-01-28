@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 import os
 from dotenv import load_dotenv, find_dotenv
 from django.utils.translation import gettext_lazy as gettext
+from django.contrib.messages import constants as messages
 
 
 load_dotenv(find_dotenv())
@@ -15,7 +16,12 @@ LANGUAGES = [
 ]
 
 
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+
 
 SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-secreta")
 
@@ -134,3 +140,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "julio.santos@quickeam.com"  # Substitua pelo seu e-mail
+EMAIL_HOST_PASSWORD = "zpdj lvos ffow fusg"  # Use uma senha de aplicativo, se for Gmail
+DEFAULT_FROM_EMAIL = "QuickEAM <seu-email@gmail.com>"
