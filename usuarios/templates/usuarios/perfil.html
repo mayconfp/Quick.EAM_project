@@ -51,6 +51,12 @@
         </div>
         <button type="submit" class="save-button">Salvar Alterações</button>
     </form>
+
+    <!-- Botão para excluir a conta -->
+    <form action="{% url 'deletar_conta' %}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir sua conta? Esta ação é irreversível!');">
+        {% csrf_token %}
+        <button type="submit" style="background-color: red; color: white;">Excluir Conta</button>
+    </form>
 </div>
 
 <!-- Script para Atualizar Nome e E-mail Dinamicamente -->
