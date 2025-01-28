@@ -10,15 +10,16 @@ from django.utils.safestring import mark_safe
 from usuarios.provedores import formatar_texto_para_html
 from django.contrib.auth import get_user_model
 User = get_user_model() 
-from django.urls import reverse
+from django.http import JsonResponse
 from .forms import CustomUserUpdateForm
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.template.loader import render_to_string
 from django.core.mail import send_mail
-from django.contrib.auth.tokens import default_token_generator
 from django.contrib import messages
 from django.conf import settings
+from .validators import SenhaPersonalizada
+from .models import PasswordResetCode
+from django.urls import reverse
+from django.core.exceptions import ValidationError
+
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
 
@@ -180,52 +181,97 @@ def password_reset_request(request):
         user = User.objects.filter(email=email).first()
 
         if user:
-            # Gera o ID do usuário e o token
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
+            # Gerar código de verificação
+            code_instance, created = PasswordResetCode.objects.get_or_create(user=user)
+            code_instance.generate_code()
+            code_instance.save()
 
-            # Gera o link de redefinição
-            reset_link = request.build_absolute_uri(reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token}))
-
-            # Enviar e-mail com o link
-            subject = "Redefinição de Senha - QuickEAM"
-            message = f"Clique no link para redefinir sua senha: {reset_link}"
+            # Enviar código por e-mail
+            subject = "Código de Redefinição de Senha - QuickEAM"
+            message = f"Seu código de verificação para redefinir a senha é: {code_instance.code}"
             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
 
-            messages.success(request, "Um e-mail foi enviado com instruções para redefinir sua senha.")
-            return redirect("password_reset_request")
+            return JsonResponse({"success": True, "message": "Código de verificação enviado para seu e-mail."})
 
-        else:
-            messages.error(request, "Nenhuma conta encontrada com este e-mail.")
-    
-    return render(request, "usuarios/password_reset_request.html")
+        return JsonResponse({"success": False, "message": "Nenhuma conta encontrada com este e-mail."})
+
+    return render(request, "usuarios/password_reset.html")
 
 
+def validate_reset_code(request):
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip()  # 🔥 Evita erro se email for None
+        code = request.POST.get("code", "").strip()  # 🔥 Evita erro se code for None
 
-def password_reset_confirm(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
+        if not email:
+            return JsonResponse({"success": False, "message": "E-mail não informado."})
 
-    if user and default_token_generator.check_token(user, token):
-        if request.method == "POST":
-            new_password = request.POST["password"]
-            confirm_password = request.POST["confirm_password"]
+        if not code:
+            return JsonResponse({"success": False, "message": "Código não informado."})
 
-            if new_password == confirm_password:
-                user.set_password(new_password)
-                user.save()
-                messages.success(request, "Senha redefinida com sucesso! Faça login com a nova senha.")
-                return redirect("login")
-            else:
-                messages.error(request, "As senhas não coincidem.")
+        user = User.objects.filter(email=email).first()
 
-        return render(request, "usuarios/password_reset_confirm.html", {"valid_link": True})
-    
-    return render(request, "usuarios/password_reset_confirm.html", {"valid_link": False})
+        if user:
+            code_instance = PasswordResetCode.objects.filter(user=user).first()
 
+            if code_instance:
+                stored_code = code_instance.code.strip()
+                
+                if stored_code == code:
+                    if code_instance.is_expired():
+                        code_instance.delete()
+                        return JsonResponse({"success": False, "message": "Código expirado! Solicite um novo."})
+
+                    return JsonResponse({"success": True, "message": "Código válido! Agora redefina sua senha."})
+
+        return JsonResponse({"success": False, "message": "Código inválido ou expirado."})
+
+    return JsonResponse({"success": False, "message": "Requisição inválida."})
+
+
+
+
+def password_reset_confirm(request):
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip()
+        code = request.POST.get("code", "").strip()
+        new_password = request.POST.get("password", "").strip()
+        confirm_password = request.POST.get("confirm_password", "").strip()
+
+        if not email:
+            return JsonResponse({"success": False, "message": "E-mail não informado."})
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return JsonResponse({"success": False, "message": "Usuário não encontrado."})
+
+        code_instance = PasswordResetCode.objects.filter(user=user, code=code).first()
+        if not code_instance:
+            return JsonResponse({"success": False, "message": "Código inválido."})
+
+        if code_instance.is_expired():
+            code_instance.delete()
+            return JsonResponse({"success": False, "message": "Código expirado! Solicite um novo."})
+
+        if new_password != confirm_password:
+            return JsonResponse({"success": False, "message": "As senhas não coincidem."})
+
+        try:
+            SenhaPersonalizada().validate(new_password)  # ✅ Corrigido!
+        except ValidationError as e:
+            return JsonResponse({"success": False, "message": "Senha inválida: " + " ".join(e.messages)})
+
+        user.set_password(new_password)
+        user.save()
+        code_instance.delete()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Senha redefinida com sucesso!",
+            "redirect_url": reverse("login")  # 🔥 Certifique-se de que "login" é o nome correto da URL
+        })
+
+    return JsonResponse({"success": False, "message": "Requisição inválida."})
 
 
 
