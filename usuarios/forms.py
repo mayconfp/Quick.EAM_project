@@ -6,6 +6,8 @@ from django.core.exceptions import ValidationError
 from .validators import validar_cnpj_existente
 
 class CustomUserCreationForm(UserCreationForm):
+    email=forms.EmailField(required=True)
+
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'cnpj', 'password1', 'password2', 'profile_picture']
@@ -21,6 +23,7 @@ class CustomUserCreationForm(UserCreationForm):
             if CustomUser.objects.filter(cnpj=cnpj).exists():
                 raise ValidationError("Este CNPJ já está cadastrado.")
         return cnpj
+
 
     def clean(self):
         """Validações gerais."""
