@@ -5,6 +5,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
 class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'cnpj', 'password1', 'password2', 'profile_picture']

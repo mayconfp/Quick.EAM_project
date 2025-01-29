@@ -20,6 +20,14 @@ def user_profile_picture_path(instance, filename):
 
 
 class CustomUser(AbstractUser):
+
+    email = models.EmailField(
+        unique= True,
+        blank= False,
+        null = False,
+        help_text="Email Obrigatório."
+    )
+
     cnpj = models.CharField(
         max_length=18, 
         blank=True, 

@@ -35,7 +35,13 @@
         {% elif pagina_atual == 'login' %}
         <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
         <li><a href="{% url 'home' %}">Voltar para Home</a></li>    
+         
+        {% elif pagina_atual == 'password_reset_request' %}
+        <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
+        <li><a href="{% url 'login' %}">Login</a></li>
+        <li><a href="{% url 'home' %}">Voltar para Home</a></li>    
             
+
         {% endif %}
     </ul>
 </nav>

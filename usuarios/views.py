@@ -195,7 +195,7 @@ def password_reset_request(request):
 
         return JsonResponse({"success": False, "message": "Nenhuma conta encontrada com este e-mail."})
 
-    return render(request, "usuarios/password_reset.html")
+    return render(request, "usuarios/password_reset.html" , {'pagina_atual': 'password_reset_request'})
 
 
 def validate_reset_code(request):

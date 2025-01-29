@@ -55,7 +55,7 @@
     <!-- Botão para excluir a conta -->
     <form action="{% url 'deletar_conta' %}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir sua conta? Esta ação é irreversível!');">
         {% csrf_token %}
-        <button type="submit" style="background-color: red; color: white;">Excluir Conta</button>
+        <button type="submit" class ="delete-button">Excluir Conta</button>
     </form>
 </div>
 
