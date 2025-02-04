@@ -121,3 +121,6 @@ class PasswordResetCode(models.Model):
               f"(Expira em {expiration_time}, Agora: {current_time}) -> Expirado? {is_expired}")
 
         return is_expired
+    
+
+    
