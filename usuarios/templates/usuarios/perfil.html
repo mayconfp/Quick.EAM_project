@@ -1,25 +1,31 @@
 {% load static %}
+<head>
+    <link rel="icon" href="{% static 'favicon/favicon_2.png' %}" type="image/x-icon">
+</head>    
 {% include 'usuarios/partials/nav.html' %}
 
 {% block content %}
 <div class="profile-container">
     <h2>Editar Perfil</h2>
     
+
+    <div class="profile-image-container">
+        {% if request.user.profile_picture %}
+            <img src="{{ request.user.profile_picture.url }}" alt="Imagem de Perfil" class="profile-image">
+        {% else %}
+            <img src="{% static 'images/exemploimg.avif' %}" alt="Imagem Padrão" class="profile-image">
+        {% endif %}
+    </div>
+
     <!-- Exibir Nome de Usuário, E-mail e Imagem de Perfil -->
     <div class="user-info">
         <p><strong>Nome de Usuário:</strong> <span id="username-display">{{ request.user.username }}</span></p>
+
         <p><strong>E-mail:</strong> <span id="email-display">{{ request.user.email }}</span></p>
+
         <p><strong>Imagem de Perfil:</strong></p>
         
-        <div class="profile-image-container">
-            {% if request.user.profile_picture %}
-                <img src="{{ request.user.profile_picture.url }}" alt="Imagem de Perfil" class="profile-image">
-            {% else %}
-                <img src="{% static 'images/exemploimg.avif' %}" alt="Imagem Padrão" class="profile-image">
-            {% endif %}
-        </div>
     </div>
-    
     <!-- Exibir mensagens de feedback -->
     {% if messages %}
         <div class="messages">
@@ -41,7 +47,7 @@
 
         <div class="form-group">
             <label for="id_cnpj">CNPJ:</label>
-            <input type="text" name="cnpj" value="{{ user.cnpj }}" placeholder="CNPJ" maxlength="18" id="id_cnpj">
+            <p id = "id_cnpj">{{ user.cnpj }}</p>
         </div>
     
 

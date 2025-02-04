@@ -257,10 +257,11 @@ def password_reset_confirm(request):
             return JsonResponse({"success": False, "message": "As senhas não coincidem."})
 
         try:
-            SenhaPersonalizada().validate(new_password)  # ✅ Corrigido!
+            SenhaPersonalizada().validate(new_password)
         except ValidationError as e:
-            return JsonResponse({"success": False, "message": "Senha inválida: " + " ".join(e.messages)})
+            return JsonResponse({"success": False, "message": "<br>".join(e.messages)})  # 🔥 Exibe todas as mensagens separadas por <br>
 
+        # 🔥 Se passou pela validação, salvar a senha
         user.set_password(new_password)
         user.save()
         code_instance.delete()

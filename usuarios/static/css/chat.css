@@ -203,7 +203,7 @@ height: 60px;
     border-top: 1px solid #DEE2E6;
     position: fixed;
     bottom: 0;
-    left: 400px; /* Ajusta alinhamento com o histórico */
+    left: 50px; /* Ajusta alinhamento com o histórico */
     right: 0;
     z-index: 1000;
     box-sizing: border-box;
