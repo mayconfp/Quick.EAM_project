@@ -43,3 +43,20 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error("Sidebar não encontrada.");
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    function togglePassword(fieldId) {
+        let passwordField = document.getElementById(fieldId);
+        let toggleButton = passwordField.nextElementSibling;
+
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            toggleButton.innerHTML = "👁️"; // Ícone diferente ao exibir senha
+        } else {
+            passwordField.type = "password";
+            toggleButton.innerHTML = "👁️"; // Ícone original ao ocultar senha
+        }
+    }
+
+    window.togglePassword = togglePassword;
+});
