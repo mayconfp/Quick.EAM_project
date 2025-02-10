@@ -174,15 +174,6 @@ class CicloPadrao(models.Model):
 
 
 
-class CicloPadrao(models.Model):
-    cod_ciclo = models.CharField(max_length=50, primary_key=True)
-    descricao = models.CharField(max_length=255)
-    intervalo_dias = models.IntegerField()
-
-    def __str__(self):
-        return self.descricao
-
-
 
 class Criticidade(models.Model):
     cod_criticidade = models.CharField(max_length=50, primary_key=True)

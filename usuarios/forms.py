@@ -7,7 +7,19 @@ from .validators import validar_cnpj_existente
 from .models import Categoria, CategoriaLang, Especialidade, MatrizPadraoAtividade, CicloPadrao, Criticidade, ChaveModelo
 
 
+def clean_cnpj(self):
+    """Valida e normaliza o campo CNPJ."""
+    cnpj = self.cleaned_data.get('cnpj')
+    if cnpj:
+        # Normaliza o CNPJ removendo caracteres especiais
+        cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
 
+        # Valida com API e verifica unicidade
+        validar_cnpj_existente(cnpj)
+
+        if CustomUser.objects.filter(cnpj=cnpj).exists():
+            raise ValidationError("Este CNPJ já está cadastrado.")
+    return cnpj
 
 
 class CustomUserCreationForm(UserCreationForm):

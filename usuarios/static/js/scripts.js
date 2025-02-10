@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let menuToggle = document.getElementById("menuToggle");
     let menu = document.getElementById("menu");
 
-    if (menuToggle && menu) {  
+    if (menuToggle && menu) {
         // Alterna a classe 'hidden' ao clicar no botão do menu
         menuToggle.addEventListener("click", function (event) {
             event.stopPropagation(); // Evita que o clique no botão feche o menu imediatamente
@@ -19,44 +19,4 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         console.error("Erro: Elementos da navbar não encontrados!");
     }
-});
-
-
-
-
-document.addEventListener('DOMContentLoaded', function () {
-    const sidebar = document.getElementById('sidebar');
-    const openBtn = document.getElementById('open_btn');
-
-    if (openBtn && sidebar) {
-        openBtn.addEventListener('click', function () {
-            sidebar.classList.toggle('open_sidebar');
-        });
-
-        // Fechar a sidebar ao clicar fora dela
-        document.addEventListener('click', function (event) {
-            if (!sidebar.contains(event.target) && !openBtn.contains(event.target)) {
-                sidebar.classList.remove('open_sidebar');
-            }
-        });
-    } else {
-        console.error("Sidebar não encontrada.");
-    }
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    function togglePassword(fieldId) {
-        let passwordField = document.getElementById(fieldId);
-        let toggleButton = passwordField.nextElementSibling;
-
-        if (passwordField.type === "password") {
-            passwordField.type = "text";
-            toggleButton.innerHTML = "👁️"; // Ícone diferente ao exibir senha
-        } else {
-            passwordField.type = "password";
-            toggleButton.innerHTML = "👁️"; // Ícone original ao ocultar senha
-        }
-    }
-
-    window.togglePassword = togglePassword;
 });

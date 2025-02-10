@@ -1,4 +1,3 @@
-
 * {
     margin: 0;
     padding: 0;
@@ -45,13 +44,8 @@ height: 60px;
     padding: 0 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-.menu-btn .bar {
-    display: block;
-    width: 100%;
-    height: 4px;
-    background-color: white;
-    border-radius: 2px;
-    transition: all 0.3s ease;
+.chat-page .menu-btn {
+    display: none !important;
 }
 
 .history-msg {
@@ -139,10 +133,10 @@ height: 60px;
 
 .chat-container {
     display: flex;
-    width: calc(100% - 400px);
+    width: calc(100% - 332px);
     height: calc(100vh - 70px);
     display: flex;
-    margin-left: 400px;
+    margin-left: 250px;
     flex-direction: column;
     overflow: hidden;
     top: 0;
@@ -155,7 +149,7 @@ height: 60px;
 .chat-history {
     flex: 1;
     margin-top:60px;
-    padding: 10px;
+    padding: 5px;
     overflow-y: auto;
     background-color: #F8F9FA;
     color: #2B2D42;
@@ -204,7 +198,7 @@ height: 60px;
     border-top: 1px solid #DEE2E6;
     position: fixed;
     bottom: 0;
-    left: 400px; /* Ajusta alinhamento com o histórico */
+    left: 50px; /* Ajusta alinhamento com o histórico */
     right: 0;
     z-index: 1000;
     box-sizing: border-box;
