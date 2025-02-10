@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Categorias</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    {% include 'usuarios/partials/nav.html' %}
+    <div class="container mt-5">
+        <h2>Categorias</h2>
+        <a href="{% url 'criar_categoria' %}" class="btn btn-primary mb-3">Nova Categoria</a>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Categoria Pai</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for categoria in categorias %}
+                <tr>
+                    <td>{{ categoria.cod_categoria }}</td>
+                    <td>{{ categoria.cod_categoria_pai.cod_categoria if categoria.cod_categoria_pai else "Nenhuma" }}</td>
+                    <td>
+                        <a href="{% url 'editar_categoria' categoria.cod_categoria %}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{% url 'excluir_categoria' categoria.cod_categoria %}" class="btn btn-danger btn-sm">Excluir</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center">Nenhuma categoria encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>

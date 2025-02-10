@@ -31,6 +31,11 @@ from .validators import SenhaPersonalizada
 from .models import PasswordResetCode
 from django.urls import reverse
 from django.core.exceptions import ValidationError
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Categoria, Especialidade, CicloPadrao
+from .forms import CategoriaForm, EspecialidadeForm, CicloPadraoForm
+
 
 
 
@@ -370,3 +375,115 @@ def password_reset_confirm(request):
     return JsonResponse({"success": False, "message": "Requisição inválida."})
 
 
+# 🔹 Listar Categorias
+def lista_categorias(request):
+    categorias = Categoria.objects.all()
+    return render(request, 'gpp/lista_categorias.html', {'categorias': categorias})
+
+# 🔹 Criar Categoria
+def criar_categoria(request):
+    if request.method == "POST":
+        form = CategoriaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoria criada com sucesso!")
+            return redirect('lista_categorias')
+    else:
+        form = CategoriaForm()
+    return render(request, 'gpp/form_categoria.html', {'form': form})
+
+# 🔹 Editar Categoria
+def editar_categoria(request, cod_categoria):
+    categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
+    if request.method == "POST":
+        form = CategoriaForm(request.POST, instance=categoria)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoria atualizada com sucesso!")
+            return redirect('lista_categorias')
+    else:
+        form = CategoriaForm(instance=categoria)
+    return render(request, 'gpp/form_categoria.html', {'form': form})
+
+# 🔹 Excluir Categoria
+def excluir_categoria(request, cod_categoria):
+    categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
+    categoria.delete()
+    messages.success(request, "Categoria excluída com sucesso!")
+    return redirect('lista_categorias')
+
+# 🔹 Listar Especialidades
+def lista_especialidades(request):
+    especialidades = Especialidade.objects.all()
+    return render(request, 'gpp/lista_especialidades.html', {'especialidades': especialidades})
+
+# 🔹 Criar Especialidade
+def criar_especialidade(request):
+    if request.method == "POST":
+        form = EspecialidadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Especialidade criada com sucesso!")
+            return redirect('lista_especialidades')
+    else:
+        form = EspecialidadeForm()
+    return render(request, 'gpp/form_especialidade.html', {'form': form})
+
+
+# 🔹 Editar Especialidade
+def editar_especialidade(request, cod_especialidade):
+    especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
+    if request.method == "POST":
+        form = EspecialidadeForm(request.POST, instance=especialidade)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Especialidade atualizada com sucesso!")
+            return redirect('lista_especialidades')
+    else:
+        form = EspecialidadeForm(instance=especialidade)
+    return render(request, 'gpp/form_especialidade.html', {'form': form})
+
+# 🔹 Excluir Especialidade
+def excluir_especialidade(request, cod_especialidade):
+    especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
+    especialidade.delete()
+    messages.success(request, "Especialidade excluída com sucesso!")
+    return redirect('lista_especialidades')
+
+
+# 🔹 Listar Ciclos de Manutenção
+def lista_ciclos(request):
+    ciclos = CicloPadrao.objects.all()
+    return render(request, 'gpp/lista_ciclos.html', {'ciclos': ciclos})
+
+# 🔹 Criar Ciclo de Manutenção
+def criar_ciclo(request):
+    if request.method == "POST":
+        form = CicloPadraoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Ciclo de manutenção criado com sucesso!")
+            return redirect('lista_ciclos')
+    else:
+        form = CicloPadraoForm()
+    return render(request, 'gpp/form_ciclo.html', {'form': form})
+
+# 🔹 Editar Ciclo de Manutenção
+def editar_ciclo(request, cod_ciclo):
+    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=cod_ciclo)
+    if request.method == "POST":
+        form = CicloPadraoForm(request.POST, instance=ciclo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Ciclo atualizado com sucesso!")
+            return redirect('lista_ciclos')
+    else:
+        form = CicloPadraoForm(instance=ciclo)
+    return render(request, 'gpp/form_ciclo.html', {'form': form})
+
+# 🔹 Excluir Ciclo de Manutenção
+def excluir_ciclo(request, cod_ciclo):
+    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=cod_ciclo)
+    ciclo.delete()
+    messages.success(request, "Ciclo excluído com sucesso!")
+    return redirect('lista_ciclos')

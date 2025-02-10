@@ -4,6 +4,11 @@ from .models import CustomUser
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from .validators import validar_cnpj_existente
+from .models import Categoria, CategoriaLang, Especialidade, MatrizPadraoAtividade, CicloPadrao, Criticidade, ChaveModelo
+
+
+
+
 
 class CustomUserCreationForm(UserCreationForm):
     email=forms.EmailField(required=True)
@@ -122,3 +127,79 @@ class CustomUserUpdateForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+
+
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['cod_categoria', 'cod_categoria_pai', 'descricao']  # Adicionado 'descricao'
+        labels = {
+            'cod_categoria': 'Código da Categoria',
+            'cod_categoria_pai': 'Categoria Pai',
+            'descricao': 'Descrição',
+        }
+
+
+class CategoriaLangForm(forms.ModelForm):
+    class Meta:
+        model = CategoriaLang
+        fields = ['cod_categoria', 'cod_idioma', 'descricao']
+        labels = {
+            'cod_categoria': 'Código da Categoria',
+            'cod_idioma': 'Idioma',
+            'descricao': 'Descrição Traduzida'
+        }
+
+
+class EspecialidadeForm(forms.ModelForm):
+    class Meta:
+        model = Especialidade
+        fields = ['cod_especialidade', 'descricao']
+        labels = {
+            'cod_especialidade': 'Código da Especialidade',
+            'descricao': 'Descrição'
+        }
+
+
+class MatrizPadraoAtividadeForm(forms.ModelForm):
+    class Meta:
+        model = MatrizPadraoAtividade
+        fields = ['cod_categoria', 'cod_especialidade']
+        labels = {
+            'cod_categoria': 'Categoria',
+            'cod_especialidade': 'Especialidade'
+        }
+
+
+class CicloPadraoForm(forms.ModelForm):
+    class Meta:
+        model = CicloPadrao
+        fields = ['cod_ciclo', 'descricao', 'intervalo_dias']
+        labels = {
+            'cod_ciclo': 'Código do Ciclo',
+            'descricao': 'Descrição',
+            'intervalo_dias': 'Intervalo em Dias'
+        }
+
+
+class CriticidadeForm(forms.ModelForm):
+    class Meta:
+        model = Criticidade
+        fields = ['cod_criticidade', 'descricao', 'nivel']
+        labels = {
+            'cod_criticidade': 'Código da Criticidade',
+            'descricao': 'Descrição',
+            'nivel': 'Nível de Criticidade'
+        }
+
+
+class ChaveModeloForm(forms.ModelForm):
+    class Meta:
+        model = ChaveModelo
+        fields = ['cod_chave', 'descricao']
+        labels = {
+            'cod_chave': 'Código da Chave',
+            'descricao': 'Descrição'
+        }

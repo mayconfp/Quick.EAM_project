@@ -10,6 +10,7 @@ from datetime import timedelta
 import random
 import string
 
+
 def user_profile_picture_path(instance, filename):
     """
     Renomeia os arquivos de imagem para evitar nomes longos.
@@ -121,6 +122,81 @@ class PasswordResetCode(models.Model):
               f"(Expira em {expiration_time}, Agora: {current_time}) -> Expirado? {is_expired}")
 
         return is_expired
-    
 
-    
+
+class Categoria(models.Model):
+    cod_categoria = models.CharField(max_length=50, primary_key=True)
+    cod_categoria_pai = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name="subcategorias")
+    descricao = models.CharField(max_length=255, null=True, blank=True)  # Nova coluna
+
+    def __str__(self):
+        return f"{self.cod_categoria} - {self.descricao if self.descricao else ''}"
+
+
+
+class CategoriaLang(models.Model):
+    cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name="traducoes")
+    cod_idioma = models.CharField(max_length=2)  # Exemplo: "en", "pt", "es"
+    descricao = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ('cod_categoria', 'cod_idioma')
+
+    def __str__(self):
+        return f"{self.cod_categoria} ({self.cod_idioma})"
+
+class Especialidade(models.Model):
+    cod_especialidade = models.CharField(max_length=50, primary_key=True)
+    descricao = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.descricao
+
+
+class MatrizPadraoAtividade(models.Model):
+    cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    cod_especialidade = models.ForeignKey(Especialidade, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('cod_categoria', 'cod_especialidade')
+
+    def __str__(self):
+        return f"{self.cod_categoria} - {self.cod_especialidade}"
+
+
+class CicloPadrao(models.Model):
+    cod_ciclo = models.CharField(max_length=50, primary_key=True)
+    descricao = models.CharField(max_length=255)
+    intervalo_dias = models.IntegerField()
+
+    def __str__(self):
+        return self.descricao
+
+
+
+class CicloPadrao(models.Model):
+    cod_ciclo = models.CharField(max_length=50, primary_key=True)
+    descricao = models.CharField(max_length=255)
+    intervalo_dias = models.IntegerField()
+
+    def __str__(self):
+        return self.descricao
+
+
+
+class Criticidade(models.Model):
+    cod_criticidade = models.CharField(max_length=50, primary_key=True)
+    descricao = models.CharField(max_length=255)
+    nivel = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.descricao} (Nível {self.nivel})"
+
+
+class ChaveModelo(models.Model):
+    cod_chave = models.CharField(max_length=50, primary_key=True)
+    descricao = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.descricao
+
