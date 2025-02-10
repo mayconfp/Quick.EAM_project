@@ -1,64 +1,82 @@
-
-function scrollToBottom() {
-    const chatHistory = document.getElementById("chatHistory");
-    setTimeout(() => {
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-    }, 100); // Pequeno atraso para renderização
-}
-
 document.addEventListener("DOMContentLoaded", function () {
-    scrollToBottom(); // Garante que rola ao final ao carregar
-});
+    console.log("✅ JS carregado!");
 
-window.addEventListener("resize", () => {
-    scrollToBottom(); // Ajusta ao redimensionar
-});
+    // 🔥 SIDEBAR ESQUERDA
+    const openBtn = document.getElementById("open_btn");
+    const sidebar = document.getElementById("sidebar");
 
+    if (openBtn && sidebar) {
+        openBtn.addEventListener("click", function (event) {
+            console.log("🔹 Abrindo/fechando sidebar esquerda!");
+            sidebar.classList.toggle("open_sidebar");
+            event.stopPropagation();
+        });
 
-document.querySelectorAll('.message_user, .message_bot').forEach(function (message) {
-    message.style.maxWidth = '70%'; // Limita a largura máxima
-    message.style.wordWrap = 'break-word'; // Quebra palavras longas
-    message.style.whiteSpace = 'normal'; // Permite quebras de linha
-    message.style.overflowWrap = 'break-word'; // Compatibilidade adicional
-});
-
-const messageArea = document.getElementById("message_area");
-const submitButton = document.getElementById("submitbutton");
-const chatContainer = document.getElementById("chatHistory");
-
-
-
-
-messageArea.addEventListener("input", function () {
-    this.style.height = "auto"; // Reseta a altura
-    if (this.scrollHeight <= 100) {
-        this.style.height = this.scrollHeight + "px"; // Ajusta para o conteúdo
+        document.addEventListener("click", function (event) {
+            if (!sidebar.contains(event.target) && event.target !== openBtn) {
+                sidebar.classList.remove("open_sidebar");
+            }
+        });
     } else {
-        this.style.height = "100px"; // Limita a altura máxima
+        console.warn("❌ Sidebar ESQUERDA ou botão não encontrado.");
     }
 
-    // Rola o chat para o final
+    // 🔥 SIDEBAR DIREITA
+    const openRightBtn = document.getElementById("openright_btn");
+    const sidebar2 = document.getElementById("sidebar2");
+
+    if (openRightBtn && sidebar2) {
+        openRightBtn.addEventListener("click", function (event) {
+            console.log("🔹 Abrindo/fechando sidebar direita!");
+            sidebar2.classList.toggle("open_sidebar");
+            event.stopPropagation();
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!sidebar2.contains(event.target) && event.target !== openRightBtn) {
+                sidebar2.classList.remove("open_sidebar");
+            }
+        });
+    } else {
+        console.warn("❌ Sidebar DIREITA ou botão não encontrado.");
+    }
+
+    // 🔥 AJUSTE DO SCROLL NO CHAT
+    function scrollToBottom() {
+        const chatHistory = document.getElementById("chatHistory");
+        if (chatHistory) {
+            setTimeout(() => {
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }, 100);
+        }
+    }
+
     scrollToBottom();
-});
 
-messageArea.addEventListener("keydown",function sendMessage(event){
-    if (event.key === "Enter" && !event.shiftKey){
-        event.preventDefault();
-        submitButton.click();
-    }
-});
-
-const newChatBtn = document.getElementById("newChatBtn");
-if (newChatBtn) {
-    newChatBtn.addEventListener("click", function () {
-        window.location.href = "/chat/?nova_conversa=true";
+    window.addEventListener("resize", () => {
+        scrollToBottom();
     });
-}
 
-const toggleHistory = document.getElementById("menuToggle");
-const mobileHistory = document.getElementById("mobileHistory");
+    // 🔥 AJUSTE AUTOMÁTICO DO TEXTAREA NO CHAT
+    const messageArea = document.getElementById("message_area");
+    const submitButton = document.getElementById("submitbutton");
 
-// Alterna o menu móvel
-toggleHistory.addEventListener("click", () => {
-    mobileHistory.classList.toggle("hidden");
+    if (messageArea) {
+        messageArea.addEventListener("input", function () {
+            this.style.height = "auto";
+            this.style.height = this.scrollHeight + "px";
+            scrollToBottom();
+        });
+
+        messageArea.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                submitButton.click();
+            }
+        });
+    }
+
+    console.log("Elementos carregados corretamente:", {
+        openBtn, sidebar, openRightBtn, sidebar2, messageArea
+    });
 });

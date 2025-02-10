@@ -24,22 +24,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-document.addEventListener('DOMContentLoaded', function () {
-    const sidebar = document.getElementById('sidebar');
-    const openBtn = document.getElementById('open_btn');
 
-    if (openBtn && sidebar) {
-        openBtn.addEventListener('click', function () {
-            sidebar.classList.toggle('open_sidebar');
-        });
-
-        // Fechar a sidebar ao clicar fora dela
-        document.addEventListener('click', function (event) {
-            if (!sidebar.contains(event.target) && !openBtn.contains(event.target)) {
-                sidebar.classList.remove('open_sidebar');
-            }
-        });
-    } else {
-        console.error("Sidebar não encontrada.");
-    }
-});
