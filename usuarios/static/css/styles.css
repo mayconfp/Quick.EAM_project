@@ -5,6 +5,12 @@
     box-sizing: border-box;
 }
 
+.container {
+    flex: 1; /* Permite que o conteúdo principal ocupe todo o espaço disponível */
+    padding: 80px 20px;
+    text-align: center;
+}
+
 html, body {
     height: 100%;
     margin: 0;
@@ -21,18 +27,19 @@ body {
 
 
 
-.header {
+header {
+height: 60px;
+    width: 100%;
     position: fixed;
-    justify-content: space-between;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 60px;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 0 20px;
+    z-index: 1000;
+    background-color: #FFFFFF;
+    color: #2B2D42;
     display: flex;
     align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .menu-btn {
@@ -401,14 +408,6 @@ transform: translateX(0);
 }
 
 
-
-
-.logo {
-    position: relative; /* Remove a possibilidade de sobreposição */
-    width: auto; /* Mantém o tamanho natural */
-    height: auto; 
-    z-index: 5; /* Mantém a logo acima de outros elementos */
-}
 
 .logo a {
     display: inline-block;
