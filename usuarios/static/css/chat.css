@@ -44,13 +44,8 @@ height: 60px;
     padding: 0 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-.menu-btn .bar {
-    display: block;
-    width: 100%;
-    height: 4px;
-    background-color: white;
-    border-radius: 2px;
-    transition: all 0.3s ease;
+.chat-page .menu-btn {
+    display: none !important;
 }
 
 .history-msg {

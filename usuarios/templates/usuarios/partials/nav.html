@@ -26,11 +26,6 @@
             <li><a href="{% url 'chat' %}">Voltar para o Chat</a></li>
             <li><a href="{% url 'logout' %}">Logout</a></li>
             <li><a href="{% url 'home' %}">Voltar para Home</a></li>
-    
-        {% elif pagina_atual == 'chat' %}
-            <li><a href="{% url 'perfil' %}">Perfil</a></li>
-            <li><a href="{% url 'logout' %}">Logout</a></li>
-            <li><a href="{% url 'home' %}">Voltar para Home</a></li>
         
         {% elif pagina_atual == 'login' %}
         <li><a href="{% url 'register' %}">Cadastrar-se</a></li>
