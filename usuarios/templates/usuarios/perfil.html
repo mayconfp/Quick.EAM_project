@@ -41,8 +41,10 @@
 
         <div class="form-group">
             <label for="id_cnpj">CNPJ:</label>
-            <input type="text" name="cnpj" value="{{ user.cnpj }}" placeholder="CNPJ" maxlength="18" id="id_cnpj">
+            <input type="text" id="id_cnpj" class="form-control" value="{{ request.user.cnpj|default:'Não informado' }}" readonly>
         </div>
+
+
     
 
         <div class="form-group">
@@ -61,15 +63,32 @@
 
 <!-- Script para Atualizar Nome e E-mail Dinamicamente -->
 <script>
-    document.getElementById("profile-form").addEventListener("submit", function() {
-        let usernameInput = document.querySelector("input[name='username']").value;
-        let emailInput = document.querySelector("input[name='email']").value;
-        
-        // Atualiza os valores no frontend
-        document.getElementById("username-display").textContent = usernameInput;
-        document.getElementById("email-display").textContent = emailInput;
+    document.getElementById("profile-form").addEventListener("submit", function(event) {
+        event.preventDefault();  // Impede o envio padrão do formulário
+
+        let formData = new FormData(this);
+
+        fetch("{% url 'perfil' %}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("username-display").textContent = formData.get("username");
+                document.getElementById("email-display").textContent = formData.get("email");
+                alert("Perfil atualizado com sucesso!");
+            } else {
+                alert("Erro ao atualizar perfil: " + data.message);
+            }
+        })
+        .catch(error => console.error("Erro ao atualizar perfil:", error));
     });
 </script>
+
 
 
 
