@@ -39,6 +39,7 @@
             {{ form.email.label_tag }} {{ form.email }}
         </div>
 
+         <!-- Exibe apenas o cnpj caso possua um -->
         <div class="form-group">
             <label for="id_cnpj">CNPJ:</label>
             <input type="text" id="id_cnpj" class="form-control" value="{{ request.user.cnpj|default:'Não informado' }}" readonly>

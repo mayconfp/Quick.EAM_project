@@ -103,7 +103,7 @@ class CustomUserUpdateForm(forms.ModelForm):
                 raise ValidationError("Este e-mail já está em uso.")
         return email
 
-
+#att
 
 class CategoriaForm(forms.ModelForm):
     class Meta:

@@ -43,6 +43,7 @@ PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
 logger = logging.getLogger(__name__)  # Cria um logger para este módulo
 
+#mudança na função de perfil
 @login_required
 def perfil(request):
     """Exibe e permite atualizar os dados do usuário logado."""

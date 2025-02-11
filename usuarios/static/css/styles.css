@@ -5,6 +5,8 @@
     box-sizing: border-box;
 }
 
+/* Container da home */
+
 .container {
     flex: 1; /* Permite que o conteúdo principal ocupe todo o espaço disponível */
     padding: 80px 20px;
