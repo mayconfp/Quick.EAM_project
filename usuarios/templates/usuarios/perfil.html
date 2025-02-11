@@ -10,6 +10,7 @@
     
 
     <div class="profile-image-container">
+        <p><strong>Imagem de Perfil:</strong></p>
         {% if request.user.profile_picture %}
             <img src="{{ request.user.profile_picture.url }}" alt="Imagem de Perfil" class="profile-image">
         {% else %}
@@ -20,10 +21,9 @@
     <!-- Exibir Nome de Usuário, E-mail e Imagem de Perfil -->
     <div class="user-info">
         <p><strong>Nome de Usuário:</strong> <span id="username-display">{{ request.user.username }}</span></p>
-
         <p><strong>E-mail:</strong> <span id="email-display">{{ request.user.email }}</span></p>
 
-        <p><strong>Imagem de Perfil:</strong></p>
+        
         
     </div>
     <!-- Exibir mensagens de feedback -->

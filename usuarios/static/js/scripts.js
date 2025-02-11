@@ -1,27 +1,39 @@
+
 document.addEventListener("DOMContentLoaded", function () {
-    let menuToggle = document.getElementById("menuToggle");
-    let menu = document.getElementById("menu");
+    const navbar = document.getElementById("navbar");
+    const logo = document.querySelector(".logo img");
+    const navLinks = document.querySelectorAll(".nav-links a");
 
-    if (menuToggle && menu) {  
-        // Alterna a classe 'hidden' ao clicar no botão do menu
-        menuToggle.addEventListener("click", function (event) {
-            event.stopPropagation(); // Evita que o clique no botão feche o menu imediatamente
-            menu.classList.toggle("hidden");
-        });
+    let lastScrollY = window.scrollY;
 
-        // Fecha o menu se clicar fora dele
-        document.addEventListener("click", function (event) {
-            let isClickInside = menu.contains(event.target) || menuToggle.contains(event.target);
-            if (!isClickInside) {
-                menu.classList.add("hidden"); // Fecha o menu
-            }
-        });
-    } else {
-        console.error("Erro: Elementos da navbar não encontrados!");
-    }
+    window.addEventListener("scroll", function () {
+        if (window.scrollY > lastScrollY) {
+            // 🔽 Descendo: Adiciona efeito de redução
+            navbar.classList.add("scrolled");
+            logo.classList.add("small-logo");
+            navLinks.forEach(link => link.classList.add("hide-text"));
+        } else {
+            // 🔼 Subindo: Volta ao estado original
+            navbar.classList.remove("scrolled");
+            logo.classList.remove("small-logo");
+            navLinks.forEach(link => link.classList.remove("hide-text"));
+        }
+
+        lastScrollY = window.scrollY;
+    });
 });
 
+function togglePassword(inputId, iconId) {
+    let passwordInput = document.getElementById(inputId);
+    let toggleIcon = document.getElementById(iconId);
 
-
-
-
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleIcon.classList.remove("fa-eye");
+        toggleIcon.classList.add("fa-eye-slash");
+    } else {
+        passwordInput.type = "password";
+        toggleIcon.classList.remove("fa-eye-slash");
+        toggleIcon.classList.add("fa-eye");
+    }
+}

@@ -9,7 +9,7 @@ body{
 
 .login{
    max-width: 300px;
-    margin: 50px auto; /* Centraliza horizontalmente */
+   margin: 120px auto; /* Centraliza horizontalmente */
     padding: 20px 26px;
     background-color: #fff; /* Fundo branco para contraste */
     border: 1px solid #ddd;
@@ -19,6 +19,29 @@ body{
 
 }
 
+.password-container {
+    display: grid;
+    align-items: center;
+    width: 100%;
+    gap: 10px; /* Adiciona um espaço entre o input e o ícone */
+}
+
+.password-container input {
+    flex: 1; /* Faz o campo ocupar o espaço disponível */
+}
+
+.toggle-password {
+    cursor: pointer;
+    color: #333;
+    font-size: 18px;
+    margin-left: 5px; /* Dá um pequeno espaçamento entre o input e o ícone */
+}
+
+
+.footer{
+    position: fixed;
+    bottom: 0;
+}
 .login .label{
     font-weight: bold;
     display: block;

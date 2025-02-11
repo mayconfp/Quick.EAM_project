@@ -1,12 +1,14 @@
-
-
+{%load static%}
 <footer class="footer">
-    <div class="footer-content">
-        <p>&copy; 2024 QuickEAM. Todos os direitos reservados.</p>
-        <ul class="footer-links">
-            <li><a href="#">Termos de Uso</a></li>
-            <li><a href="#">Política de Privacidade</a></li>
-            <li><a href="#">Contato</a></li>
-        </ul>
+    <div class="footer-container">
+        <p>Copyright © 2024 - CNPJ 29.056.040/0001-37 - Todos os direitos reservados à 
+            <a href="https://www.quickeam.com" target="_blank">QuickEAM</a>.
+        </p>
+        <div class="social-icons">
+            <a href="https://www.facebook.com/people/QuickEAM/61562308384485/"><img src={% static 'images/facebook.png '%} alt="Facebook"></a>
+            <a href="https://www.instagram.com/quickeam_/"><img src={% static 'images/instagram.png '%} alt="Instagram"></a>
+            <a href="https://www.linkedin.com/company/quickeam"><img src={% static 'images/linkedin.png '%} alt="LinkedIn"></a>
+            <a href="https://www.youtube.com/@QuickEAM_BR"><img src="{% static 'images/youtube.png '%}" alt="YouTube"></a>
+        </div>
     </div>
 </footer>
