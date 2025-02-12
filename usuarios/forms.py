@@ -3,48 +3,50 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
+from .validators import validar_cnpj_existente
+from .models import Categoria, CategoriaLang, Especialidade, MatrizPadraoAtividade, CicloPadrao, Criticidade, ChaveModelo
+
+
 
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-    
+    email=forms.EmailField(required=True)
+
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'cnpj', 'password1', 'password2', 'profile_picture']
 
-    def save(self, commit=True):
-        # Chama a implementação padrão do método save
-        user = super().save(commit=False)
-
-        # Obtém o CNPJ do formulário
-        cnpj = self.cleaned_data.get('cnpj')
-
-        # Se o CNPJ for fornecido, salva no campo correto do modelo
-        if cnpj:
-            user.cnpj = cnpj
-
-        if commit:
-            user.save()
-        return user
-
     def clean_cnpj(self):
+        """Valida e normaliza o campo CNPJ."""
         cnpj = self.cleaned_data.get('cnpj')
         if cnpj:
+            # Normaliza o CNPJ
             cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
+            # Valida com API e verifica unicidade
+            validar_cnpj_existente(cnpj)
             if CustomUser.objects.filter(cnpj=cnpj).exists():
                 raise ValidationError("Este CNPJ já está cadastrado.")
         return cnpj
 
 
     def clean(self):
-        """Validações customizadas para o formulário."""
+        """Validações gerais."""
         cleaned_data = super().clean()
         email = cleaned_data.get("email")
         cnpj = cleaned_data.get("cnpj")
 
         if not email and not cnpj:
-            raise forms.ValidationError("Você deve fornecer um e-mail ou CNPJ")
-
+            raise forms.ValidationError("Você deve fornecer um e-mail ou CNPJ.")
         return cleaned_data
+
+    def save(self, commit=True):
+        """Salva os dados normalizados."""
+        user = super().save(commit=False)
+        if self.cleaned_data.get('cnpj'):
+            user.cnpj = self.cleaned_data.get('cnpj').strip()
+        if commit:
+            user.save()
+        return user
+
 
 class CustomLoginForm(AuthenticationForm):
     username = forms.CharField(
@@ -55,6 +57,12 @@ class CustomLoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}),
         label="Senha"
     )
+
+    def clean_username(self):
+        username_or_cnpj = self.cleaned_data.get('username')
+        if username_or_cnpj:
+            username_or_cnpj = username_or_cnpj.strip()  # Remove espaços extras
+        return username_or_cnpj
 
 
 
@@ -69,70 +77,103 @@ class CustomUserUpdateForm(forms.ModelForm):
         required=False,
         widget=forms.EmailInput(attrs={'placeholder': 'E-mail'}),
     )
-    cnpj = forms.CharField(
-        max_length=18,
-        required=False,
-        widget=forms.TextInput(attrs={'placeholder': 'CNPJ (Opcional)'}),
-    )
-
     profile_picture = forms.ImageField(
-        required=False,  # Permite que o usuário não envie uma imagem
+        required=False,
         widget=forms.ClearableFileInput(attrs={'class': 'custom-file-input'}),
-        label="Foto de Perfil"
+        label="Foto do Perfil",
     )
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'cnpj', 'profile_picture']  # Certifique-se de incluir 'profile_picture' aqui
-
-    def clean_cnpj(self):
-        """Valida e normaliza o campo CNPJ."""
-        cnpj = self.cleaned_data.get('cnpj')
-        if cnpj:
-            # Remove formatações como ., / e -
-            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
-            # Verifica se o CNPJ já está em uso, exceto para o próprio usuário
-            if CustomUser.objects.filter(cnpj=cnpj).exclude(pk=self.instance.pk).exists():
-                raise forms.ValidationError("Este CNPJ já está em uso.")
-        return cnpj
+        fields = ['username', 'email', 'profile_picture']  # 🔥 Removemos 'cnpj'
 
     def clean_username(self):
-        """Valida se o nome de usuário é único, exceto para o próprio usuário."""
+        """Valida a unicidade do nome de usuário apenas se ele foi alterado."""
         username = self.cleaned_data.get('username')
-        if CustomUser.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
-            raise forms.ValidationError("Este nome de usuário já está em uso.")
+        if username and username != self.instance.username:
+            if CustomUser.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+                raise ValidationError("Este nome de usuário já está em uso.")
         return username
 
-    def save(self, commit=True):
-        """Sobrescreve o método save para lidar com o arquivo de imagem."""
-        user = super().save(commit=False)  # Salva os dados principais do formulário, mas não no banco ainda
-        if 'profile_picture' in self.files:  # Verifica se há uma imagem no POST
-            user.profile_picture = self.files['profile_picture']  # Atribui o arquivo enviado ao campo do modelo
-        if commit:
-            user.save()  # Salva no banco de dados
-        return user
+    def clean_email(self):
+        """Valida a unicidade do e-mail apenas se ele foi alterado."""
+        email = self.cleaned_data.get('email')
+        if email and email != self.instance.email:
+            if CustomUser.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+                raise ValidationError("Este e-mail já está em uso.")
+        return email
 
+#att
 
-#
-
+class CategoriaForm(forms.ModelForm):
     class Meta:
-        model = CustomUser
-        fields = ['username', 'email', 'cnpj']
+        model = Categoria
+        fields = ['cod_categoria', 'cod_categoria_pai', 'descricao']  # Adicionado 'descricao'
+        labels = {
+            'cod_categoria': 'Código da Categoria',
+            'cod_categoria_pai': 'Categoria Pai',
+            'descricao': 'Descrição',
+        }
 
-    def clean_cnpj(self):
-        """Valida e normaliza o campo CNPJ."""
-        cnpj = self.cleaned_data.get('cnpj')
-        if cnpj:
-            # Remove formatações como ., / e -
-            cnpj = cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
-            # Verifica se o CNPJ já está em uso, exceto para o próprio usuário
-            if CustomUser.objects.filter(cnpj=cnpj).exclude(pk=self.instance.pk).exists():
-                raise forms.ValidationError("Este CNPJ já está em uso.")
-        return cnpj
 
-    def clean_username(self):
-        """Valida se o nome de usuário é único, exceto para o próprio usuário."""
-        username = self.cleaned_data.get('username')
-        if CustomUser.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
-            raise forms.ValidationError("Este nome de usuário já está em uso.")
-        return username
+class CategoriaLangForm(forms.ModelForm):
+    class Meta:
+        model = CategoriaLang
+        fields = ['cod_categoria', 'cod_idioma', 'descricao']
+        labels = {
+            'cod_categoria': 'Código da Categoria',
+            'cod_idioma': 'Idioma',
+            'descricao': 'Descrição Traduzida'
+        }
+
+
+class EspecialidadeForm(forms.ModelForm):
+    class Meta:
+        model = Especialidade
+        fields = ['cod_especialidade', 'descricao']
+        labels = {
+            'cod_especialidade': 'Código da Especialidade',
+            'descricao': 'Descrição'
+        }
+
+
+class MatrizPadraoAtividadeForm(forms.ModelForm):
+    class Meta:
+        model = MatrizPadraoAtividade
+        fields = ['cod_categoria', 'cod_especialidade']
+        labels = {
+            'cod_categoria': 'Categoria',
+            'cod_especialidade': 'Especialidade'
+        }
+
+
+class CicloPadraoForm(forms.ModelForm):
+    class Meta:
+        model = CicloPadrao
+        fields = ['cod_ciclo', 'descricao', 'intervalo_dias']
+        labels = {
+            'cod_ciclo': 'Código do Ciclo',
+            'descricao': 'Descrição',
+            'intervalo_dias': 'Intervalo em Dias'
+        }
+
+
+class CriticidadeForm(forms.ModelForm):
+    class Meta:
+        model = Criticidade
+        fields = ['cod_criticidade', 'descricao', 'nivel']
+        labels = {
+            'cod_criticidade': 'Código da Criticidade',
+            'descricao': 'Descrição',
+            'nivel': 'Nível de Criticidade'
+        }
+
+
+class ChaveModeloForm(forms.ModelForm):
+    class Meta:
+        model = ChaveModelo
+        fields = ['cod_chave', 'descricao']
+        labels = {
+            'cod_chave': 'Código da Chave',
+            'descricao': 'Descrição'
+        }

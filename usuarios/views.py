@@ -1,31 +1,111 @@
-from .models import ChatHistory , ChatSession
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout , authenticate
-from .forms import CustomUserCreationForm, CustomLoginForm
-from .services import processar_comunicacao_multi_ia
-from django.shortcuts import get_object_or_404
-from usuarios.provedores import processar_comunicacao_multi_ia, gerar_contexto_completo
+from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
+from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm
+from .models import CustomUser, ChatSession, ChatHistory
+from .provedores import gerar_contexto_completo, gerar_resposta, processar_comunicacao_multi_ia
+from .provedores import formatar_texto_para_html
+from django.utils.translation import activate
 from django.utils.safestring import mark_safe
-from usuarios.provedores import formatar_texto_para_html
+import requests
+import logging
 from django.contrib.auth import get_user_model
 User = get_user_model() 
+from django.urls import reverse
+from .forms import CustomUserUpdateForm
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib import messages
+from django.conf import settings
 from django.http import JsonResponse
 from .forms import CustomUserUpdateForm
-from django.core.mail import send_mail
 from django.contrib import messages
 from django.conf import settings
 from .validators import SenhaPersonalizada
 from .models import PasswordResetCode
 from django.urls import reverse
 from django.core.exceptions import ValidationError
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Categoria, Especialidade, CicloPadrao
+from .forms import CategoriaForm, EspecialidadeForm, CicloPadraoForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import MatrizPadraoAtividade, Categoria, Especialidade
+from .forms import MatrizPadraoAtividadeForm
+
+
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
+logger = logging.getLogger(__name__)  # Cria um logger para este módulo
+
+#mudança na função de perfil
+@login_required
+def perfil(request):
+    """Exibe e permite atualizar os dados do usuário logado."""
+    if request.method == 'POST':
+        form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Seu perfil foi atualizado com sucesso!")
+            return redirect('perfil')
+        else:
+            messages.error(request, "Erro ao atualizar o perfil. Verifique os dados.")
+
+    else:
+        form = CustomUserUpdateForm(instance=request.user)
+
+    return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
+
+#
+
+def definir_idioma(request):
+    """Define o idioma com base na localização enviada pelo cliente."""
+    if request.method == 'POST':
+        try:
+            import json
+            dados = json.loads(request.body)
+            latitude = dados.get('latitude')
+            longitude = dados.get('longitude')
+
+            # Use uma API de geocodificação para determinar o país
+            url = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={latitude}&longitude={longitude}&localityLanguage=en"
+            response = requests.get(url)
+            dados_localizacao = response.json()
+
+            pais = dados_localizacao.get('countryCode', 'EN')
+
+            # Mapeia o país para o idioma
+            mapa_idiomas = {
+                'BR': 'pt-br',
+                'US': 'en',
+                'ES': 'es',
+            }
+
+            idioma = mapa_idiomas.get(pais, 'en')
+            activate(idioma)
+            request.session['django_language'] = idioma
+
+            return JsonResponse({'status': 'Idioma definido', 'idioma': idioma})
+        except Exception as e:
+            return JsonResponse({'status': 'Erro', 'mensagem': str(e)}, status=400)
+    else:
+        return JsonResponse({'status': 'Método não permitido'}, status=405)
+
+
 
 def home(request):
-    """Página inicial com informações sobre a QuickEAM."""
     return render(request, 'usuarios/home.html', {'pagina_atual': 'home'})
+
+
 
 
 def register(request):
@@ -34,17 +114,18 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Cadastro realizado com sucesso! Agora você pode fazer login.')
             return redirect('login')
         else:
-            print(form.errors)
+            messages.error(request, "Erro ao realizar o cadastro. Verifique os dados.")
     else:
         form = CustomUserCreationForm()
-        
     return render(request, 'usuarios/register.html', {'form': form, 'pagina_atual': 'register'})
 
 
+
+
 def user_login(request):
-    errormessage = None
     if request.method == 'POST':
         form = CustomLoginForm(data=request.POST)
         if form.is_valid():
@@ -59,7 +140,18 @@ def user_login(request):
                 messages.error(request, "Usuário ou CNPJ e senha inválidos.")
     else:
         form = CustomLoginForm()
-    return render(request, 'usuarios/login.html', {'form': form, 'errormessage': errormessage, 'pagina_atual': 'login'})
+
+    return render(request, 'usuarios/login.html', {'form': form})
+
+
+
+def logout_view(request):
+    """Efetua logout do usuário e redireciona para a página inicial."""
+    logout(request)
+    messages.info(request, "Você saiu da sua conta.")
+    return redirect('home')
+
+
 
 @login_required
 def chat(request):
@@ -67,32 +159,32 @@ def chat(request):
     session_id = request.GET.get('session')
     session = None
 
-    # Carrega ou cria uma nova sessão
+    # Carrega a sessão atual se o session_id for fornecido
     if session_id:
         session = get_object_or_404(ChatSession, id=session_id, user=request.user)
     else:
+        # Busca a última sessão criada para o usuário
         session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
 
     if not session:
-        return redirect('nova_conversa')
+        return redirect('nova_conversa')  # Redireciona para criar uma nova conversa
 
     # Processa a mensagem do usuário
     if request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
         if user_message:
             if not session.title or session.title == "Nova Conversa":
-                session.title = user_message[:30]
+                session.title = user_message[:35]  # Define o título da sessão com base na primeira mensagem
                 session.save()
 
-            # 🔄 Gera o contexto completo com base no histórico
+            # Gera o contexto completo com base no histórico
             historico_completo = ChatHistory.objects.filter(session=session).order_by('timestamp')
-
             contexto_para_openai = gerar_contexto_completo(historico_completo)
 
-            # 🧠 Chama a função que processa a mensagem com múltiplas IAs
+            # Processa a mensagem com múltiplas IAs
             ai_response = processar_comunicacao_multi_ia(user_message, contexto_para_openai)
 
-            # 🔄 Formata a resposta para HTML antes de salvar e exibir
+            # Formata a resposta para HTML antes de salvar e exibir
             ai_response_formatado = formatar_texto_para_html(ai_response)
 
             # Salva a mensagem e a resposta no histórico
@@ -107,11 +199,11 @@ def chat(request):
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
     sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
 
-    # Marcar como seguro para renderizar no template
+    # Formata o histórico para renderização segura
     chat_history = [
         {
             'question': mensagem.question,
-            'answer': mark_safe(mensagem.answer),  # Permite renderizar HTML seguro
+            'answer': mark_safe(mensagem.answer),
         }
         for mensagem in chat_history
     ]
@@ -124,24 +216,20 @@ def chat(request):
         'pagina_atual': 'chat'
     })
 
+
+
 @login_required
 def nova_conversa(request):
-    if request.method == 'POST':
-        # Cria uma nova sessão de conversa
-        new_session = ChatSession.objects.create(user=request.user, title="Nova Conversa")
-        return redirect(f"/chat/?session={new_session.id}")
+    
+    ultima_sessao = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
+    if ultima_sessao and not ChatHistory.objects.filter(session=ultima_sessao).exists():
+        # Redireciona para a sessão existente se estiver "vazia"
+        return redirect(f"/chat/?session={ultima_sessao.id}")
 
-    # Garante que a criação da sessão funcione corretamente
-    if not ChatSession.objects.filter(user=request.user).exists():
-        new_session = ChatSession.objects.create(user=request.user, title="Nova Conversa")
-        return redirect(f"/chat/?session={new_session.id}")
+    
+    new_session = ChatSession.objects.create(user=request.user, title="Nova Conversa")
+    return redirect(f"/chat/?session={new_session.id}")
 
-    # Se houver uma sessão existente, redireciona para a última
-    last_session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
-    if last_session:
-        return redirect(f"/chat/?session={last_session.id}")
-
-    return redirect('chat')
 
 
 @login_required
@@ -151,28 +239,31 @@ def deletar_conversa(request, session_id):
     return redirect('chat')
 
 
-@login_required
-def perfil(request):
-    """Exibe e permite atualizar os dados do usuário logado com mensagens de feedback"""
-    
-    if request.method == 'POST':
-        form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user)  # Adicionamos request.FILES
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Seu perfil foi atualizado com sucesso!")
-            return redirect('perfil')
-    else:
-        form = CustomUserUpdateForm(instance=request.user)
 
-    return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
+
+@login_required
+def excluir_chat(request, session_id):
+    """Exclui uma conversa específica."""
+    try:
+        chat_session = ChatSession.objects.get(id=session_id, user=request.user)
+        chat_session.delete()
+    except ChatSession.DoesNotExist:
+        messages.error(request, "Conversa não encontrada ou não pertence a você.")
+    return redirect('chat')
+
+
+
 
 
 @login_required
 def deletar_conta(request):
-    """Exclui a conta do usuário logado"""
+    """Exclui a conta do usuário logado."""
     user = request.user
     user.delete()
-    return redirect('home') # Redireciona para a página inicial após excluir
+    messages.success(request, "Sua conta foi excluída com sucesso.")
+    return redirect('home')
+
+
 
 
 def password_reset_request(request):
@@ -257,11 +348,10 @@ def password_reset_confirm(request):
             return JsonResponse({"success": False, "message": "As senhas não coincidem."})
 
         try:
-            SenhaPersonalizada().validate(new_password)
+            SenhaPersonalizada().validate(new_password)  # ✅ Corrigido!
         except ValidationError as e:
-            return JsonResponse({"success": False, "message": "<br>".join(e.messages)})  # 🔥 Exibe todas as mensagens separadas por <br>
+            return JsonResponse({"success": False, "message": "Senha inválida: " + " ".join(e.messages)})
 
-        # 🔥 Se passou pela validação, salvar a senha
         user.set_password(new_password)
         user.save()
         code_instance.delete()
@@ -275,9 +365,155 @@ def password_reset_confirm(request):
     return JsonResponse({"success": False, "message": "Requisição inválida."})
 
 
+# 🔹 Listar Categorias
+def lista_categorias(request):
+    categorias = Categoria.objects.all()
+    return render(request, 'gpp/lista_categorias.html', {'categorias': categorias})
+
+# 🔹 Criar Categoria
+def criar_categoria(request):
+    if request.method == "POST":
+        form = CategoriaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoria criada com sucesso!")
+            return redirect('lista_categorias')
+    else:
+        form = CategoriaForm()
+    return render(request, 'gpp/form_categoria.html', {'form': form})
+
+# 🔹 Editar Categoria
+def editar_categoria(request, cod_categoria):
+    categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
+    if request.method == "POST":
+        form = CategoriaForm(request.POST, instance=categoria)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoria atualizada com sucesso!")
+            return redirect('lista_categorias')
+    else:
+        form = CategoriaForm(instance=categoria)
+    return render(request, 'gpp/form_categoria.html', {'form': form})
+
+# 🔹 Excluir Categoria
+def excluir_categoria(request, cod_categoria):
+    categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
+    categoria.delete()
+    messages.success(request, "Categoria excluída com sucesso!")
+    return redirect('lista_categorias')
+
+# 🔹 Listar Especialidades
+def lista_especialidades(request):
+    especialidades = Especialidade.objects.all()
+    return render(request, 'gpp/lista_especialidades.html', {'especialidades': especialidades})
+
+# 🔹 Criar Especialidade
+def criar_especialidade(request):
+    if request.method == "POST":
+        form = EspecialidadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Especialidade criada com sucesso!")
+            return redirect('lista_especialidades')
+    else:
+        form = EspecialidadeForm()
+    return render(request, 'gpp/form_especialidade.html', {'form': form})
 
 
-def logout_view(request):
-    """Efetuar logout."""
-    logout(request)
-    return redirect('home')
+# 🔹 Editar Especialidade
+def editar_especialidade(request, cod_especialidade):
+    especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
+    if request.method == "POST":
+        form = EspecialidadeForm(request.POST, instance=especialidade)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Especialidade atualizada com sucesso!")
+            return redirect('lista_especialidades')
+    else:
+        form = EspecialidadeForm(instance=especialidade)
+    return render(request, 'gpp/form_especialidade.html', {'form': form})
+
+# 🔹 Excluir Especialidade
+def excluir_especialidade(request, cod_especialidade):
+    especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
+    especialidade.delete()
+    messages.success(request, "Especialidade excluída com sucesso!")
+    return redirect('lista_especialidades')
+
+
+# 🔹 Listar Ciclos de Manutenção
+def lista_ciclos(request):
+    ciclos = CicloPadrao.objects.all()
+    return render(request, 'gpp/lista_ciclos.html', {'ciclos': ciclos})
+
+# 🔹 Criar Ciclo de Manutenção
+def criar_ciclo(request):
+    if request.method == "POST":
+        form = CicloPadraoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Ciclo de manutenção criado com sucesso!")
+            return redirect('lista_ciclos')
+    else:
+        form = CicloPadraoForm()
+    return render(request, 'gpp/form_ciclo.html', {'form': form})
+
+# 🔹 Editar Ciclo de Manutenção
+def editar_ciclo(request, cod_ciclo):
+    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=cod_ciclo)
+    if request.method == "POST":
+        form = CicloPadraoForm(request.POST, instance=ciclo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Ciclo atualizado com sucesso!")
+            return redirect('lista_ciclos')
+    else:
+        form = CicloPadraoForm(instance=ciclo)
+    return render(request, 'gpp/form_ciclo.html', {'form': form})
+
+# 🔹 Excluir Ciclo de Manutenção
+def excluir_ciclo(request, cod_ciclo):
+    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=cod_ciclo)
+    ciclo.delete()
+    messages.success(request, "Ciclo excluído com sucesso!")
+    return redirect('lista_ciclos')
+
+
+
+
+@login_required
+def lista_matriz_padrao(request):
+    matriz = MatrizPadraoAtividade.objects.all()
+    return render(request, 'gpp/lista_matriz_padrao.html', {'matriz': matriz})
+
+@login_required
+def criar_matriz_padrao(request):
+    if request.method == "POST":
+        form = MatrizPadraoAtividadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Relação criada com sucesso!")
+            return redirect('lista_matriz_padrao')
+    else:
+        form = MatrizPadraoAtividadeForm()
+    return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
+
+@login_required
+def editar_matriz_padrao(request, id):
+    matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
+    if request.method == "POST":
+        form = MatrizPadraoAtividadeForm(request.POST, instance=matriz)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Relação atualizada com sucesso!")
+            return redirect('lista_matriz_padrao')
+    else:
+        form = MatrizPadraoAtividadeForm(instance=matriz)
+    return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
+
+@login_required
+def excluir_matriz_padrao(request, id):
+    matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
+    matriz.delete()
+    messages.success(request, "Relação excluída com sucesso!")
+    return redirect('lista_matriz_padrao')

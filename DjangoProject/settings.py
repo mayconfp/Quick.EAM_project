@@ -7,7 +7,7 @@ from dotenv import load_dotenv, find_dotenv
 from django.utils.translation import gettext_lazy as gettext
 from django.contrib.messages import constants as messages
 
-# Carrega variáveis de ambiente do .env
+
 load_dotenv(find_dotenv())
 
 LANGUAGES = [
@@ -15,9 +15,13 @@ LANGUAGES = [
     ('pt-br', gettext('Portuguese')),
 ]
 
+
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+
 
 SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-secreta")
 
@@ -47,7 +51,7 @@ MIDDLEWARE = [
     'usuarios.middleware.LocalizacaoMiddleware',  # Seu middleware customizado
 ]
 
-DEFAULT_CHARSET = 'utf-8'
+
 
 
 ROOT_URLCONF = 'DjangoProject.urls'
@@ -108,11 +112,9 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "usuarios", "static"),]
 # Chaves de API
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 LLAMA_API_KEY = os.getenv("LLAMA_API_KEY")
+RECEITA_API_URL = os.getenv("RECEITA_API_URL", "https://receitaws.com.br/v1/cnpj/")
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -127,10 +129,18 @@ LOGGING = {
     },
 }
 
+#
+
 AUTHENTICATION_BACKENDS = [
     'usuarios.authentication_backends.UsernameOrCNPJBackend',  # Caminho correto para o backend
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"

@@ -1,0 +1,53 @@
+{%load static%}
+<div class="container mt-3">
+    <h3>Categorias</h3>
+    <button class="btn btn-primary btn-sm" onclick="openForm('categoria')">Nova Categoria</button>
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Categoria Pai</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for categoria in categorias %}
+            <tr>
+                <td>{{ categoria.cod_categoria }}</td>
+                <td>
+                    {% if categoria.cod_categoria_pai %}
+                        {{ categoria.cod_categoria_pai.cod_categoria }}
+                    {% else %}
+                        Nenhuma
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'editar_categoria' categoria.cod_categoria %}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{% url 'excluir_categoria' categoria.cod_categoria %}" class="btn btn-danger btn-sm">Excluir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center">Nenhuma categoria encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal de Formulário -->
+<div id="formCategoria" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeForm('categoria')">&times;</span>
+        {% include 'gpp/form_categoria.html' %}
+    </div>
+</div>
+
+<script>
+function openForm(formType) {
+    document.getElementById('form' + formType.charAt(0).toUpperCase() + formType.slice(1)).style.display = 'block';
+}
+function closeForm(formType) {
+    document.getElementById('form' + formType.charAt(0).toUpperCase() + formType.slice(1)).style.display = 'none';
+}
+</script>

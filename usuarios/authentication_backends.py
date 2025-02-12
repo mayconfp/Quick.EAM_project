@@ -13,6 +13,7 @@ class UsernameOrCNPJBackend(BaseBackend):
             logger.warning("Username ou senha não fornecidos.")
             return None
 
+
         try:
             # Tenta buscar o usuário pelo username
             user = UserModel.objects.get(username=username)

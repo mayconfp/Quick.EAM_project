@@ -1,5 +1,42 @@
 from django.core.exceptions import ValidationError
 import re
+import requests
+from django.core.exceptions import ValidationError
+from django.conf import settings
+
+import logging
+
+def validar_cnpj_existente(cnpj):
+    """Valida o CNPJ usando a API configurada."""
+    if not cnpj:
+        return
+
+    # Normaliza o CNPJ
+    cnpj = re.sub(r'\D', '', cnpj)
+    url = f"{settings.RECEITA_API_URL}{cnpj}"
+    logging.info(f"Validando CNPJ: {cnpj} com URL {url}")
+
+    try:
+        response = requests.get(url, timeout=10)
+        logging.info(f"Resposta da API: {response.status_code} - {response.text}")
+    except requests.RequestException as e:
+        logging.error(f"Erro ao validar o CNPJ: {e}")
+        raise ValidationError("Erro ao validar o CNPJ. Tente novamente mais tarde.")
+
+    # carregando a resposta da api
+    data = response.json()
+    situacao_cadastral = data.get("situacao", None) 
+
+    if situacao_cadastral is None:
+        raise ValidationError("Erro: não foi possível obter a situação cadastral do CNPJ.")
+
+    logging.info(f"Situação do CNPJ {cnpj}: {situacao_cadastral}")
+    
+    # Validando o cadastro
+    if situacao_cadastral.upper() != "ATIVA":
+        raise ValidationError(f"CNPJ encontrado, mas com situação: {situacao_cadastral}")
+
+
 
 class SenhaPersonalizada:
     def validate (self , password , user = None):
@@ -24,9 +61,9 @@ def validate_custom_username(username):
         raise ValidationError("O nome de usuário deve conter apenas letras e números.")
     if username.lower() == "admin":
         raise ValidationError("Este nome de usuário não é permitido.")
+    
 
-
-
+    
 def validate_cnpj(cnpj):
     """
     Valida um CNPJ brasileiro.
