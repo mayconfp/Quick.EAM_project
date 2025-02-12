@@ -27,8 +27,8 @@ body {
 
 
 
-h2{
-    margin-top: 10px;
+h2 {
+    margin-top: 45px;
 }
 .texto h3{
     padding: 10px;
@@ -121,7 +121,7 @@ h2{
 
 .profile-container {
     max-width: 400px;
-    margin: 40px auto;
+    margin: 15px auto;
     padding: 20px;
     background: #fff;
     border-radius: 10px;
@@ -570,11 +570,17 @@ background-color: #4f46e5;
     transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
 }
 
+h2 {
+    margin-top: 30px;
+}
 
 #user_avatar{
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+#user a{
+    visibility: hidden;
 }
 
 .side_item {
@@ -612,11 +618,11 @@ transform: translateX(0);
     z-index: 1000;
     transform: translateX(0);
 }
-#openright_btn {
 
+#openright_btn {
     border: none;
     position: absolute;
-    top: 80vh;
+    top: 78vh;
     left: -13px;
     cursor: pointer;
     border-radius: 100%;

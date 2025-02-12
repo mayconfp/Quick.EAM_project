@@ -9,7 +9,7 @@ body{
 
 .registro{
    max-width: 300px;
-    margin: 50px auto; /* Centraliza horizontalmente */
+    margin: 100px auto; /* Centraliza horizontalmente */
     padding: 20px 26px;
     background-color: #fff; /* Fundo branco para contraste */
     border: 1px solid #ddd;

@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ JS carregado!");
+    
 
     // 🔥 SIDEBAR ESQUERDA
     const openBtn = document.getElementById("open_btn");
@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (openBtn && sidebar) {
         openBtn.addEventListener("click", function (event) {
-            console.log("🔹 Abrindo/fechando sidebar esquerda!");
             sidebar.classList.toggle("open_sidebar");
             event.stopPropagation();
         });
@@ -27,7 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (openRightBtn && sidebar2) {
         openRightBtn.addEventListener("click", function (event) {
-            console.log("🔹 Abrindo/fechando sidebar direita!");
             sidebar2.classList.toggle("open_sidebar");
             event.stopPropagation();
         });
@@ -76,7 +74,4 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    console.log("Elementos carregados corretamente:", {
-        openBtn, sidebar, openRightBtn, sidebar2, messageArea
-    });
 });
