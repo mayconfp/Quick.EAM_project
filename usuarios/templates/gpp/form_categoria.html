@@ -1,22 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if form.instance.pk %}Editar Categoria{% else %}Nova Categoria{% endif %}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-    {% include 'usuarios/partials/nav.html' %}
-    <div class="container mt-5">
-        <h2>{% if form.instance.pk %}Editar Categoria{% else %}Nova Categoria{% endif %}</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-success">Salvar</button>
-            <a href="{% url 'lista_categorias' %}" class="btn btn-secondary">Cancelar</a>
-        </form>
-    </div>
-    {% include 'usuarios/partials/footer.html' %}
-</body>
-</html>
+<form id="categoriaForm" method="post">
+    {% csrf_token %}
+
+    <label for="cod_categoria">Código da Categoria:</label>
+    <input type="text" name="cod_categoria" id="cod_categoria" required class="form-control">
+
+    <label for="cod_categoria_pai">Categoria Pai:</label>
+    <select name="cod_categoria_pai" id="cod_categoria_pai" class="form-control">
+        <option value="">Nenhuma</option>
+        {% for categoria in categorias %}
+            <option value="{{ categoria.cod_categoria }}">{{ categoria.cod_categoria }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="descricao">Descrição:</label>
+    <input type="text" name="descricao" id="descricao" class="form-control">
+
+    <button type="submit" class="btn btn-success mt-3">Salvar</button>
+    <button type="button" class="btn btn-secondary mt-3 close">Cancelar</button>
+</form>
+
+<!-- Script para enviar via AJAX -->
+<script>
+document.getElementById("categoriaForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    let form = this;
+    let formData = new FormData(form);
+
+    fetch("{% url 'criar_categoria' %}", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-CSRFToken": formData.get("csrfmiddlewaretoken")
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Categoria criada com sucesso!");
+            location.reload();
+        } else {
+            alert("Erro ao criar categoria!");
+        }
+    })
+    .catch(error => console.error("Erro:", error));
+});
+</script>

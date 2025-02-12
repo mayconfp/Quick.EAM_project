@@ -39,7 +39,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import MatrizPadraoAtividade, Categoria, Especialidade
 from .forms import MatrizPadraoAtividadeForm
-
+from django.http import JsonResponse
 
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
@@ -370,17 +370,23 @@ def lista_categorias(request):
     categorias = Categoria.objects.all()
     return render(request, 'gpp/lista_categorias.html', {'categorias': categorias})
 
-# 🔹 Criar Categoria
+
+
+
+@login_required
 def criar_categoria(request):
     if request.method == "POST":
         form = CategoriaForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Categoria criada com sucesso!")
-            return redirect('lista_categorias')
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False, "errors": form.errors})
     else:
         form = CategoriaForm()
     return render(request, 'gpp/form_categoria.html', {'form': form})
+
+
 
 # 🔹 Editar Categoria
 def editar_categoria(request, cod_categoria):
