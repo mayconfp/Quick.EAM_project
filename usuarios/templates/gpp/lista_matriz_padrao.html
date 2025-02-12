@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matriz Padrão de Atividades</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    {% include 'usuarios/partials/nav.html' %}
+    <div class="container mt-5">
+        <h2>Matriz Padrão de Atividades</h2>
+        <a href="{% url 'criar_matriz_padrao' %}" class="btn btn-primary mb-3">Nova Relação</a>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Categoria</th>
+                    <th>Especialidade</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in matriz %}
+                <tr>
+                    <td>{{ item.cod_categoria }}</td>
+                    <td>{{ item.cod_especialidade }}</td>
+                    <td>
+                        <a href="{% url 'editar_matriz_padrao' item.id %}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{% url 'excluir_matriz_padrao' item.id %}" class="btn btn-danger btn-sm">Excluir</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center">Nenhuma relação encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include 'usuarios/partials/footer.html' %}
+</body>
+</html>

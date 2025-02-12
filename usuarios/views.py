@@ -35,7 +35,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Categoria, Especialidade, CicloPadrao
 from .forms import CategoriaForm, EspecialidadeForm, CicloPadraoForm
-
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import MatrizPadraoAtividade, Categoria, Especialidade
+from .forms import MatrizPadraoAtividadeForm
 
 
 
@@ -474,3 +477,43 @@ def excluir_ciclo(request, cod_ciclo):
     ciclo.delete()
     messages.success(request, "Ciclo excluído com sucesso!")
     return redirect('lista_ciclos')
+
+
+
+
+@login_required
+def lista_matriz_padrao(request):
+    matriz = MatrizPadraoAtividade.objects.all()
+    return render(request, 'gpp/lista_matriz_padrao.html', {'matriz': matriz})
+
+@login_required
+def criar_matriz_padrao(request):
+    if request.method == "POST":
+        form = MatrizPadraoAtividadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Relação criada com sucesso!")
+            return redirect('lista_matriz_padrao')
+    else:
+        form = MatrizPadraoAtividadeForm()
+    return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
+
+@login_required
+def editar_matriz_padrao(request, id):
+    matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
+    if request.method == "POST":
+        form = MatrizPadraoAtividadeForm(request.POST, instance=matriz)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Relação atualizada com sucesso!")
+            return redirect('lista_matriz_padrao')
+    else:
+        form = MatrizPadraoAtividadeForm(instance=matriz)
+    return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
+
+@login_required
+def excluir_matriz_padrao(request, id):
+    matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
+    matriz.delete()
+    messages.success(request, "Relação excluída com sucesso!")
+    return redirect('lista_matriz_padrao')

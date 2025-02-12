@@ -2,7 +2,15 @@
 <div class="container2">
     <nav id="sidebar2" class="right-sidebar">
         <div id="sidebar_content2">
-            <p>SAP</p>
+            <p>Gestão de Planos Padrão (GPP)</p>
+            <ul class="gpp-menu">
+                <li><a href="{% url 'lista_categorias' %}">📂 Categorias</a></li>
+                <li><a href="{% url 'lista_especialidades' %}">🔧 Especialidades</a></li>
+                <li><a href="{% url 'lista_ciclos' %}">⏳ Ciclos de Manutenção</a></li>
+                <li><a href="{% url 'lista_matriz_padrao' %}">📋 Matriz Padrão Atividades</a></li>
+
+            </ul>
+
         </div>
         <button id="openright_btn">
             <i id="openright_btn_icon" class="fa-solid fa-chevron-right"></i>

@@ -23,6 +23,14 @@ urlpatterns = [
     path('gpp/categorias/nova/', views.criar_categoria, name='criar_categoria'),
     path('gpp/categorias/editar/<str:cod_categoria>/', views.editar_categoria, name='editar_categoria'),
     path('gpp/categorias/excluir/<str:cod_categoria>/', views.excluir_categoria, name='excluir_categoria'),
+    path('gpp/matriz/', views.lista_matriz_padrao, name='lista_matriz_padrao'),
+# 🔹 Rotas do GPP - Matriz Padrão Atividades
+    path('gpp/matriz/', views.lista_matriz_padrao, name='lista_matriz_padrao'),
+    path('gpp/matriz/nova/', views.criar_matriz_padrao, name='criar_matriz_padrao'),
+    path('gpp/matriz/editar/<int:id>/', views.editar_matriz_padrao, name='editar_matriz_padrao'),
+    path('gpp/matriz/excluir/<int:id>/', views.excluir_matriz_padrao, name='excluir_matriz_padrao'),
+
+
 
     # 🔹 Rotas do GPP - Especialidades
     path('gpp/especialidades/', views.lista_especialidades, name='lista_especialidades'),
