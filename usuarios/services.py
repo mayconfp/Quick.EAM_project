@@ -1,67 +1,56 @@
-from .openai_cliente import gerar_resposta_openai
+from .openai_cliente import gerar_resposta_openai, buscar_resposta_no_json
 from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
 from .models import ChatHistory
-import json
 from .provedores import processar_comunicacao_multi_ia
+from .openai_cliente import carregar_conhecimento
+import json
 
-def gerar_resposta(user_message, historico):
-    """Gera uma resposta consolidada das IAs."""
-    return processar_comunicacao_multi_ia(user_message, historico)
 
+def gerar_resposta(user_message, chat_history=None):
+    """Gera uma resposta consolidada do JSON e IAs."""
+
+    # 🔎 **PASSO 1: Busca no JSON primeiro**
+    resposta_json = buscar_resposta_no_json(user_message)
+    if resposta_json:
+        return resposta_json  # Retorna a resposta diretamente do JSON
+
+    # 🔎 **PASSO 2: Se não estiver no JSON, busca no contexto**
+    if chat_history:
+        for item in chat_history:
+            if user_message.lower().strip() in item['question'].lower():
+                return item['answer']
+
+    # 🔎 **PASSO 3: Se não for algo relacionado ao projeto, chama a OpenAI**
+    return processar_comunicacao_multi_ia(user_message, chat_history)
 
 
 def processar_comunicacao_multi_ia(mensagem, historico=None):
     try:
-        # Log da mensagem recebida
-        print(f"[DEBUG] Mensagem recebida para processar: {mensagem}")
-        if historico:
-            print(f"[DEBUG] Histórico recebido: {list(historico)}")
+        print(f"[DEBUG] Mensagem recebida: {mensagem}")
 
-        # Inicializar dicionário para armazenar respostas de cada IA
-        respostas_adicionais = {
-            "Llama": None,
-            "Gemini": None,
-            "Historico": [msg.question for msg in historico] if historico else []
-        }
+        # 🔄 **Formata histórico corretamente antes de passar**
+        historico_formatado = [{"question": h.question, "answer": h.answer} for h in historico] if historico else []
 
-        # Obter resposta da Llama
-        try:
-            resposta_llama = gerar_resposta_llama(mensagem)
-            respostas_adicionais["Llama"] = resposta_llama
-            print(f"[DEBUG] Resposta da Llama: {resposta_llama}")
-        except Exception as e:
-            print(f"[ERROR] Erro ao obter resposta da Llama: {e}")
-            respostas_adicionais["Llama"] = "Erro ao processar com Llama."
+        # 🔎 **PASSO 1: Busca no JSON**
+        resposta_json = buscar_resposta_no_json(mensagem)
+        if resposta_json:
+            return resposta_json
 
-        # Obter resposta da Gemini
-        try:
-            resposta_gemini = gemini_gerar_resposta(mensagem)
-            respostas_adicionais["Gemini"] = resposta_gemini
-            print(f"[DEBUG] Resposta da Gemini: {resposta_gemini}")
-        except Exception as e:
-            print(f"[ERROR] Erro ao obter resposta da Gemini: {e}")
-            respostas_adicionais["Gemini"] = "Erro ao processar com Gemini."
-
-        # Preparar contexto para OpenAI
-        print(f"[DEBUG] Contexto enviado para OpenAI: {respostas_adicionais}")
-
-        # Obter resposta final da OpenAI
-        resposta_final = gerar_resposta_openai(mensagem, respostas_adicionais)
+        # 🔎 **PASSO 2: Chama OpenAI**
+        resposta_final = gerar_resposta_openai(mensagem, historico_formatado)
         print(f"[DEBUG] Resposta final da OpenAI: {resposta_final}")
 
-        # Certificar-se de que a resposta está em formato JSON e codificada corretamente
-        return json.dumps(resposta_final, ensure_ascii=False)
+        return resposta_final
 
     except Exception as e:
         print(f"[ERROR] Erro ao processar comunicação multi-IA: {e}")
-        return json.dumps({"erro": "Erro ao processar as respostas entre as IAs."}, ensure_ascii=False)
-
+        return "Erro ao processar as respostas entre as IAs."
 
 
 def recuperar_ultima_resposta(user):
     """
-    Recupera a última resposta registrada no banco de dados para o usuário.
+    Recupera as última resposta registrada no banco de dados para o usuário.
     """
     try:
         ultima_resposta = ChatHistory.objects.filter(user=user).order_by('-timestamp').first()

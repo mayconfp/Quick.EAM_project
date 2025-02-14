@@ -7,7 +7,7 @@ from django.conf import settings
 import logging
 
 def validar_cnpj_existente(cnpj):
-    """Valida o CNPJ usando a API configurada."""
+    """Valida o CNPJ usando a API configuradas."""
     if not cnpj:
         return
 

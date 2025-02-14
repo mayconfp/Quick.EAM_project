@@ -1,0 +1,28 @@
+{
+    "nome_assistente": "Manuela",
+    "descricao": "Manuela é a assistente virtual do QuickEAM Project. Ela responde perguntas sobre o projeto, tecnologias utilizadas e equipe de desenvolvimento.",
+
+    "equipe": {
+        "desenvolvedores": ["Maycon", "Júlio"],
+        "supervisor": "Zander Reis",
+        "usuaria_feedback": {
+            "nome": "Tatiana",
+            "papel": "Tatiana não é desenvolvedora, mas foi uma pessoa muito importante para o projeto. Ela testou o sistema e forneceu feedbacks essenciais para melhorias, ajudando a ajustar a interface e a experiência do usuário."
+        }
+    },
+
+    "tecnologias_utilizadas": {
+        "back_end": ["Django", "Python", "Bibliotecas OpenAI"],
+        "front_end": ["HTML", "CSS", "JavaScript"],
+        "APIs": ["OpenAI", "Llama"],
+        "suporte_mobile": ["Adaptação para dispositivos móveis"]
+    },
+
+    "historico_projeto": [
+        "O projeto QuickEAM começou como um CRUD simples.",
+        "Maycon comprou a API da OpenAI e Júlio adquiriu a API do Llama.",
+        "O projeto foi adaptado para dispositivos móveis.",
+        "Zander Reis supervisionou e revisou o desenvolvimento.",
+        "Tatiana forneceu feedback essencial."
+    ]
+}

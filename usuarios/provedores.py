@@ -1,8 +1,7 @@
-from .openai_cliente import gerar_resposta_openai
+from .openai_cliente import gerar_resposta_openai, carregar_conhecimento, buscar_resposta_no_json
 from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
 import re
-
 
 def formatar_texto_para_html(texto):
     """Converte marcações de texto em HTML."""
@@ -22,30 +21,6 @@ def formatar_texto_para_html(texto):
     texto = texto.replace('---', '<hr>')
     return texto
 
-
-def processar_comunicacao_multi_ia(user_message, historico_completo):
-    respostas = {}
-
-    try:
-        respostas['openai'] = gerar_resposta_openai(user_message, historico_completo)
-    except Exception as e:
-        respostas['openai'] = f"Erro na OpenAI: {e}"
-
-    try:
-        respostas['gemini'] = gemini_gerar_resposta(user_message, historico_completo)
-    except Exception as e:
-        respostas['gemini'] = f"Erro na Gemini: {e}"
-
-    try:
-        respostas['llama'] = gerar_resposta_llama(user_message, historico_completo)
-    except Exception as e:
-        respostas['llama'] = f"Erro na Llama: {e}"
-
-    melhor_resposta = respostas['openai'] or respostas['gemini'] or respostas['llama']
-    return melhor_resposta
-
-
-
 def gerar_contexto_completo(historico):
     """
     Gera um contexto completo com base no histórico da conversa.
@@ -53,18 +28,52 @@ def gerar_contexto_completo(historico):
     contexto = []
     for mensagem in historico:
         if isinstance(mensagem, dict):
-            # Se for um dicionário
             contexto.append({"role": "user", "content": mensagem.get("question", "")})
             contexto.append({"role": "assistant", "content": mensagem.get("answer", "")})
         else:
-            # Se for um objeto do banco de dados
             contexto.append({"role": "user", "content": mensagem.question})
             contexto.append({"role": "assistant", "content": mensagem.answer})
     return contexto
 
+def processar_comunicacao_multi_ia(user_message, historico):
+    """Processa a mensagem do usuário consultando primeiro o JSON, depois contexto, e por último as IAs externas."""
+
+    conhecimento = carregar_conhecimento()
+
+    # 🚀 **PASSO 1: Verifica no JSON**
+    resposta_json = buscar_resposta_no_json(user_message)
+
+    if resposta_json:
+        return resposta_json  # Se encontrado no JSON, retorna a resposta direto
+
+    # 🚀 **PASSO 2: Gera contexto baseado no histórico da conversa**
+    contexto = gerar_contexto_completo(historico)
+
+    # 🚀 **PASSO 3: Se não estiver no JSON, consulta as IAs externas**
+    respostas = {}
+
+    try:
+        respostas['openai'] = gerar_resposta_openai(user_message, contexto)
+    except Exception as e:
+        respostas['openai'] = f"Erro na OpenAI: {e}"
+
+    try:
+        respostas['gemini'] = gemini_gerar_resposta(user_message, contexto)
+    except Exception as e:
+        respostas['gemini'] = f"Erro na Gemini: {e}"
+
+    try:
+        respostas['llama'] = gerar_resposta_llama(user_message, contexto)
+    except Exception as e:
+        respostas['llama'] = f"Erro na Llama: {e}"
+
+    melhor_resposta = respostas.get('openai') or respostas.get('gemini') or respostas.get('llama')
+
+    return melhor_resposta or "Desculpe, não consegui gerar uma resposta para essa pergunta."
+
 def gerar_resposta(provedor, mensagem, contexto=None):
     """
-    Gerencia chamadas para diferentes provedores de IA e retorna a resposta de um provedor específico.
+    Gerencia chamadass para diferentes provedores de IA e retorna a resposta de um provedor específico.
     """
     provedores_disponiveis = {
         'openai': gerar_resposta_openai,

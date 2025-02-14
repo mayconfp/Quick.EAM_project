@@ -13,7 +13,7 @@ from django.utils.safestring import mark_safe
 import requests
 import logging
 from django.contrib.auth import get_user_model
-User = get_user_model() 
+User = get_user_model()
 from django.urls import reverse
 from .forms import CustomUserUpdateForm
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -159,54 +159,42 @@ def chat(request):
     session_id = request.GET.get('session')
     session = None
 
-    # Carrega a sessão atual se o session_id for fornecido
     if session_id:
         session = get_object_or_404(ChatSession, id=session_id, user=request.user)
     else:
-        # Busca a última sessão criada para o usuário
         session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
 
     if not session:
-        return redirect('nova_conversa')  # Redireciona para criar uma nova conversa
+        return redirect('nova_conversa')
 
-    # Processa a mensagem do usuário
+    # 🔄 **Busca histórico da conversa**
+    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
+
+    # 🔎 **Formatar histórico**
+    chat_history_formatado = [{"question": mensagem.question, "answer": mensagem.answer} for mensagem in chat_history]
+
     if request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
         if user_message:
             if not session.title or session.title == "Nova Conversa":
-                session.title = user_message[:35]  # Define o título da sessão com base na primeira mensagem
+                session.title = user_message[:35]
                 session.save()
 
-            # Gera o contexto completo com base no histórico
-            historico_completo = ChatHistory.objects.filter(session=session).order_by('timestamp')
-            contexto_para_openai = gerar_contexto_completo(historico_completo)
+            # 🔄 **Passa o histórico corretamente para a função**
+            ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
 
-            # Processa a mensagem com múltiplas IAs
-            ai_response = processar_comunicacao_multi_ia(user_message, contexto_para_openai)
-
-            # Formata a resposta para HTML antes de salvar e exibir
-            ai_response_formatado = formatar_texto_para_html(ai_response)
-
-            # Salva a mensagem e a resposta no histórico
+            # 💾 **Salva no banco**
             ChatHistory.objects.create(
                 session=session,
                 user=request.user,
                 question=user_message,
-                answer=ai_response_formatado
+                answer=ai_response
             )
 
-    # Recupera o histórico da sessão atual
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
     sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
 
-    # Formata o histórico para renderização segura
-    chat_history = [
-        {
-            'question': mensagem.question,
-            'answer': mark_safe(mensagem.answer),
-        }
-        for mensagem in chat_history
-    ]
+    chat_history = [{"question": mensagem.question, "answer": mensagem.answer} for mensagem in chat_history]
 
     return render(request, 'usuarios/chat.html', {
         'response': ai_response,
@@ -216,7 +204,7 @@ def chat(request):
         'pagina_atual': 'chat'
     })
 
-
+#
 
 @login_required
 def nova_conversa(request):
