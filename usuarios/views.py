@@ -59,7 +59,6 @@ def perfil(request):
 
 
 
-
 logger = logging.getLogger(__name__)  # Criando o logger para registrar eventos
 
 @login_required
@@ -93,12 +92,9 @@ def chat(request):
             logger.info(f"[DEBUG] Usuário enviou: {user_message}")
 
             # 🔎 **Tenta responder primeiro pelo JSON**
-            ai_response = gerar_resposta(user_message, chat_history_formatado)# Remova chat_history_formatado
+            ai_response = gerar_resposta(user_message, chat_history_formatado)
 
-
-            if ai_response:
-                logger.info(f"[DEBUG] Resposta encontrada no JSON: {ai_response}")
-            else:
+            if not ai_response:
                 # 🔄 **Se não encontrar no JSON, usa IA**
                 logger.info(f"[DEBUG] Nenhuma resposta no JSON. Chamando IA para responder: '{user_message}'")
                 try:
@@ -122,15 +118,19 @@ def chat(request):
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
     sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
 
+    # ✅ **Corrige erro antes de formatar**
+    if ai_response is None:
+        ai_response = "Ocorreu um erro ao obter a resposta."
+
+    ai_response_formatado = formatar_texto_para_html(str(ai_response))  # 🔥 Garante que sempre seja string
+
     return render(request, 'usuarios/chat.html', {
-        'response': mark_safe(formatar_texto_para_html(ai_response)),  # 🔥 Formatando HTML corretamente
+        'response': mark_safe(ai_response_formatado),  # 🔥 Renderiza HTML corretamente
         'chat_history': chat_history,
         'sessions': sessions,
         'current_session': session,
         'pagina_atual': 'chat'
     })
-
-
 
 
 

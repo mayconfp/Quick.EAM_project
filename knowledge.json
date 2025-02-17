@@ -16,11 +16,11 @@
     },
     "equipe": {
       "desenvolvedores": [
-        "Carlos Silva - Engenheiro de Software",
-        "Ana Souza - Especialista em Machine Learning",
-        "Lucas Ribeiro - Arquiteto de Soluções"
+        "Maycon Felipe - Back-end",
+        "Júlio Cesar - Desenvolvedor Front-end",
+        "Tatiana Santos - Essencial para o Feedback no desenvolvimento"
       ],
-      "supervisor": "Mariana Costa - Diretora de Tecnologia"
+      "supervisor": "Zander - Diretor de Tecnologia"
     },
     "tecnologias_utilizadas": [
       "Python",

@@ -1,9 +1,9 @@
 from .openai_cliente import gerar_resposta_openai
 from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
-
-import logging
 import re
+import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +12,32 @@ PROVEDORES_VALIDOS = {
     'llama': gerar_resposta_llama,
     'gemini': gemini_gerar_resposta,
 }
+
+
+def formatar_texto_para_html(texto):
+    """Corrige a formatação de texto para HTML, incluindo listas, negrito, itálico e quebras de linha."""
+    if not texto:
+        return ""
+
+    # 🔹 **Correção para negrito, itálico e sublinhado**
+    texto = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)  # Negrito: **texto** → <b>texto</b>
+    texto = re.sub(r'\*(.*?)\*', r'<i>\1</i>', texto)  # Itálico: *texto* → <i>texto</i>
+    texto = re.sub(r'_(.*?)_', r'<u>\1</u>', texto)  # Sublinhado: _texto_ → <u>texto</u>
+
+    # 🔹 **Correção para listas numeradas**
+    texto = re.sub(r'(?m)^\d+\.\s(.*?)$', r'<li>\1</li>', texto)  # Transforma números em <li>
+    texto = re.sub(r'(<li>.*?</li>)', r'<ol>\1</ol>', texto, flags=re.DOTALL)  # Garante <ol> externo
+
+    # 🔹 **Correção para listas com hífen (-) ou asterisco (*)**
+    texto = re.sub(r'(?m)^\s*[-*]\s(.*?)$', r'<li>\1</li>', texto)  # Transforma - ou * em <li>
+    texto = re.sub(r'(<li>.*?</li>)', r'<ul>\1</ul>', texto, flags=re.DOTALL)  # Garante <ul> externo
+
+    # 🔹 **Correção para quebras de linha**
+    texto = texto.replace("\n", "<br>")
+
+    return texto
+
+
 
 
 def processar_comunicacao_multi_ia(user_message, historico):
@@ -52,23 +78,6 @@ def processar_comunicacao_multi_ia(user_message, historico):
 
     return melhor_resposta or "Desculpe, não consegui gerar uma resposta no momento."
 
-
-
-
-
-
-def formatar_texto_para_html(texto):
-    """Corrige a formatação de texto e caracteres especiais."""
-    if not texto:
-        return ""
-
-    texto = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)  
-    texto = re.sub(r'\*(.*?)\*', r'<i>\1</i>', texto)  
-    texto = re.sub(r'_(.*?)_', r'<u>\1</u>', texto)  
-    texto = re.sub(r'(?m)^\d+\.\s(.*?)$', r'<li>\1</li>', texto)
-    texto = re.sub(r'(<li>.*?</li>)', r'<ol>\1</ol>', texto, flags=re.DOTALL)
-
-    return texto
 
 
 

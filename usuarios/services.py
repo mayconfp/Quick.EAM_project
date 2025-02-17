@@ -12,6 +12,8 @@ def gerar_resposta(user_message, chat_history=None):
         logger.warning("Mensagem inválida recebida.")
         return "Não entendi sua mensagem. Pode reformular?"
 
+
+
     user_message = user_message.strip()
 
     # 🔎 **Busca no JSON**

@@ -2,10 +2,10 @@ import json
 import os
 import openai
 import difflib
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from datetime import datetime
 
-_ = load_dotenv()
+_ = load_dotenv(find_dotenv())
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def carregar_conhecimento():
@@ -72,7 +72,7 @@ def gerar_resposta_openai(user_message, contexto=None):
 
     # Se não encontrou resposta no JSON, usa OpenAI e adiciona a base de conhecimento como contexto
     messages = [
-        {"role": "system", "content": "Você é a IA QuickEAM, um assistente virtual especializado na empresa QuickEAM."},
+        {"role": "system", "content": "Você é a IA Manuela, um assistente virtual especializado na empresa QuickEAM."},
         {"role": "user", "content": user_message}
     ]
 
