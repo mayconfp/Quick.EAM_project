@@ -1,28 +1,33 @@
 {
-    "nome_assistente": "Manuela",
-    "descricao": "Manuela é a assistente virtual do QuickEAM Project. Ela responde perguntas sobre o projeto, tecnologias utilizadas e equipe de desenvolvimento.",
-
+    "empresa": {
+      "nome": "QuickEAM",
+      "descricao": "A QuickEAM é uma empresa especializada em soluções de gestão de ativos empresariais (Enterprise Asset Management - EAM).",
+      "missao": "Fornecer tecnologia avançada para otimizar a gestão de ativos, reduzir custos e aumentar a eficiência operacional das empresas.",
+      "solucoes": [
+        "Sistemas inteligentes que utilizam IA e machine learning.",
+        "Integração com ERPs para otimizar a manutenção e monitoramento de ativos.",
+        "Ferramentas para análise preditiva e automação de processos."
+      ]
+    },
+    "projetos": {
+      "manutencao_preditiva": "Sistema que prevê falhas em equipamentos industriais usando IA.",
+      "gestao_ativos": "Plataforma integrada para monitoramento de ativos empresariais.",
+      "otimizacao_processos": "Ferramenta para análise de dados e tomada de decisões estratégicas."
+    },
     "equipe": {
-        "desenvolvedores": ["Maycon", "Júlio"],
-        "supervisor": "Zander Reis",
-        "usuaria_feedback": {
-            "nome": "Tatiana",
-            "papel": "Tatiana não é desenvolvedora, mas foi uma pessoa muito importante para o projeto. Ela testou o sistema e forneceu feedbacks essenciais para melhorias, ajudando a ajustar a interface e a experiência do usuário."
-        }
+      "desenvolvedores": [
+        "Carlos Silva - Engenheiro de Software",
+        "Ana Souza - Especialista em Machine Learning",
+        "Lucas Ribeiro - Arquiteto de Soluções"
+      ],
+      "supervisor": "Mariana Costa - Diretora de Tecnologia"
     },
-
-    "tecnologias_utilizadas": {
-        "back_end": ["Django", "Python", "Bibliotecas OpenAI"],
-        "front_end": ["HTML", "CSS", "JavaScript"],
-        "APIs": ["OpenAI", "Llama"],
-        "suporte_mobile": ["Adaptação para dispositivos móveis"]
-    },
-
-    "historico_projeto": [
-        "O projeto QuickEAM começou como um CRUD simples.",
-        "Maycon comprou a API da OpenAI e Júlio adquiriu a API do Llama.",
-        "O projeto foi adaptado para dispositivos móveis.",
-        "Zander Reis supervisionou e revisou o desenvolvimento.",
-        "Tatiana forneceu feedback essencial."
+    "tecnologias_utilizadas": [
+      "Python",
+      "Django",
+      "Machine Learning",
+      "OpenAI API",
+      "SAP/PM"
     ]
-}
+  }
+  

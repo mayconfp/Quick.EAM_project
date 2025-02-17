@@ -1,46 +1,36 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
-from django.http import JsonResponse
 from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm
 from .models import CustomUser, ChatSession, ChatHistory
-from .provedores import gerar_contexto_completo, gerar_resposta, processar_comunicacao_multi_ia
-from .provedores import formatar_texto_para_html
 from django.utils.translation import activate
-from django.utils.safestring import mark_safe
 import requests
-import logging
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
-from .forms import CustomUserUpdateForm
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib import messages
-from django.conf import settings
 from django.http import JsonResponse
 from .forms import CustomUserUpdateForm
-from django.contrib import messages
 from django.conf import settings
 from .validators import SenhaPersonalizada
 from .models import PasswordResetCode
-from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from .models import Categoria, Especialidade, CicloPadrao
 from .forms import CategoriaForm, EspecialidadeForm, CicloPadraoForm
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from .models import MatrizPadraoAtividade, Categoria, Especialidade
 from .forms import MatrizPadraoAtividadeForm
-from django.http import JsonResponse
-
+from django.utils.safestring import mark_safe
+from .models import ChatSession, ChatHistory
+from .provedores import processar_comunicacao_multi_ia, formatar_texto_para_html
+from .openai_cliente import gerar_resposta_openai
+from .services import gerar_resposta
+import logging
+from django.utils.safestring import mark_safe
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
@@ -65,7 +55,86 @@ def perfil(request):
 
     return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
 
-#
+
+
+
+
+
+logger = logging.getLogger(__name__)  # Criando o logger para registrar eventos
+
+@login_required
+def chat(request):
+    ai_response = None
+    session_id = request.GET.get('session')
+    session = None
+
+    if session_id:
+        session = get_object_or_404(ChatSession, id=session_id, user=request.user)
+    else:
+        session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
+
+    if not session:
+        return redirect('nova_conversa')
+
+    # 🔄 **Busca histórico da conversa**
+    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
+    
+    # 🔎 **Formatar histórico**
+    chat_history_formatado = [{"question": mensagem.question, "answer": mensagem.answer} for mensagem in chat_history]
+
+    if request.method == 'POST':
+        user_message = request.POST.get('message', '').strip()
+
+        if user_message:
+            if not session.title or session.title == "Nova Conversa":
+                session.title = user_message[:35]
+                session.save()
+
+            logger.info(f"[DEBUG] Usuário enviou: {user_message}")
+
+            # 🔎 **Tenta responder primeiro pelo JSON**
+            ai_response = gerar_resposta(user_message, chat_history_formatado)# Remova chat_history_formatado
+
+
+            if ai_response:
+                logger.info(f"[DEBUG] Resposta encontrada no JSON: {ai_response}")
+            else:
+                # 🔄 **Se não encontrar no JSON, usa IA**
+                logger.info(f"[DEBUG] Nenhuma resposta no JSON. Chamando IA para responder: '{user_message}'")
+                try:
+                    ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
+
+                    if not ai_response:
+                        ai_response = "Desculpe, não consegui processar sua mensagem. Tente reformular."
+                        logger.warning(f"[WARNING] IA não conseguiu gerar resposta para: '{user_message}'")
+                except Exception as e:
+                    logger.error(f"[ERROR] Erro ao processar IA: {e}")
+                    ai_response = "Ocorreu um erro ao tentar responder. Tente novamente mais tarde."
+
+            # 💾 **Salva no banco**
+            ChatHistory.objects.create(
+                session=session,
+                user=request.user,
+                question=user_message,
+                answer=ai_response
+            )
+
+    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
+    sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
+
+    return render(request, 'usuarios/chat.html', {
+        'response': mark_safe(formatar_texto_para_html(ai_response)),  # 🔥 Formatando HTML corretamente
+        'chat_history': chat_history,
+        'sessions': sessions,
+        'current_session': session,
+        'pagina_atual': 'chat'
+    })
+
+
+
+
+
+
 
 def definir_idioma(request):
     """Define o idioma com base na localização enviada pelo cliente."""
@@ -153,56 +222,8 @@ def logout_view(request):
 
 
 
-@login_required
-def chat(request):
-    ai_response = None
-    session_id = request.GET.get('session')
-    session = None
 
-    if session_id:
-        session = get_object_or_404(ChatSession, id=session_id, user=request.user)
-    else:
-        session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
 
-    if not session:
-        return redirect('nova_conversa')
-
-    # 🔄 **Busca histórico da conversa**
-    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
-
-    # 🔎 **Formatar histórico**
-    chat_history_formatado = [{"question": mensagem.question, "answer": mensagem.answer} for mensagem in chat_history]
-
-    if request.method == 'POST':
-        user_message = request.POST.get('message', '').strip()
-        if user_message:
-            if not session.title or session.title == "Nova Conversa":
-                session.title = user_message[:35]
-                session.save()
-
-            # 🔄 **Passa o histórico corretamente para a função**
-            ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
-
-            # 💾 **Salva no banco**
-            ChatHistory.objects.create(
-                session=session,
-                user=request.user,
-                question=user_message,
-                answer=ai_response
-            )
-
-    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
-    sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
-
-    chat_history = [{"question": mensagem.question, "answer": mensagem.answer} for mensagem in chat_history]
-
-    return render(request, 'usuarios/chat.html', {
-        'response': ai_response,
-        'chat_history': chat_history,
-        'sessions': sessions,
-        'current_session': session,
-        'pagina_atual': 'chat'
-    })
 
 #
 
