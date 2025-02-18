@@ -124,6 +124,7 @@ class PasswordResetCode(models.Model):
         return is_expired
 
 
+
 class Categoria(models.Model):
     cod_categoria = models.CharField(max_length=50, primary_key=True)
     cod_categoria_pai = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name="subcategorias")

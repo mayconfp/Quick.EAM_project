@@ -1,44 +1,26 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model , logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
-from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm
-from .models import CustomUser, ChatSession, ChatHistory
-from .provedores import gerar_contexto_completo, gerar_resposta, processar_comunicacao_multi_ia
-from .provedores import formatar_texto_para_html
+from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm, CicloPadraoForm, MatrizPadraoAtividadeForm
+from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade, CicloPadrao
+from .provedores import gerar_contexto_completo, processar_comunicacao_multi_ia , formatar_texto_para_html
 from django.utils.translation import activate
 from django.utils.safestring import mark_safe
 import requests
 import logging
-from django.contrib.auth import get_user_model
 User = get_user_model() 
 from django.urls import reverse
-from .forms import CustomUserUpdateForm
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.template.loader import render_to_string
 from django.core.mail import send_mail
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib import messages
-from django.conf import settings
-from django.http import JsonResponse
-from .forms import CustomUserUpdateForm
-from django.contrib import messages
 from django.conf import settings
 from .validators import SenhaPersonalizada
 from .models import PasswordResetCode
-from django.urls import reverse
 from django.core.exceptions import ValidationError
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Categoria, Especialidade, CicloPadrao
-from .forms import CategoriaForm, EspecialidadeForm, CicloPadraoForm
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import MatrizPadraoAtividade, Categoria, Especialidade
-from .forms import MatrizPadraoAtividadeForm
+
+
+
+
 
 
 
@@ -365,43 +347,78 @@ def password_reset_confirm(request):
     return JsonResponse({"success": False, "message": "Requisição inválida."})
 
 
-# 🔹 Listar Categorias
-def lista_categorias(request):
-    categorias = Categoria.objects.all()
-    return render(request, 'gpp/lista_categorias.html', {'categorias': categorias})
+
+def listar_categorias(request):
+    query = request.GET.get("q")
+    if query:
+        categorias = Categoria.objects.filter(
+            cod_categoria__icontains=query
+        ) | Categoria.objects.filter(
+            cod_categoria_pai__cod_categoria__icontains=query
+        )  # Busca por subcategorias associadas
+    else:
+        categorias = Categoria.objects.all()
+
+    return render(request, "gpp/listar_categorias.html", {"categorias": categorias})
 
 # 🔹 Criar Categoria
 def criar_categoria(request):
     if request.method == "POST":
-        form = CategoriaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Categoria criada com sucesso!")
-            return redirect('lista_categorias')
-    else:
-        form = CategoriaForm()
-    return render(request, 'gpp/form_categoria.html', {'form': form})
+        descricao = request.POST.get("descricao")
+        categoria_pai_id = request.POST.get("categoria_pai")  # Obtém a categoria pai (se existir)
+
+        if descricao:
+            # Conta quantas categorias existem e cria um novo código
+            num = Categoria.objects.count() + 1
+            novo_cod_categoria = f"CAT{num}"
+
+            # Certifica-se de que o código gerado é único
+            while Categoria.objects.filter(cod_categoria=novo_cod_categoria).exists():
+                num += 1
+                novo_cod_categoria = f"CAT{num}"
+
+            # Verifica se há uma categoria pai válida
+            categoria_pai = None
+            if categoria_pai_id:
+                categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first()
+
+            # Cria a nova categoria com ou sem pai
+            Categoria.objects.create(
+                cod_categoria=novo_cod_categoria,
+                cod_categoria_pai=categoria_pai,  # Agora a categoria pai é corretamente atribuída
+                descricao=descricao
+            )
+
+        return redirect("listar_categorias")
+
+    categorias = Categoria.objects.all()  # Para exibir no dropdown
+    return render(request, "gpp/criar_categoria.html", {"categorias": categorias})
 
 # 🔹 Editar Categoria
 def editar_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
+    
     if request.method == "POST":
-        form = CategoriaForm(request.POST, instance=categoria)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Categoria atualizada com sucesso!")
-            return redirect('lista_categorias')
-    else:
-        form = CategoriaForm(instance=categoria)
-    return render(request, 'gpp/form_categoria.html', {'form': form})
+        categoria.descricao = request.POST.get("descricao")
+        categoria_pai_id = request.POST.get("categoria_pai")
 
-# 🔹 Excluir Categoria
+        if categoria_pai_id:
+            categoria.cod_categoria_pai = Categoria.objects.get(cod_categoria=categoria_pai_id)
+        else:
+            categoria.cod_categoria_pai = None  # Define como raiz
+
+        categoria.save()
+        return redirect("listar_categorias")
+
+    categorias = Categoria.objects.exclude(cod_categoria=categoria.cod_categoria)  # Evita selecionar a própria categoria como pai
+    return render(request, "gpp/editar_categoria.html", {"categoria": categoria, "categorias": categorias})
+
+# 🔹 Excluir Categoria (SEM JAVASCRIPT, APENAS FORMULÁRIO)
 def excluir_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
-    categoria.delete()
-    messages.success(request, "Categoria excluída com sucesso!")
-    return redirect('lista_categorias')
-
+    categoria.delete()  # Deleta a categoria e suas subcategorias automaticamente
+    return redirect("listar_categorias")
+        
 # 🔹 Listar Especialidades
 def lista_especialidades(request):
     especialidades = Especialidade.objects.all()

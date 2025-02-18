@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Categorias</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+
+    <h2>Lista de Categorias</h2>
+    <form method="POST" action="{% url 'criar_categoria' %}">
+        {% csrf_token %}
+        
+        <label for="descricao">Nome da Categoria:</label>
+        <input type="text" id="descricao" name="descricao" required>
+    
+        <label for="categoria_pai">Categoria Pai (opcional):</label>
+        <select id="categoria_pai" name="categoria_pai">
+            <option value="">Nenhuma (Categoria Principal)</option>
+            {% for categoria in categorias %}
+                <option value="{{ categoria.cod_categoria }}">{{ categoria.descricao }}</option>
+            {% endfor %}
+        </select>
+    
+        <button type="submit">Criar Categoria</button>
+    </form>
+    <form method="GET" action="{% url 'listar_categorias' %}">
+        <label for="buscar_codigo">Buscar por Código:</label>
+        <input type="text" id="buscar_codigo" name="q" placeholder="Digite o código..." value="{{ request.GET.q }}">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Categoria Pai</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for categoria in categorias %}
+            <tr>
+                <td>{{ categoria.cod_categoria }}</td>
+                <td>{{ categoria.descricao }}</td>
+                <td>
+                    {% if categoria.cod_categoria_pai %}
+                        {{ categoria.cod_categoria_pai.descricao }} ({{ categoria.cod_categoria_pai.cod_categoria }})
+                    {% else %}
+                        Nenhuma
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'editar_categoria' categoria.cod_categoria %}" class="btn btn-warning">✏️ Editar</a>
+                    <a href="{% url 'excluir_categoria' categoria.cod_categoria %}" class="btn btn-danger">🗑️ Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
