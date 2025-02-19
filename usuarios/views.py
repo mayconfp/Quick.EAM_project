@@ -47,7 +47,7 @@ def perfil(request):
 
     return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
 
-#
+
 
 def definir_idioma(request):
     """Define o idioma com base na localização enviada pelo cliente."""
@@ -359,7 +359,8 @@ def listar_categorias(request):
     else:
         categorias = Categoria.objects.all()
 
-    return render(request, "gpp/listar_categorias.html", {"categorias": categorias})
+    return render(request, "gpp/listar_categorias.html", {"categorias": categorias ,'pagina_atual': 'listar_categorias'})
+
 
 # 🔹 Criar Categoria
 def criar_categoria(request):

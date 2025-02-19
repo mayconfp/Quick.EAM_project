@@ -142,6 +142,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://d92d-2804-1b1-1293-8c50-5942-7875-f8a2-6e09.ngrok-free.app'
+]
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587

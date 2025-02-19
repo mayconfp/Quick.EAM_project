@@ -265,7 +265,7 @@ height: 60px;
     background-color: #E9ECEF;
     color: #2B2D42; /* Fundo cinza claro */
     word-wrap: break-word;/* Texto cinza escuro */
-    padding: 10px 15px;
+    padding: 10px 25px;
     margin-bottom: 15px;
     border-radius: 10px;
     margin-right: auto; /* Empurra para a esquerda */
@@ -330,7 +330,7 @@ overflow-y: auto; /* Adiciona rolagem caso o conteúdo exceda a altura */
 }
 
 
-@media (max-width: 768px) {
+@media screen and (max-width: 430px) {
 
 header {
     display: flex; /* Ativa o flexbox */
@@ -459,29 +459,40 @@ header {
         color: #e0e0e0;
     }
 
-    .mobile-history ul li {
-        margin-bottom: 10px;
-        padding: 10px;
-        background-color: #2a2a40;
-        border-radius: 5px;
-        width: 90%;
-        text-align: center;
-    }
-
+.mobile-history ul li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #2a2a40;
+    border-radius: 5px;
+    width: 90%;
+    text-align: center;
+}
     .chat-container {
-        margin-left: 0;
         width: 100%;
-    }
+        margin-left: 0;
+        
+}
+.chat-history{
+    padding-bottom: 60px;
+}
+
 
 .message_user,
-    .message_bot {
-        max-width: 90%;
-    }
+.message_bot {
+    max-width: 90%;
+    padding: 10px 25px;
+}
+.message_user{
+margin-left: 30px;
+}    
+
+
 
 }
-@media (max-width: 768px) {
+@media screen and (max-width: 430px) {
     .desktop-only {
         display: none; /* Esconde o histórico desktop */
+        
     }
 
 
