@@ -5,7 +5,7 @@
             
             <div id="user">
                 <a href="{% url 'perfil' %}">
-                    <img src="{% if request.user.profile_picture %}{{ request.user.profile_picture.url }}{% else %}{% static 'images/do-utilizador.png' %}{% endif %}" 
+                    <img src="{% if request.user.profile_picture %}{{ request.user.profile_picture.url }}{% else %}{% static 'images/exemploimg.avif' %}{% endif %}" 
                          id="user_avatar" 
                          alt="Avatar">
                 </a>
@@ -24,7 +24,7 @@
                     </a>
                 </li>
                 <li class="side_item active">
-                    <a href="#">
+                    <a href="{% url 'perfil'%}">
                         <i class="fa-solid fa-gear"></i>
                         <span class="item_description">Configurações</span>
                     </a>
@@ -69,6 +69,5 @@
             <i id="open_btn_icon" class="fa-solid fa-chevron-right"></i>
         </button>
     </nav>
-    
     
 </div>

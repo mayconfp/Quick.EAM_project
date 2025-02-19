@@ -30,7 +30,7 @@ DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '9035-2804-5274-f02f-b01-55df-e3e5-85f2-ba8d.ngrok-free.app',
+    '75c7-2804-1b1-1293-8c50-1d17-26c6-e121-d729.ngrok-free.app',
 ]
 
 INSTALLED_APPS = [
@@ -156,5 +156,5 @@ DEFAULT_FROM_EMAIL = "QuickEAM <seu-email@gmail.com>"
 
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://9035-2804-5274-f02f-b01-55df-e3e5-85f2-ba8d.ngrok-free.app',
+    'https://75c7-2804-1b1-1293-8c50-1d17-26c6-e121-d729.ngrok-free.app',
 ]

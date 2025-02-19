@@ -33,16 +33,18 @@
             <option value="">Nenhuma (Categoria Principal)</option>
             {% for categoria in categorias %}
                 <option value="{{ categoria.cod_categoria }}">{{ categoria.descricao }}</option>
+                
             {% endfor %}
         </select>
 
         <!-- Botão de Submissão -->
         <button type="submit">Criar Categoria</button>
     </form>
-
+     
     <!-- Botão de Voltar -->
     <br>
     <a href="{% url 'listar_categorias' %}" class="btn btn-secondary">⬅️ Voltar para Lista</a>
+    
 
 </body>
 </html>

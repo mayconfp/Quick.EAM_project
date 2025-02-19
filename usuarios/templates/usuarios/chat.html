@@ -10,13 +10,13 @@
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
-<body>
-
+<body class="chat-page">
+    
     {% include 'usuarios/partials/sidebar.html' %}
     {% include 'usuarios/partials/nav.html'%}
     {%include 'usuarios/partials/rightbar.html'%}
     <div>
-
+        
         {% include 'usuarios/partials/_mobile_history.html' %}
     </div>
 
@@ -45,6 +45,6 @@
         </div>
     </div>
     <script src="{% static 'js/chat.js' %}"></script>
-
+    
 </body>
 </html>

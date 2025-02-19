@@ -481,7 +481,7 @@ header {
 }
 @media (max-width: 768px) {
     .desktop-only {
-        display: none; /* Esconde o histórico desktop */
+        display: none; /* Esconde o histórico desktop*/
     }
 
 
