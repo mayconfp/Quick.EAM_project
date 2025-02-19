@@ -7,6 +7,7 @@
     <title>Lista de Categorias</title>
     <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
 </head>
+<a href="{% url 'chat' %}"><button type="submit">Voltar para chat</button></a>
 <body>
 
     <h2>Lista de Categorias</h2>
@@ -30,6 +31,7 @@
         <label for="buscar_codigo">Buscar por Código:</label>
         <input type="text" id="buscar_codigo" name="q" placeholder="Digite o código..." value="{{ request.GET.q }}">
         <button type="submit">Buscar</button>
+        
     </form>
 
     <table>
@@ -59,8 +61,10 @@
                 </td>
             </tr>
             {% endfor %}
+            
         </tbody>
     </table>
 
 </body>
+
 </html>
