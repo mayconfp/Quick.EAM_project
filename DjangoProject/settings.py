@@ -27,7 +27,11 @@ SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-secreta")
 
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '9035-2804-5274-f02f-b01-55df-e3e5-85f2-ba8d.ngrok-free.app',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -149,3 +153,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "julio.santos@quickeam.com"  # Substitua pelo seu e-mail
 EMAIL_HOST_PASSWORD = "zpdj lvos ffow fusg"  # Use uma senha de aplicativo, se for Gmail
 DEFAULT_FROM_EMAIL = "QuickEAM <seu-email@gmail.com>"
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://9035-2804-5274-f02f-b01-55df-e3e5-85f2-ba8d.ngrok-free.app',
+]
