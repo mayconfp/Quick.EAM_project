@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Categoria - GPP</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+
+    <h2>Criar Nova Categoria</h2>
+
+    <!-- Mensagens de Feedback -->
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{% url 'criar_categoria' %}">
+        {% csrf_token %}
+        
+        <!-- Campo Nome da Categoria -->
+        <label for="descricao">Nome da Categoria:</label>
+        <input type="text" id="descricao" name="descricao" required>
+
+        <!-- Campo Categoria Pai (Opcional) -->
+        <label for="categoria_pai">Categoria Pai (opcional):</label>
+        <select id="categoria_pai" name="categoria_pai">
+            <option value="">Nenhuma (Categoria Principal)</option>
+            {% for categoria in categorias %}
+                <option value="{{ categoria.cod_categoria }}">{{ categoria.descricao }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Botão de Submissão -->
+        <button type="submit">Criar Categoria</button>
+    </form>
+
+    <!-- Botão de Voltar -->
+    <br>
+    <a href="{% url 'listar_categorias' %}" class="btn btn-secondary">⬅️ Voltar para Lista</a>
+
+</body>
+</html>

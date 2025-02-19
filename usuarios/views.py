@@ -222,9 +222,6 @@ def logout_view(request):
 
 
 
-
-
-
 #
 
 @login_required
@@ -374,49 +371,78 @@ def password_reset_confirm(request):
     return JsonResponse({"success": False, "message": "Requisição inválida."})
 
 
-# 🔹 Listar Categorias
-def lista_categorias(request):
-    categorias = Categoria.objects.all()
-    return render(request, 'gpp/lista_categorias.html', {'categorias': categorias})
 
+def listar_categorias(request):
+    query = request.GET.get("q")
+    if query:
+        categorias = Categoria.objects.filter(
+            cod_categoria__icontains=query
+        ) | Categoria.objects.filter(
+            cod_categoria_pai__cod_categoria__icontains=query
+        )  # Busca por subcategorias associadas
+    else:
+        categorias = Categoria.objects.all()
 
+    return render(request, "gpp/listar_categorias.html", {"categorias": categorias})
 
-
-@login_required
+# 🔹 Criar Categoria
 def criar_categoria(request):
     if request.method == "POST":
-        form = CategoriaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({"success": True})
-        else:
-            return JsonResponse({"success": False, "errors": form.errors})
-    else:
-        form = CategoriaForm()
-    return render(request, 'gpp/form_categoria.html', {'form': form})
+        descricao = request.POST.get("descricao")
+        categoria_pai_id = request.POST.get("categoria_pai")  # Obtém a categoria pai (se existir)
 
+        if descricao:
+            # Conta quantas categorias existem e cria um novo código
+            num = Categoria.objects.count() + 1
+            novo_cod_categoria = f"CAT{num}"
 
+            # Certifica-se de que o código gerado é único
+            while Categoria.objects.filter(cod_categoria=novo_cod_categoria).exists():
+                num += 1
+                novo_cod_categoria = f"CAT{num}"
+
+            # Verifica se há uma categoria pai válida
+            categoria_pai = None
+            if categoria_pai_id:
+                categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first()
+
+            # Cria a nova categoria com ou sem pai
+            Categoria.objects.create(
+                cod_categoria=novo_cod_categoria,
+                cod_categoria_pai=categoria_pai,  # Agora a categoria pai é corretamente atribuída
+                descricao=descricao
+            )
+
+        return redirect("listar_categorias")
+
+    categorias = Categoria.objects.all()  # Para exibir no dropdown
+    return render(request, "gpp/criar_categoria.html", {"categorias": categorias})
 
 # 🔹 Editar Categoria
 def editar_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
+    
     if request.method == "POST":
-        form = CategoriaForm(request.POST, instance=categoria)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Categoria atualizada com sucesso!")
-            return redirect('lista_categorias')
-    else:
-        form = CategoriaForm(instance=categoria)
-    return render(request, 'gpp/form_categoria.html', {'form': form})
+        categoria.descricao = request.POST.get("descricao")
+        categoria_pai_id = request.POST.get("categoria_pai")
 
-# 🔹 Excluir Categoria
+        if categoria_pai_id:
+            categoria.cod_categoria_pai = Categoria.objects.get(cod_categoria=categoria_pai_id)
+        else:
+            categoria.cod_categoria_pai = None  # Define como raiz
+
+        categoria.save()
+        return redirect("listar_categorias")
+
+    categorias = Categoria.objects.exclude(cod_categoria=categoria.cod_categoria)  # Evita selecionar a própria categoria como pai
+    return render(request, "gpp/editar_categoria.html", {"categoria": categoria, "categorias": categorias})
+
+# 🔹 Excluir Categoria (SEM JAVASCRIPT, APENAS FORMULÁRIO)
 def excluir_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
-    categoria.delete()
-    messages.success(request, "Categoria excluída com sucesso!")
-    return redirect('lista_categorias')
-
+    categoria.delete()  # Deleta a categoria e suas subcategorias automaticamente
+    return redirect("listar_categorias")
+        
 # 🔹 Listar Especialidades
 def lista_especialidades(request):
     especialidades = Especialidade.objects.all()
