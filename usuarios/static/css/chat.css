@@ -264,7 +264,6 @@ height: 60px;
 
 .message_bot {
     text-align: left;
-    max-width: 70%;
     background-color: #E9ECEF;
     color: #2B2D42; /* Fundo cinza claro */
     word-wrap: break-word;/* Texto cinza escuro */
@@ -371,6 +370,10 @@ header {
     color: #e0e0e0;
 }
 
+.logo a{
+    display: inline-block;
+}
+
 .history-msg {
     display: none; /* Esconde o histórico para dispositivos móveis */
 }
@@ -460,15 +463,9 @@ header {
 
 .message_user,
 .message_bot {
-    max-width: 85%; /* Reduz para garantir que não ultrapasse */
     padding: 5px 22px;
     font-size: 14px;
 }
-
-.message_user{
-margin-left: 30px;
-}    
-
 
 
 }

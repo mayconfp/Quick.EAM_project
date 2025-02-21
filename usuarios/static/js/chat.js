@@ -1,43 +1,58 @@
 document.addEventListener("DOMContentLoaded", function () {
     
+const openBtn = document.getElementById("open_btn");
+const sidebar = document.getElementById("sidebar");
+const openRightBtn = document.getElementById("openright_btn");
+const sidebar2 = document.getElementById("sidebar2");
+const overlay = document.getElementById("overlay"); // Usaremos apenas um overlay para cobrir tudo
 
-    // 🔥 SIDEBAR ESQUERDA
-    const openBtn = document.getElementById("open_btn");
-    const sidebar = document.getElementById("sidebar");
+function closeAllSidebars() {
+    sidebar.classList.remove("open_sidebar");
+    sidebar2.classList.remove("open_sidebar");
+    document.body.classList.remove("menu-open");
+}
 
-    if (openBtn && sidebar) {
-        openBtn.addEventListener("click", function (event) {
-            sidebar.classList.toggle("open_sidebar");
-            event.stopPropagation();
-        });
+if (openBtn && sidebar && overlay) {
+    openBtn.addEventListener("click", function (event) {
+        const isOpen = sidebar.classList.contains("open_sidebar");
 
-        document.addEventListener("click", function (event) {
-            if (!sidebar.contains(event.target) && event.target !== openBtn) {
-                sidebar.classList.remove("open_sidebar");
-            }
-        });
-    } else {
-        console.warn("❌ Sidebar ESQUERDA ou botão não encontrado.");
-    }
+        closeAllSidebars(); // Fecha qualquer sidebar aberta antes de abrir outra
+        if (!isOpen) {
+            sidebar.classList.add("open_sidebar");
+            document.body.classList.add("menu-open");
+        }
+        event.stopPropagation();
+    });
+}
 
-    // 🔥 SIDEBAR DIREITA
-    const openRightBtn = document.getElementById("openright_btn");
-    const sidebar2 = document.getElementById("sidebar2");
+if (openRightBtn && sidebar2 && overlay) {
+    openRightBtn.addEventListener("click", function (event) {
+        const isOpen = sidebar2.classList.contains("open_sidebar");
 
-    if (openRightBtn && sidebar2) {
-        openRightBtn.addEventListener("click", function (event) {
-            sidebar2.classList.toggle("open_sidebar");
-            event.stopPropagation();
-        });
+        closeAllSidebars(); // Fecha qualquer sidebar aberta antes de abrir outra
+        if (!isOpen) {
+            sidebar2.classList.add("open_sidebar");
+            document.body.classList.add("menu-open");
+        }
+        event.stopPropagation();
+    });
+}
 
-        document.addEventListener("click", function (event) {
-            if (!sidebar2.contains(event.target) && event.target !== openRightBtn) {
-                sidebar2.classList.remove("open_sidebar");
-            }
-        });
-    } else {
-        console.warn("❌ Sidebar DIREITA ou botão não encontrado.");
-    }
+// ✅ Fecha qualquer sidebar aberta ao clicar no overlay
+overlay.addEventListener("click", function () {
+    closeAllSidebars();
+});
+
+// ✅ Impede que a sidebar feche ao clicar dentro dela
+sidebar.addEventListener("click", function (event) {
+    event.stopPropagation();
+});
+
+sidebar2.addEventListener("click", function (event) {
+    event.stopPropagation();
+});
+    
+
 
     // 🔥 AJUSTE DO SCROLL NO CHAT
     function scrollToBottom() {
