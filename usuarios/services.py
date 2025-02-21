@@ -2,6 +2,7 @@ from .openai_cliente import gerar_resposta_openai
 from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
 import logging
+from .models import ChatHistory
 
 logger = logging.getLogger(__name__)
 
@@ -31,47 +32,29 @@ def gerar_resposta(user_message, chat_history=None):
     return processar_comunicacao_multi_ia(user_message, chat_history)
 
 
-def processar_comunicacao_multi_ia(mensagem, historico=None):
-    """Processa a mensagem consultando primeiro JSON antes de usar IAs externas."""
+def processar_comunicacao_multi_ia(user_message, historico):
+    """Processa a mensagem consultando JSON antes de usar IAs externas."""
+
+    if not user_message.strip():
+        return "A mensagem não pode estar vazia."
+
+    # 🔎 **Verifica se é um pedido de resumo**
+    if "resuma" in user_message.lower() or "resumo" in user_message.lower():
+        return gerar_resposta_openai(user_message, [])  # Remove contexto da QuickEAM
+
+    respostas = {}
 
     try:
-        logger.info(f"Processando mensagem: {mensagem}")
-
-        historico_formatado = [{"question": h.get("question"), "answer": h.get("answer")} for h in (historico or [])]
-
-        respostas = {}
-
-        # 🔎 **PASSO 1: Chama OpenAI**
-        try:
-            respostas['openai'] = gerar_resposta_openai(mensagem, historico_formatado)
-        except Exception as e:
-            logger.error(f"Erro na OpenAI: {e}")
-            respostas['openai'] = None
-
-        # 🔎 **PASSO 2: Se OpenAI falhar, chama Gemini**
-        if not respostas['openai']:
-            try:
-                respostas['gemini'] = gemini_gerar_resposta(mensagem, historico_formatado)
-            except Exception as e:
-                logger.error(f"Erro na Gemini: {e}")
-                respostas['gemini'] = None
-
-        # 🔎 **PASSO 3: Se OpenAI e Gemini falharem, chama Llama**
-        if not respostas['openai'] and not respostas['gemini']:
-            try:
-                respostas['llama'] = gerar_resposta_llama(mensagem, historico_formatado)
-            except Exception as e:
-                logger.error(f"Erro na Llama: {e}")
-                respostas['llama'] = None
-
-        # 🔥 **Retorna a melhor resposta disponível**
-        melhor_resposta = respostas.get('openai') or respostas.get('gemini') or respostas.get('llama')
-
-        return melhor_resposta or "Desculpe, não consegui gerar uma resposta para essa pergunta."
-
+        respostas['openai'] = gerar_resposta_openai(user_message, historico)
     except Exception as e:
-        logger.critical(f"Erro crítico ao processar multi-IA: {e}")
-        return "Ocorreu um erro inesperado ao processar sua pergunta."
+        print(f"[ERROR] Erro na OpenAI: {e}")
+        respostas['openai'] = None
+
+    melhor_resposta = respostas.get('openai')
+
+    return melhor_resposta or "Desculpe, não consegui gerar uma resposta no momento."
+
+
 
 
 def recuperar_ultima_resposta(user):
@@ -79,7 +62,7 @@ def recuperar_ultima_resposta(user):
     Recupera a última resposta registrada no banco de dados para o usuário.
     """
     try:
-        ultima_resposta = ChatHistory.objects.filter(user=user).order_by('-timestamp').first()
+        ultima_resposta = ChatHistory.objects.filter(session__user=user).order_by('-timestamp').first()
         if ultima_resposta and ultima_resposta.answer.strip():
             print(f"[DEBUG] Última resposta encontrada: {ultima_resposta.answer}")
             return ultima_resposta.answer.strip()

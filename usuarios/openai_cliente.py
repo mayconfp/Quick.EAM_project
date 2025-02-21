@@ -72,7 +72,7 @@ def gerar_resposta_openai(user_message, contexto=None):
 
     # Se não encontrou resposta no JSON, usa OpenAI e adiciona a base de conhecimento como contexto
     messages = [
-        {"role": "system", "content": "Você é a IA Manuela, um assistente virtual especializado na empresa QuickEAM."},
+        {"role": "system", "content": "Você é a IA Manuela, um assistente virtual especializado na empresa QuickEAM, mas também pode responder perguntas gerais sobre diversos temas."},
         {"role": "user", "content": user_message}
     ]
 

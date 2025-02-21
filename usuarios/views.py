@@ -2,35 +2,28 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm
-from .models import CustomUser, ChatSession, ChatHistory
 from django.utils.translation import activate
 import requests
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.template.loader import render_to_string
 from django.core.mail import send_mail
-from django.contrib.auth.tokens import default_token_generator
 from django.http import JsonResponse
-from .forms import CustomUserUpdateForm
 from django.conf import settings
 from .validators import SenhaPersonalizada
 from .models import PasswordResetCode
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Categoria, Especialidade, CicloPadrao
-from .forms import CategoriaForm, EspecialidadeForm, CicloPadraoForm
-from .models import MatrizPadraoAtividade, Categoria, Especialidade
-from .forms import MatrizPadraoAtividadeForm
-from django.utils.safestring import mark_safe
-from .models import ChatSession, ChatHistory
+from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm, CicloPadraoForm, MatrizPadraoAtividadeForm
+from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade, CicloPadrao
 from .provedores import processar_comunicacao_multi_ia, formatar_texto_para_html
-from .openai_cliente import gerar_resposta_openai
 from .services import gerar_resposta
 import logging
+from .services import recuperar_ultima_resposta
 from django.utils.safestring import mark_safe
+from .provedores import formatar_texto_para_html
+
+
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
@@ -61,9 +54,14 @@ def perfil(request):
 
 logger = logging.getLogger(__name__)  # Criando o logger para registrar eventos
 
+
+
+from django.utils.safestring import mark_safe
+from .provedores import formatar_texto_para_html
+
 @login_required
 def chat(request):
-    ai_response = None
+    ai_response = "Ocorreu um erro ao obter a resposta."  # Define um valor padrão
     session_id = request.GET.get('session')
     session = None
 
@@ -75,59 +73,63 @@ def chat(request):
     if not session:
         return redirect('nova_conversa')
 
-    # 🔄 **Busca histórico da conversa**
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
-    
-    # 🔎 **Formatar histórico**
-    chat_history_formatado = [{"question": mensagem.question, "answer": mensagem.answer} for mensagem in chat_history]
 
     if request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
 
-        if user_message:
-            if not session.title or session.title == "Nova Conversa":
-                session.title = user_message[:35]
-                session.save()
+        if not user_message:
+            return JsonResponse({"success": False, "message": "A mensagem não pode estar vazia."})
 
-            logger.info(f"[DEBUG] Usuário enviou: {user_message}")
+        if not session.title or session.title == "Nova Conversa":
+            session.title = user_message[:45]
+            session.save()
 
-            # 🔎 **Tenta responder primeiro pelo JSON**
-            ai_response = gerar_resposta(user_message, chat_history_formatado)
+        logger.info(f"[DEBUG] Usuário enviou: {user_message}")
 
-            if not ai_response:
-                # 🔄 **Se não encontrar no JSON, usa IA**
-                logger.info(f"[DEBUG] Nenhuma resposta no JSON. Chamando IA para responder: '{user_message}'")
-                try:
-                    ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
+        ai_response = gerar_resposta(user_message, chat_history)
 
-                    if not ai_response:
-                        ai_response = "Desculpe, não consegui processar sua mensagem. Tente reformular."
-                        logger.warning(f"[WARNING] IA não conseguiu gerar resposta para: '{user_message}'")
-                except Exception as e:
-                    logger.error(f"[ERROR] Erro ao processar IA: {e}")
-                    ai_response = "Ocorreu um erro ao tentar responder. Tente novamente mais tarde."
+        if not ai_response:
+            try:
+                ai_response = processar_comunicacao_multi_ia(user_message, chat_history)
 
-            # 💾 **Salva no banco**
-            ChatHistory.objects.create(
-                session=session,
-                user=request.user,
-                question=user_message,
-                answer=ai_response
-            )
+                if not ai_response:
+                    ai_response = "Desculpe, não consegui processar sua mensagem. Tente reformular."
+            except Exception as e:
+                ai_response = "Ocorreu um erro ao tentar responder. Tente novamente mais tarde."
+
+        # ✅ **Salva no banco**
+        ChatHistory.objects.create(
+            session=session,
+            user=request.user,
+            question=user_message,
+            answer=ai_response
+        )
 
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
-    sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
 
-    # ✅ **Corrige erro antes de formatar**
+    # ✅ **Evita salvar mensagens de erro repetitivas no histórico**
+    chat_history_formatado = [
+        {"question": mensagem.question, "answer": mensagem.answer}
+        for mensagem in chat_history
+        if "não consegui gerar uma resposta precisa" not in mensagem.answer.lower()
+    ]
+
+    # ✅ **Garante que `ai_response` nunca seja None**
     if ai_response is None:
         ai_response = "Ocorreu um erro ao obter a resposta."
 
-    ai_response_formatado = formatar_texto_para_html(str(ai_response))  # 🔥 Garante que sempre seja string
+    # 🚨 **Correção para evitar respostas em formato de lista**
+    if isinstance(ai_response, list):
+        ai_response = " ".join(str(item) for item in ai_response)
+
+    # 🔥 **Formata corretamente a resposta da IA**
+    ai_response_formatado = mark_safe(formatar_texto_para_html(ai_response))
 
     return render(request, 'usuarios/chat.html', {
-        'response': mark_safe(ai_response_formatado),  # 🔥 Renderiza HTML corretamente
+        'response': ai_response_formatado,
         'chat_history': chat_history,
-        'sessions': sessions,
+        'sessions': ChatSession.objects.filter(user=request.user).order_by('-created_at'),
         'current_session': session,
         'pagina_atual': 'chat'
     })
@@ -145,14 +147,18 @@ def definir_idioma(request):
             latitude = dados.get('latitude')
             longitude = dados.get('longitude')
 
-            # Use uma API de geocodificação para determinar o país
+            # ⚡ Evita chamadas repetidas: verifica se já existe na sessão
+            if "user_language" in request.session:
+                return JsonResponse({'status': 'Idioma já definido', 'idioma': request.session['user_language']})
+
+            # 🔄 Chama API apenas se necessário
             url = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={latitude}&longitude={longitude}&localityLanguage=en"
             response = requests.get(url)
             dados_localizacao = response.json()
 
             pais = dados_localizacao.get('countryCode', 'EN')
 
-            # Mapeia o país para o idioma
+            # 🗺 Mapeia o país para o idioma
             mapa_idiomas = {
                 'BR': 'pt-br',
                 'US': 'en',
@@ -160,8 +166,8 @@ def definir_idioma(request):
             }
 
             idioma = mapa_idiomas.get(pais, 'en')
+            request.session['user_language'] = idioma  # 🔥 Salva na sessão para evitar chamadas repetidas
             activate(idioma)
-            request.session['django_language'] = idioma
 
             return JsonResponse({'status': 'Idioma definido', 'idioma': idioma})
         except Exception as e:

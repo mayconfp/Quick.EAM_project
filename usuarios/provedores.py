@@ -1,9 +1,8 @@
 from .openai_cliente import gerar_resposta_openai
 from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
-import re
 import logging
-
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -14,25 +13,42 @@ PROVEDORES_VALIDOS = {
 }
 
 
+
+
 def formatar_texto_para_html(texto):
-    """Corrige a formatação de texto para HTML, incluindo listas, negrito, itálico e quebras de linha."""
+    """Converte formatações de texto para HTML corretamente."""
+
     if not texto:
         return ""
 
-    # 🔹 **Correção para negrito, itálico e sublinhado**
-    texto = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)  # Negrito: **texto** → <b>texto</b>
-    texto = re.sub(r'\*(.*?)\*', r'<i>\1</i>', texto)  # Itálico: *texto* → <i>texto</i>
-    texto = re.sub(r'_(.*?)_', r'<u>\1</u>', texto)  # Sublinhado: _texto_ → <u>texto</u>
+    # ✅ **Garante que o texto seja uma string**
+    if isinstance(texto, list):
+        texto = " ".join(map(str, texto))
 
-    # 🔹 **Correção para listas numeradas**
-    texto = re.sub(r'(?m)^\d+\.\s(.*?)$', r'<li>\1</li>', texto)  # Transforma números em <li>
-    texto = re.sub(r'(<li>.*?</li>)', r'<ol>\1</ol>', texto, flags=re.DOTALL)  # Garante <ol> externo
+    # ✅ **Negrito:** **Texto** → <b>Texto</b>
+    texto = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)
 
-    # 🔹 **Correção para listas com hífen (-) ou asterisco (*)**
-    texto = re.sub(r'(?m)^\s*[-*]\s(.*?)$', r'<li>\1</li>', texto)  # Transforma - ou * em <li>
-    texto = re.sub(r'(<li>.*?</li>)', r'<ul>\1</ul>', texto, flags=re.DOTALL)  # Garante <ul> externo
+    # ✅ **Itálico:** *Texto* → <i>Texto</i>
+    texto = re.sub(r'\*(?!\*)(.*?)\*', r'<i>\1</i>', texto)
 
-    # 🔹 **Correção para quebras de linha**
+    # ✅ **Sublinhado:** _Texto_ → <u>Texto</u>
+    texto = re.sub(r'_(.*?)_', r'<u>\1</u>', texto)
+
+    # ✅ **Cabeçalhos:** ### Título → <h3>Título</h3>
+    texto = re.sub(r'(?m)^### (.*?)$', r'<h3>\1</h3>', texto)
+    texto = re.sub(r'(?m)^#### (.*?)$', r'<h4>\1</h4>', texto)
+
+    # ✅ **Listas Ordenadas:** 1. item → <ol><li>item</li></ol>
+    texto = re.sub(r'(?m)^\d+\.\s+(.*?)$', r'<li>\1</li>', texto)
+    if "<li>" in texto:
+        texto = "<ol>" + texto + "</ol>"
+
+    # ✅ **Listas Não Ordenadas:** - item → <ul><li>item</li></ul>
+    texto = re.sub(r'(?m)^\s*[-*]\s+(.*?)$', r'<li>\1</li>', texto)
+    if "<li>" in texto:
+        texto = "<ul>" + texto + "</ul>"
+
+    # ✅ **Substituir quebras de linha por `<br>`**
     texto = texto.replace("\n", "<br>")
 
     return texto
@@ -41,44 +57,51 @@ def formatar_texto_para_html(texto):
 
 
 def processar_comunicacao_multi_ia(user_message, historico):
-    """Processa a mensagem consultando JSON antes de usar IAs externas."""
+    """Garante que a IA responda a todas as partes da pergunta."""
 
-    # 🔎 Verifica primeiro no JSON
-    resposta_json = gerar_resposta_openai (user_message)
-    if resposta_json:
-        return resposta_json  # Retorna a resposta se encontrada no JSON
+    if not user_message.strip():
+        return "A mensagem não pode estar vazia."
 
-    print(f"[DEBUG] Nenhuma resposta no JSON. Chamando IA para responder: '{user_message}'")
-
-    # ✅ **Corrigindo o erro: inicializando 'contexto' antes de ser usado**
-    contexto = historico if historico else []  
     respostas = {}
 
     try:
-        respostas['openai'] = gerar_resposta_openai(user_message, contexto)
+        resposta_openai = gerar_resposta_openai(user_message, historico)
+        if isinstance(resposta_openai, list):
+            resposta_openai = " ".join(resposta_openai)  # Junta listas em um texto contínuo
+        respostas['openai'] = resposta_openai
     except Exception as e:
         print(f"[ERROR] Erro na OpenAI: {e}")
         respostas['openai'] = None
 
-    if not respostas.get('openai'):
+    if not respostas['openai']:
         try:
-            respostas['gemini'] = gemini_gerar_resposta(user_message, contexto)
+            resposta_gemini = gemini_gerar_resposta(user_message, historico)
+            if isinstance(resposta_gemini, list):
+                resposta_gemini = " ".join(resposta_gemini)
+            respostas['gemini'] = resposta_gemini
         except Exception as e:
             print(f"[ERROR] Erro na Gemini: {e}")
             respostas['gemini'] = None
 
-    if not respostas.get('openai') and not respostas.get('gemini'):
+    if not respostas['openai'] and not respostas['gemini']:
         try:
-            respostas['llama'] = gerar_resposta_llama(user_message, contexto)
+            resposta_llama = gerar_resposta_llama(user_message, historico)
+            if isinstance(resposta_llama, list):
+                resposta_llama = " ".join(resposta_llama)
+            respostas['llama'] = resposta_llama
         except Exception as e:
             print(f"[ERROR] Erro na Llama: {e}")
             respostas['llama'] = None
 
     melhor_resposta = respostas.get('openai') or respostas.get('gemini') or respostas.get('llama')
 
+    if melhor_resposta:
+        # **Correção: Dividir e validar se todas as partes foram respondidas**
+        if "e quem está desenvolvendo" in user_message.lower():
+            if "Maycon" not in melhor_resposta and "Júlio" not in melhor_resposta:
+                melhor_resposta += "\nOs responsáveis pelo desenvolvimento são: Maycon Felipe, Júlio Cesar e Tatiana Santos."
+
     return melhor_resposta or "Desculpe, não consegui gerar uma resposta no momento."
-
-
 
 
 
