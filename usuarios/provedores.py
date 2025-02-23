@@ -2,7 +2,6 @@ from .openai_cliente import gerar_resposta_openai
 from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
 import logging
-import re
 
 logger = logging.getLogger(__name__)
 
@@ -11,45 +10,6 @@ PROVEDORES_VALIDOS = {
     'llama': gerar_resposta_llama,
     'gemini': gemini_gerar_resposta,
 }
-
-
-
-
-
-def formatar_texto_para_html(texto):
-    """Aplica formatação básica de Markdown para HTML."""
-
-    if not texto:
-        return ""
-
-    # Se for uma lista, transforma em texto
-    if isinstance(texto, list):
-        texto = " ".join(texto)
-
-    # **Negrito** → **Texto** para <b>Texto</b>
-    texto = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)
-
-    # *Itálico* → *Texto* para <i>Texto</i>
-    texto = re.sub(r'\*(?!\*)(.*?)\*', r'<i>\1</i>', texto)
-
-    # _Sublinhado_ → _Texto_ para <u>Texto</u>
-    texto = re.sub(r'_(.*?)_', r'<u>\1</u>', texto)
-
-    # Listas ordenadas
-    texto = re.sub(r'(?m)^\d+\.\s+(.*?)$', r'<li>\1</li>', texto)
-    if "<li>" in texto:
-        texto = "<ol>" + texto + "</ol>"
-
-    # Listas não ordenadas (- ou *)
-    texto = re.sub(r'(?m)^\s*[-*]\s+(.*?)$', r'<li>\1</li>', texto)
-    if "<li>" in texto:
-        texto = "<ul>" + texto + "</ul>"
-
-    # Substituir quebras de linha por `<br>`
-    texto = texto.replace("\n", "<br>")
-
-    return texto
-
 
 
 

@@ -263,13 +263,15 @@ height: 60px;
     text-align: left;
     max-width: 70%;
     background-color: #E9ECEF;
-    color: #2B2D42; /* Fundo cinza claro */
-    word-wrap: break-word;/* Texto cinza escuro */
-    padding: 10px 15px;
+    color: #2B2D42;
+    word-wrap: break-word;
+    padding: 15px 30px; /* Ajusta o padding lateral e superior/inferior */
     margin-bottom: 15px;
-    border-radius: 10px;
-    margin-right: auto; /* Empurra para a esquerda */
+    border-radius: 12px; /* Suaviza os cantos */
+    margin-right: auto;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Sombra leve para destacar */
 }
+
 
 
 .side-menu {
@@ -477,6 +479,9 @@ header {
     .message_bot {
         max-width: 90%;
     }
+
+
+    
 
 }
 @media (max-width: 768px) {

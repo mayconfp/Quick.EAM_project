@@ -1,5 +1,25 @@
 document.addEventListener("DOMContentLoaded", function () {
-    
+    // 🔥 FUNÇÃO PARA DECODIFICAR E FORMATAR A RESPOSTA DA IA
+    function processarResposta(resposta) {
+        try {
+            // Remove caracteres Unicode desnecessários (\u000A, \u002D, etc.)
+            const respostaDecodificada = resposta.replace(/\\u[\dA-Fa-f]{4}/g, '');
+
+            // Converte Markdown para HTML usando `marked.js`
+            return marked.parse(respostaDecodificada);
+        } catch (error) {
+            console.error("Erro ao processar resposta:", error);
+            return resposta; // Retorna a resposta original se houver erro
+        }
+    }
+
+    // 🔥 Atualiza todas as respostas da IA corretamente ao carregar a página
+    document.querySelectorAll(".chat-response").forEach(element => {
+        const respostaOriginal = element.getAttribute("data-resposta");
+        if (respostaOriginal) {
+            element.innerHTML = processarResposta(respostaOriginal);
+        }
+    });
 
     // 🔥 SIDEBAR ESQUERDA
     const openBtn = document.getElementById("open_btn");
@@ -74,4 +94,29 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // 🔥 BUSCAR RESPOSTA DA IA E ATUALIZAR O CHAT
+    function obterRespostaIA() {
+        fetch("/chat/")
+            .then(response => {
+                if (!response.ok) {
+                    console.error("Erro na requisição ao chat:", response.status);
+                    return null;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.response) {
+                    const respostaElement = document.getElementById("resposta");
+                    if (respostaElement) {
+                        respostaElement.innerHTML = processarResposta(data.response);
+                    }
+                } else {
+                    console.warn("Nenhuma resposta válida recebida da IA.");
+                }
+            })
+            .catch(error => {
+                console.error("Erro ao buscar resposta do chat:", error);
+            });
+    }
+    
 });

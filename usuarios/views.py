@@ -15,16 +15,16 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm, CicloPadraoForm, MatrizPadraoAtividadeForm
 from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade, CicloPadrao
-from .provedores import processar_comunicacao_multi_ia, formatar_texto_para_html
+from .provedores import processar_comunicacao_multi_ia
 from .services import gerar_resposta
 import logging
 from .services import recuperar_ultima_resposta
-from django.utils.safestring import mark_safe
-from .provedores import formatar_texto_para_html
+import json
 
 
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
+
 
 logger = logging.getLogger(__name__)  # Cria um logger para este módulo
 
@@ -150,7 +150,8 @@ def chat(request):
     # 🔥 Remove aspas extras que possam ter ficado na string
     ai_response = ai_response.replace("'", "").replace("[", "").replace("]", "")
 
-    ai_response_formatado = mark_safe(formatar_texto_para_html(ai_response))
+    ai_response_formatado = json.dumps(ai_response, ensure_ascii=False) # Enviar resposta em Markdown puro
+
 
 
 
