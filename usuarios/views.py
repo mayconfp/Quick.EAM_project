@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm
 from django.utils.translation import activate
 import requests
 from django.contrib.auth import get_user_model
@@ -56,9 +55,6 @@ logger = logging.getLogger(__name__)  # Criando o logger para registrar eventos
 
 
 
-from django.utils.safestring import mark_safe
-from .provedores import formatar_texto_para_html
-
 @login_required
 def chat(request):
     ai_response = "Ocorreu um erro ao obter a resposta."  # Define um valor padrão
@@ -73,7 +69,15 @@ def chat(request):
     if not session:
         return redirect('nova_conversa')
 
+    # 🔄 **Busca histórico da conversa**
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
+
+    # 🔎 **Formatar histórico (removendo mensagens de erro para evitar loops)**
+    chat_history_formatado = [
+        {"question": mensagem.question, "answer": mensagem.answer}
+        for mensagem in chat_history
+        if "não consegui gerar uma resposta precisa" not in mensagem.answer.lower()
+    ]
 
     if request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
@@ -87,18 +91,38 @@ def chat(request):
 
         logger.info(f"[DEBUG] Usuário enviou: {user_message}")
 
-        ai_response = gerar_resposta(user_message, chat_history)
+        # ✅ **Se for um pedido de resumo, busca a última resposta**
+        if "resuma" in user_message.lower() or "resumo" in user_message.lower():
+            ultima_resposta = recuperar_ultima_resposta(request.user)
 
-        if not ai_response:
-            try:
-                ai_response = processar_comunicacao_multi_ia(user_message, chat_history)
+            if ultima_resposta:
+                prompt_resumo = f"Resuma o seguinte texto de forma objetiva:\n\n{ultima_resposta}"
+                ai_response = processar_comunicacao_multi_ia(prompt_resumo, chat_history_formatado)
+            else:
+                ai_response = "Não há texto anterior para resumir."
 
-                if not ai_response:
-                    ai_response = "Desculpe, não consegui processar sua mensagem. Tente reformular."
-            except Exception as e:
-                ai_response = "Ocorreu um erro ao tentar responder. Tente novamente mais tarde."
+        else:
+            # ✅ **Garante que a IA use o histórico antes de responder**
+            ai_response = gerar_resposta(user_message, chat_history_formatado)
 
-        # ✅ **Salva no banco**
+            if not ai_response:
+                logger.info(f"[DEBUG] Nenhuma resposta no JSON. Chamando IA para responder: '{user_message}'")
+                try:
+                    ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
+
+                    # 🔥 **Se a IA falhar, tenta novamente sem o contexto da QuickEAM**
+                    if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
+                        logger.info(f"[DEBUG] Reenviando pergunta sem base da QuickEAM: {user_message}")
+                        ai_response = processar_comunicacao_multi_ia(user_message, [])  # Remove contexto
+
+                    if not ai_response:
+                        ai_response = "Desculpe, não consegui processar sua mensagem. Tente reformular."
+                        logger.warning(f"[WARNING] IA não conseguiu gerar resposta para: '{user_message}'")
+                except Exception as e:
+                    logger.error(f"[ERROR] Erro ao processar IA: {e}")
+                    ai_response = "Ocorreu um erro ao tentar responder. Tente novamente mais tarde."
+
+        # ✅ **Salva no banco (mantendo a conversa do usuário)**
         ChatHistory.objects.create(
             session=session,
             user=request.user,
@@ -115,16 +139,20 @@ def chat(request):
         if "não consegui gerar uma resposta precisa" not in mensagem.answer.lower()
     ]
 
-    # ✅ **Garante que `ai_response` nunca seja None**
+    # ✅ **Garante que ai_response nunca seja None**
     if ai_response is None:
         ai_response = "Ocorreu um erro ao obter a resposta."
 
-    # 🚨 **Correção para evitar respostas em formato de lista**
+    # 🛑 Verificação: Se a IA retornar uma lista, converte para string corretamente
     if isinstance(ai_response, list):
-        ai_response = " ".join(str(item) for item in ai_response)
+        ai_response = ", ".join(ai_response)  # Junta elementos da lista sem colchetes e aspas
 
-    # 🔥 **Formata corretamente a resposta da IA**
+    # 🔥 Remove aspas extras que possam ter ficado na string
+    ai_response = ai_response.replace("'", "").replace("[", "").replace("]", "")
+
     ai_response_formatado = mark_safe(formatar_texto_para_html(ai_response))
+
+
 
     return render(request, 'usuarios/chat.html', {
         'response': ai_response_formatado,
@@ -133,8 +161,6 @@ def chat(request):
         'current_session': session,
         'pagina_atual': 'chat'
     })
-
-
 
 
 

@@ -15,40 +15,37 @@ PROVEDORES_VALIDOS = {
 
 
 
+
 def formatar_texto_para_html(texto):
-    """Converte formatações de texto para HTML corretamente."""
+    """Aplica formatação básica de Markdown para HTML."""
 
     if not texto:
         return ""
 
-    # ✅ **Garante que o texto seja uma string**
+    # Se for uma lista, transforma em texto
     if isinstance(texto, list):
-        texto = " ".join(map(str, texto))
+        texto = " ".join(texto)
 
-    # ✅ **Negrito:** **Texto** → <b>Texto</b>
+    # **Negrito** → **Texto** para <b>Texto</b>
     texto = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)
 
-    # ✅ **Itálico:** *Texto* → <i>Texto</i>
+    # *Itálico* → *Texto* para <i>Texto</i>
     texto = re.sub(r'\*(?!\*)(.*?)\*', r'<i>\1</i>', texto)
 
-    # ✅ **Sublinhado:** _Texto_ → <u>Texto</u>
+    # _Sublinhado_ → _Texto_ para <u>Texto</u>
     texto = re.sub(r'_(.*?)_', r'<u>\1</u>', texto)
 
-    # ✅ **Cabeçalhos:** ### Título → <h3>Título</h3>
-    texto = re.sub(r'(?m)^### (.*?)$', r'<h3>\1</h3>', texto)
-    texto = re.sub(r'(?m)^#### (.*?)$', r'<h4>\1</h4>', texto)
-
-    # ✅ **Listas Ordenadas:** 1. item → <ol><li>item</li></ol>
+    # Listas ordenadas
     texto = re.sub(r'(?m)^\d+\.\s+(.*?)$', r'<li>\1</li>', texto)
     if "<li>" in texto:
         texto = "<ol>" + texto + "</ol>"
 
-    # ✅ **Listas Não Ordenadas:** - item → <ul><li>item</li></ul>
+    # Listas não ordenadas (- ou *)
     texto = re.sub(r'(?m)^\s*[-*]\s+(.*?)$', r'<li>\1</li>', texto)
     if "<li>" in texto:
         texto = "<ul>" + texto + "</ul>"
 
-    # ✅ **Substituir quebras de linha por `<br>`**
+    # Substituir quebras de linha por `<br>`
     texto = texto.replace("\n", "<br>")
 
     return texto
