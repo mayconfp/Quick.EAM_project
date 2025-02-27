@@ -124,6 +124,9 @@ class PasswordResetCode(models.Model):
         return is_expired
 
 
+
+
+
 class Categoria(models.Model):
     cod_categoria = models.CharField(max_length=50, primary_key=True)
     cod_categoria_pai = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name="subcategorias")
@@ -131,8 +134,6 @@ class Categoria(models.Model):
 
     def __str__(self):
         return f"{self.cod_categoria} - {self.descricao if self.descricao else ''}"
-
-
 
 class CategoriaLang(models.Model):
     cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name="traducoes")
@@ -144,6 +145,10 @@ class CategoriaLang(models.Model):
 
     def __str__(self):
         return f"{self.cod_categoria} ({self.cod_idioma})"
+    
+
+    
+
 
 class Especialidade(models.Model):
     cod_especialidade = models.CharField(max_length=50, primary_key=True)

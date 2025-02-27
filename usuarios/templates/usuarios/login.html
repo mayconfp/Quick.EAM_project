@@ -41,6 +41,13 @@
         <input type="password" id="password" name="password" class="password-field">
         <button type="button" class="toggle-password" onclick="togglePassword('password')">👁️</button>
 
+        <label for="idioma">Idioma:</label>
+        <select name="idioma" id="idioma">
+            <option value="en">English</option>
+            <option value="pt-br" selected>Português</option>
+            <option value="es">Español</option>
+        </select>
+        
         <button type="submit">Entrar</button>
 
         <a href="{% url 'password_reset_request' %}">Esqueceu sua senha?</a>

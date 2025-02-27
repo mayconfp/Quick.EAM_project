@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import activate
 import requests
+from .models import Categoria, CategoriaLang
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
@@ -20,6 +22,9 @@ from .services import gerar_resposta
 import logging
 from .services import recuperar_ultima_resposta
 import json
+from django.shortcuts import redirect, render
+
+from django.db import DatabaseError
 
 
 
@@ -46,6 +51,40 @@ def perfil(request):
         form = CustomUserUpdateForm(instance=request.user)
 
     return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
+
+
+
+
+def user_login(request):
+    if request.user.is_authenticated:
+        return redirect('chat')
+
+    if request.method == 'POST':
+        form = CustomLoginForm(data=request.POST)
+        if form.is_valid():
+            username_or_cnpj = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+
+            user = authenticate(request, username=username_or_cnpj, password=password)
+            if user:
+                login(request, user)
+
+                # 🔹 Salvar o idioma na sessão após login
+                idioma_preferido = getattr(user, "idioma", "en")
+                request.session["user_language"] = idioma_preferido
+                activate(idioma_preferido)
+
+                # 🔥 **Removemos os prints duplicados**
+                return redirect(request.GET.get('next') or 'chat')
+
+            else:
+                messages.error(request, "Usuário ou CNPJ e senha inválidos.")
+
+    else:
+        form = CustomLoginForm()
+
+    return render(request, 'usuarios/login.html', {'form': form})
+
 
 
 
@@ -154,7 +193,6 @@ def chat(request):
 
 
 
-
     return render(request, 'usuarios/chat.html', {
         'response': ai_response_formatado,
         'chat_history': chat_history,
@@ -197,28 +235,6 @@ def register(request):
     return render(request, 'usuarios/register.html', {'form': form, 'pagina_atual': 'register'})
 
 
-
-
-def user_login(request):
-    if request.method == 'POST':
-        form = CustomLoginForm(data=request.POST)
-        if form.is_valid():
-            username_or_cnpj = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            idioma = form.cleaned_data.get('idioma')
-
-
-            user = authenticate(request, username=username_or_cnpj, password=password)
-            if user:
-                login(request, user)
-                request.session["user_language"] = idioma  # Salva o idioma escolhido no request session
-                return redirect('chat')
-            else:
-                messages.error(request, "Usuário ou CNPJ e senha inválidos.")
-    else:
-        form = CustomLoginForm()
-
-    return render(request, 'usuarios/login.html', {'form': form})
 
 
 
@@ -380,23 +396,32 @@ def password_reset_confirm(request):
 
 
 
-def listar_categorias(request):
-    idioma = request.session.get('user_language', 'en')
 
-    categorias = Categoria.objects.prefetch_related("traducoes").all()
+def listar_categorias(request):
+    idioma = request.session.get('user_language', 'en')  # Obtém o idioma da sessão (ex: "en", "pt", "es")
+
+    try:
+        categorias = Categoria.objects.prefetch_related("traducoes").all()
+    except DatabaseError as e:
+        messages.error(request, f"Erro ao acessar categorias: {e}")
+        categorias = []  # Se der erro, evita quebra e retorna lista vazia
 
     categorias_formatadas = []
     for categoria in categorias:
-        traducao = categoria.traducoes.filter(cod_idioma=idioma).first()
-        descricao = traducao.descricao if traducao else categoria.descricao
-
+        try:
+            traducao = categoria.traducoes.filter(cod_idioma=idioma).first()
+            descricao = traducao.descricao if traducao else categoria.descricao
+        except AttributeError:
+            descricao = categoria.descricao  # Se der erro, usa a descrição original
+        
         categorias_formatadas.append({
             "cod_categoria": categoria.cod_categoria,
             "descricao": descricao,
             "cod_categoria_pai": categoria.cod_categoria_pai.cod_categoria if categoria.cod_categoria_pai else None
         })
-        
-        return render (request, 'gpp/lista_categorias.html', {'categorias': categorias_formatadas})
+
+    return render(request, 'gpp/lista_categorias.html', {'categorias': categorias_formatadas})
+
 
 
 
@@ -406,8 +431,9 @@ def criar_categoria(request):
         descricao = request.POST.get("descricao")
         categoria_pai_id = request.POST.get("categoria_pai")
 
-        if descricao:
+        print(f"🚀 Recebendo POST - Descrição: {descricao}, Categoria Pai: {categoria_pai_id}")
 
+        if descricao:
             num = Categoria.objects.count() + 1
             novo_cod_categoria = f"CAT{num}"
 
@@ -415,29 +441,35 @@ def criar_categoria(request):
                 num += 1
                 novo_cod_categoria = f"CAT{num}"
 
-                categoria_pai = None
-                if categoria_pai_id:
-                    categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first()
+            categoria_pai = None
+            if categoria_pai_id:
+                categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first()
 
-                nova_categoria = Categoria.objects.create( 
-                    cod_categoria =novo_cod_categoria,
-                    cod_categoria_pai=novo_cod_categoria,
+            print(f"🔍 Criando categoria - Código: {novo_cod_categoria}, Descrição: {descricao}")
+
+            # Criando e salvando a nova categoria
+            nova_categoria = Categoria.objects.create(
+                cod_categoria=novo_cod_categoria,
+                cod_categoria_pai=categoria_pai,
+                descricao=descricao
+            )
+
+            print(f"✅ Categoria criada com sucesso: {nova_categoria}")
+
+            # Criando as traduções
+            idiomas_disponiveis = ["en", "pt", "es"]
+            for idioma in idiomas_disponiveis:
+                CategoriaLang.objects.create(
+                    cod_categoria=nova_categoria,
+                    cod_idioma=idioma,
                     descricao=descricao
                 )
 
-                idiomas_disponiveis = ["en", "pt", "es"]
-                for idioma in idiomas_disponiveis:
-                    CategoriaLang.objects.create(
-                        cod_categoria=nova_categoria,
-                        cod_idioma=idioma,
-                        descricao=descricao
-                    )
-
-        return redirect("listar_categorias")
+            return redirect("listar_categorias")
 
     categorias = Categoria.objects.all()
     return render(request, "gpp/criar_categoria.html", {"categorias": categorias})
-        
+
 
 
 
@@ -499,6 +531,9 @@ def lista_especialidades(request):
     especialidades = Especialidade.objects.all()
     return render(request, 'gpp/lista_especialidades.html', {'especialidades': especialidades})
 
+
+
+
 # 🔹 Criar Especialidade
 def criar_especialidade(request):
     if request.method == "POST":
@@ -510,6 +545,9 @@ def criar_especialidade(request):
     else:
         form = EspecialidadeForm()
     return render(request, 'gpp/form_especialidade.html', {'form': form})
+
+
+
 
 
 # 🔹 Editar Especialidade
@@ -525,6 +563,9 @@ def editar_especialidade(request, cod_especialidade):
         form = EspecialidadeForm(instance=especialidade)
     return render(request, 'gpp/form_especialidade.html', {'form': form})
 
+
+
+
 # 🔹 Excluir Especialidade
 def excluir_especialidade(request, cod_especialidade):
     especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
@@ -533,10 +574,16 @@ def excluir_especialidade(request, cod_especialidade):
     return redirect('lista_especialidades')
 
 
+
+
 # 🔹 Listar Ciclos de Manutenção
 def lista_ciclos(request):
     ciclos = CicloPadrao.objects.all()
     return render(request, 'gpp/lista_ciclos.html', {'ciclos': ciclos})
+
+
+
+
 
 # 🔹 Criar Ciclo de Manutenção
 def criar_ciclo(request):
@@ -550,9 +597,12 @@ def criar_ciclo(request):
         form = CicloPadraoForm()
     return render(request, 'gpp/form_ciclo.html', {'form': form})
 
+
+
+
 # 🔹 Editar Ciclo de Manutenção
-def editar_ciclo(request, cod_ciclo):
-    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=cod_ciclo)
+def editar_ciclo(request, id):
+    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=id)  # 🔹 Certifique-se de que "id" é um número
     if request.method == "POST":
         form = CicloPadraoForm(request.POST, instance=ciclo)
         if form.is_valid():

@@ -10,20 +10,19 @@ from django.contrib.messages import constants as messages
 
 load_dotenv(find_dotenv())
 
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
 LANGUAGES = [
-    ('en', gettext('English')),
-    ('pt-br', gettext('Portuguese')),
+    ('en', _('English')),
+    ('pt-br', _('Portuguese')),
     ('es', _('Spanish')),
 ]
 
 
 
-
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-
 
 
 SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-secreta")
@@ -44,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'usuarios',  # Aplicativo da sua aplicação
+    'modeltranslation',  # Aplicativo de tradução
 ]
 
 
@@ -53,15 +53,16 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',  # Middleware de autenticação
-    'django.contrib.messages.middleware.MessageMiddleware',  # Middleware de mensagens
-    'usuarios.middleware.LocalizacaoMiddleware',  # Seu middleware customizado
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'usuarios.middleware.LocalizacaoMiddleware', 
 ]
-
-
+    
 
 
 ROOT_URLCONF = 'DjangoProject.urls'
+
+
 
 TEMPLATES = [
     {
@@ -74,6 +75,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
             ],
         },
     },
