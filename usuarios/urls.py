@@ -17,6 +17,8 @@ urlpatterns = [
     path("password_reset/", password_reset_request, name="password_reset_request"),
     path("validate_reset_code/", validate_reset_code, name="validate_reset_code"),
     path("password_reset_confirm/", password_reset_confirm, name="password_reset_confirm"),
+    path('definir-idioma/', views.definir_idioma, name="definir_idioma"),
+
 
     # 🔹 Rotas do GPP - Categorias
     path('gpp/categorias/', views.listar_categorias, name="listar_categorias"),

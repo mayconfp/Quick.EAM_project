@@ -13,7 +13,10 @@ load_dotenv(find_dotenv())
 LANGUAGES = [
     ('en', gettext('English')),
     ('pt-br', gettext('Portuguese')),
+    ('es', _('Spanish')),
 ]
+
+
 
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
@@ -104,7 +107,8 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 
-TIME_ZONE = 'America/Sao_Paulo'
+
+
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True

@@ -14,7 +14,7 @@ from .models import PasswordResetCode
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm, CicloPadraoForm, MatrizPadraoAtividadeForm
-from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade, CicloPadrao
+from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade, CicloPadrao, CategoriaLang
 from .provedores import processar_comunicacao_multi_ia
 from .services import gerar_resposta
 import logging
@@ -166,41 +166,13 @@ def chat(request):
 
 
 def definir_idioma(request):
-    """Define o idioma com base na localização enviada pelo cliente."""
-    if request.method == 'POST':
-        try:
-            import json
-            dados = json.loads(request.body)
-            latitude = dados.get('latitude')
-            longitude = dados.get('longitude')
-
-            # ⚡ Evita chamadas repetidas: verifica se já existe na sessão
-            if "user_language" in request.session:
-                return JsonResponse({'status': 'Idioma já definido', 'idioma': request.session['user_language']})
-
-            # 🔄 Chama API apenas se necessário
-            url = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={latitude}&longitude={longitude}&localityLanguage=en"
-            response = requests.get(url)
-            dados_localizacao = response.json()
-
-            pais = dados_localizacao.get('countryCode', 'EN')
-
-            # 🗺 Mapeia o país para o idioma
-            mapa_idiomas = {
-                'BR': 'pt-br',
-                'US': 'en',
-                'ES': 'es',
-            }
-
-            idioma = mapa_idiomas.get(pais, 'en')
-            request.session['user_language'] = idioma  # 🔥 Salva na sessão para evitar chamadas repetidas
-            activate(idioma)
-
-            return JsonResponse({'status': 'Idioma definido', 'idioma': idioma})
-        except Exception as e:
-            return JsonResponse({'status': 'Erro', 'mensagem': str(e)}, status=400)
-    else:
-        return JsonResponse({'status': 'Método não permitido'}, status=405)
+    if request.method == "POST":
+        novo_idioma = request.POST.get("idioma")
+        if novo_idioma in ["en", "pt", "es"]:  # Idiomas suportados
+            request.session["user_language"] = novo_idioma
+            return JsonResponse({"status": "Idioma atualizado", "idioma": novo_idioma})
+        return JsonResponse({"status": "Erro", "mensagem": "Idioma não suportado"}, status=400)
+    return JsonResponse({"status": "Método não permitido"}, status=405)
 
 
 
@@ -233,10 +205,13 @@ def user_login(request):
         if form.is_valid():
             username_or_cnpj = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
+            idioma = form.cleaned_data.get('idioma')
+
 
             user = authenticate(request, username=username_or_cnpj, password=password)
             if user:
                 login(request, user)
+                request.session["user_language"] = idioma  # Salva o idioma escolhido no request session
                 return redirect('chat')
             else:
                 messages.error(request, "Usuário ou CNPJ e senha inválidos.")
@@ -406,57 +381,74 @@ def password_reset_confirm(request):
 
 
 def listar_categorias(request):
-    query = request.GET.get("q")
-    if query:
-        categorias = Categoria.objects.filter(
-            cod_categoria__icontains=query
-        ) | Categoria.objects.filter(
-            cod_categoria_pai__cod_categoria__icontains=query
-        )  # Busca por subcategorias associadas
-    else:
-        categorias = Categoria.objects.all()
+    idioma = request.session.get('user_language', 'en')
 
-    return render(request, "gpp/listar_categorias.html", {"categorias": categorias})
+    categorias = Categoria.objects.prefetch_related("traducoes").all()
+
+    categorias_formatadas = []
+    for categoria in categorias:
+        traducao = categoria.traducoes.filter(cod_idioma=idioma).first()
+        descricao = traducao.descricao if traducao else categoria.descricao
+
+        categorias_formatadas.append({
+            "cod_categoria": categoria.cod_categoria,
+            "descricao": descricao,
+            "cod_categoria_pai": categoria.cod_categoria_pai.cod_categoria if categoria.cod_categoria_pai else None
+        })
+        
+        return render (request, 'gpp/lista_categorias.html', {'categorias': categorias_formatadas})
+
+
 
 # 🔹 Criar Categoria
 def criar_categoria(request):
     if request.method == "POST":
         descricao = request.POST.get("descricao")
-        categoria_pai_id = request.POST.get("categoria_pai")  # Obtém a categoria pai (se existir)
+        categoria_pai_id = request.POST.get("categoria_pai")
 
         if descricao:
-            # Conta quantas categorias existem e cria um novo código
+
             num = Categoria.objects.count() + 1
             novo_cod_categoria = f"CAT{num}"
 
-            # Certifica-se de que o código gerado é único
             while Categoria.objects.filter(cod_categoria=novo_cod_categoria).exists():
                 num += 1
                 novo_cod_categoria = f"CAT{num}"
 
-            # Verifica se há uma categoria pai válida
-            categoria_pai = None
-            if categoria_pai_id:
-                categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first()
+                categoria_pai = None
+                if categoria_pai_id:
+                    categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first()
 
-            # Cria a nova categoria com ou sem pai
-            Categoria.objects.create(
-                cod_categoria=novo_cod_categoria,
-                cod_categoria_pai=categoria_pai,  # Agora a categoria pai é corretamente atribuída
-                descricao=descricao
-            )
+                nova_categoria = Categoria.objects.create( 
+                    cod_categoria =novo_cod_categoria,
+                    cod_categoria_pai=novo_cod_categoria,
+                    descricao=descricao
+                )
+
+                idiomas_disponiveis = ["en", "pt", "es"]
+                for idioma in idiomas_disponiveis:
+                    CategoriaLang.objects.create(
+                        cod_categoria=nova_categoria,
+                        cod_idioma=idioma,
+                        descricao=descricao
+                    )
 
         return redirect("listar_categorias")
 
-    categorias = Categoria.objects.all()  # Para exibir no dropdown
+    categorias = Categoria.objects.all()
     return render(request, "gpp/criar_categoria.html", {"categorias": categorias})
+        
+
+
 
 # 🔹 Editar Categoria
+
 def editar_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
-    
+    idioma = request.session.get('user_language', 'en')
+
     if request.method == "POST":
-        categoria.descricao = request.POST.get("descricao")
+        nova_descricao = request.POST.get("descricao")
         categoria_pai_id = request.POST.get("categoria_pai")
 
         if categoria_pai_id:
@@ -465,17 +457,43 @@ def editar_categoria(request, cod_categoria):
             categoria.cod_categoria_pai = None  # Define como raiz
 
         categoria.save()
+
+        traducao, created = CategoriaLang.objects.get_or_create(
+            cod_categoria=categoria,
+            cod_idioma=idioma,
+            defaults={"descricao": nova_descricao}
+        )
+        if not created:
+            traducao.descricao = nova_descricao
+            traducao.save()
         return redirect("listar_categorias")
 
-    categorias = Categoria.objects.exclude(cod_categoria=categoria.cod_categoria)  # Evita selecionar a própria categoria como pai
-    return render(request, "gpp/editar_categoria.html", {"categoria": categoria, "categorias": categorias})
+    categorias = Categoria.objects.exclude(cod_categoria=categoria.cod_categoria)
+    traducao = categoria.traducoes.filter(cod_idioma=idioma).first()
+    descricao = traducao.descricao if traducao else categoria.descricao
+
+    return render(request, "gpp/editar_categoria.html", {
+        "categoria": categoria,
+        "categorias": categorias,
+        "descricao": descricao
+    })
+
+
+
 
 # 🔹 Excluir Categoria (SEM JAVASCRIPT, APENAS FORMULÁRIO)
 def excluir_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
-    categoria.delete()  # Deleta a categoria e suas subcategorias automaticamente
+
+    categoria.traducoes.all().delete()
+
+    categoria.delete()
+
     return redirect("listar_categorias")
         
+
+
+
 # 🔹 Listar Especialidades
 def lista_especialidades(request):
     especialidades = Especialidade.objects.all()
@@ -591,3 +609,5 @@ def excluir_matriz_padrao(request, id):
     matriz.delete()
     messages.success(request, "Relação excluída com sucesso!")
     return redirect('lista_matriz_padrao')
+
+

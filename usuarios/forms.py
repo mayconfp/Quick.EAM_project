@@ -49,6 +49,11 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomLoginForm(AuthenticationForm):
+    LANGUAGE_CHOICES = [
+        ('en', 'English'),
+        ('pt', 'Português'),
+        ('es', 'Español'),
+    ]
     username = forms.CharField(
         widget=forms.TextInput(attrs={'placeholder': 'Usuário ou CNPJ'}),
         label="Usuário ou CNPJ"
@@ -57,13 +62,13 @@ class CustomLoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}),
         label="Senha"
     )
+    idioma = forms.ChoiceField(choices=LANGUAGE_CHOICES, required=True, label="Idioma")
 
     def clean_username(self):
         username_or_cnpj = self.cleaned_data.get('username')
         if username_or_cnpj:
             username_or_cnpj = username_or_cnpj.strip()  # Remove espaços extras
         return username_or_cnpj
-
 
 
 class CustomUserUpdateForm(forms.ModelForm):
