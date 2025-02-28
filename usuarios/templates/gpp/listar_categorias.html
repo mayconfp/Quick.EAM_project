@@ -8,16 +8,18 @@
     <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
 </head>
 <body>
-    {% include 'usuarios/partials/nav.html'%}
-    
-    <div class = "categoria">
+    {% include 'usuarios/partials/nav.html' %}
+
+    <div class="categoria">
         <h2>Lista de Categorias</h2>
+
+        <!-- 🔹 Formulário para Criar Categoria -->
         <form method="POST" action="{% url 'criar_categoria' %}">
             {% csrf_token %}
-        
+
             <label for="descricao">Nome da Categoria:</label>
             <input type="text" id="descricao" name="descricao" required>
-        
+
             <label for="categoria_pai">Categoria Pai (opcional):</label>
             <select id="categoria_pai" name="categoria_pai">
                 <option value="">Nenhuma (Categoria Principal)</option>
@@ -25,21 +27,35 @@
                     <option value="{{ categoria.cod_categoria }}">{{ categoria.descricao }}</option>
                 {% endfor %}
             </select>
-        
+
+            <label for="idioma">Idioma:</label>
+            <select id="idioma" name="idioma">
+                <option value="pt">Português</option>
+                <option value="en">Inglês</option>
+                <option value="es">Espanhol</option>
+                <option value="fr">Francês</option>
+                <option value="de">Alemão</option>
+            </select>
+
             <button type="submit">Criar Categoria</button>
         </form>
+
+        <!-- 🔹 Formulário para Buscar Categorias -->
         <form method="GET" action="{% url 'listar_categorias' %}">
             <label for="buscar_codigo">Buscar por Código:</label>
             <input type="text" id="buscar_codigo" name="q" placeholder="Digite o código..." value="{{ request.GET.q }}">
             <button type="submit">Buscar</button>
         </form>
     </div>
+
+    <!-- 🔹 Tabela de Categorias -->
     <table>
         <thead>
             <tr>
                 <th>Código</th>
                 <th>Nome</th>
                 <th>Categoria Pai</th>
+                <th>Idioma</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -47,12 +63,26 @@
             {% for categoria in categorias %}
             <tr>
                 <td>{{ categoria.cod_categoria }}</td>
-                <td>{{ categoria.descricao }}</td>
+                <td>
+                    {{ categoria.descricao }} 
+                    {% for traducao in categoria.traducoes.all %}
+                        <br> <small>({{ traducao.cod_idioma }}: {{ traducao.descricao }})</small>
+                    {% endfor %}
+                </td>
                 <td>
                     {% if categoria.cod_categoria_pai %}
                         {{ categoria.cod_categoria_pai.descricao }} ({{ categoria.cod_categoria_pai.cod_categoria }})
                     {% else %}
                         Nenhuma
+                    {% endif %}
+                </td>
+                <td>
+                    {% if categoria.traducoes.exists %}
+                        {% for traducao in categoria.traducoes.all %}
+                            {{ traducao.cod_idioma }},
+                        {% endfor %}
+                    {% else %}
+                        Nenhuma tradução
                     {% endif %}
                 </td>
                 <td>

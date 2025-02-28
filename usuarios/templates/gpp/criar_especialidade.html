@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Especialidade</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+
+    {% include 'usuarios/partials/nav.html' %}
+
+    <h2>Criar Nova Especialidade</h2>
+    
+    <form method="POST" action="{% url 'criar_especialidade' %}">
+        {% csrf_token %}
+        <label for="descricao">Nome da Especialidade:</label>
+        <input type="text" id="descricao" name="descricao" required>
+        <button type="submit">Criar Especialidade</button>
+    </form>
+
+</body>
+</html>

@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm, CicloPadraoForm, MatrizPadraoAtividadeForm
-from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade, CicloPadrao
+from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade, CicloPadrao, CategoriaLang
 from .provedores import gerar_contexto_completo, processar_comunicacao_multi_ia , formatar_texto_para_html
 from django.utils.translation import activate
 from django.utils.safestring import mark_safe
@@ -17,6 +17,7 @@ from django.conf import settings
 from .validators import SenhaPersonalizada
 from .models import PasswordResetCode
 from django.core.exceptions import ValidationError
+
 
 
 
@@ -366,98 +367,152 @@ def listar_categorias(request):
 def criar_categoria(request):
     if request.method == "POST":
         descricao = request.POST.get("descricao")
-        categoria_pai_id = request.POST.get("categoria_pai")  # Obtém a categoria pai (se existir)
+        idioma = request.POST.get("idioma", "pt")  # Padrão para português
 
         if descricao:
-            # Conta quantas categorias existem e cria um novo código
-            num = Categoria.objects.count() + 1
+            # Gera um código único baseado na contagem total de categorias + 1
+            ultimo_codigo = Categoria.objects.order_by('-cod_categoria').first()
+            if ultimo_codigo:
+                num = int(ultimo_codigo.cod_categoria.replace("CAT", "")) + 1
+            else:
+                num = 1  # Se não houver categorias, inicia a contagem do zero
+
             novo_cod_categoria = f"CAT{num}"
 
-            # Certifica-se de que o código gerado é único
-            while Categoria.objects.filter(cod_categoria=novo_cod_categoria).exists():
-                num += 1
-                novo_cod_categoria = f"CAT{num}"
-
-            # Verifica se há uma categoria pai válida
-            categoria_pai = None
-            if categoria_pai_id:
-                categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first()
-
-            # Cria a nova categoria com ou sem pai
-            Categoria.objects.create(
+            # Criar a categoria
+            categoria = Categoria.objects.create(
                 cod_categoria=novo_cod_categoria,
-                cod_categoria_pai=categoria_pai,  # Agora a categoria pai é corretamente atribuída
+                descricao=descricao  # Pode armazenar o nome original
+            )
+
+            # Criar a tradução correspondente
+            CategoriaLang.objects.create(
+                cod_categoria=categoria,
+                cod_idioma=idioma,
                 descricao=descricao
             )
 
         return redirect("listar_categorias")
+    
+    return render(request, "gpp/criar_categoria.html")
 
-    categorias = Categoria.objects.all()  # Para exibir no dropdown
-    return render(request, "gpp/criar_categoria.html", {"categorias": categorias})
-
-# 🔹 Editar Categoria
+# 🔹 Editar Categoria e Traduções
 def editar_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
     
     if request.method == "POST":
+        # Atualiza a descrição da categoria
         categoria.descricao = request.POST.get("descricao")
-        categoria_pai_id = request.POST.get("categoria_pai")
 
+        # Atualiza a categoria pai
+        categoria_pai_id = request.POST.get("categoria_pai")
         if categoria_pai_id:
             categoria.cod_categoria_pai = Categoria.objects.get(cod_categoria=categoria_pai_id)
         else:
             categoria.cod_categoria_pai = None  # Define como raiz
 
         categoria.save()
+
+        # 🔹 Atualiza as traduções existentes
+        idiomas = request.POST.getlist("idiomas[]")
+        traducoes = request.POST.getlist("traducoes[]")
+
+        # Remove as traduções antigas
+        categoria.traducoes.all().delete()
+
+        # Adiciona as novas traduções
+        for i in range(len(idiomas)):
+            CategoriaLang.objects.create(
+                cod_categoria=categoria,
+                cod_idioma=idiomas[i],
+                descricao=traducoes[i]
+            )
+
         return redirect("listar_categorias")
 
-    categorias = Categoria.objects.exclude(cod_categoria=categoria.cod_categoria)  # Evita selecionar a própria categoria como pai
-    return render(request, "gpp/editar_categoria.html", {"categoria": categoria, "categorias": categorias})
+    # 🔹 Lista categorias para selecionar uma categoria pai
+    categorias = Categoria.objects.exclude(cod_categoria=categoria.cod_categoria)
+
+    return render(request, "gpp/editar_categoria.html", {
+        "categoria": categoria,
+        "categorias": categorias
+    })
 
 # 🔹 Excluir Categoria (SEM JAVASCRIPT, APENAS FORMULÁRIO)
 def excluir_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
     categoria.delete()  # Deleta a categoria e suas subcategorias automaticamente
     return redirect("listar_categorias")
-        
+
+
+def adicionar_traducao(request, cod_categoria):
+    categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
+
+    if request.method == "POST":
+        idioma = request.POST.get("idioma")
+        descricao_traduzida = request.POST.get("descricao_traduzida")
+
+        if idioma and descricao_traduzida:
+            CategoriaLang.objects.create(
+                cod_categoria=categoria,
+                cod_idioma=idioma,
+                descricao=descricao_traduzida
+            )
+
+    return redirect("editar_categoria", cod_categoria=categoria.cod_categoria)
+
+
+
 # 🔹 Listar Especialidades
 def lista_especialidades(request):
-    especialidades = Especialidade.objects.all()
-    return render(request, 'gpp/lista_especialidades.html', {'especialidades': especialidades})
+    query = request.GET.get("q")
+    if query:
+        especialidades = Especialidade.objects.filter(cod_especialidade__icontains=query)
+    else:
+        especialidades = Especialidade.objects.all()
+    
+    return render(request, "gpp/lista_especialidades.html", {"especialidades": especialidades})
 
 # 🔹 Criar Especialidade
 def criar_especialidade(request):
     if request.method == "POST":
-        form = EspecialidadeForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Especialidade criada com sucesso!")
-            return redirect('lista_especialidades')
-    else:
-        form = EspecialidadeForm()
-    return render(request, 'gpp/form_especialidade.html', {'form': form})
+        descricao = request.POST.get("descricao")
+        
+        if descricao:
+            # Gera código automático
+            ultimo_codigo = Especialidade.objects.order_by('-cod_especialidade').first()
+            if ultimo_codigo:
+                num = int(ultimo_codigo.cod_especialidade.replace("ESP", "")) + 1
+            else:
+                num = 1
 
+            novo_cod_especialidade = f"ESP{num}"
+
+            Especialidade.objects.create(
+                cod_especialidade=novo_cod_especialidade,
+                descricao=descricao
+            )
+
+        return redirect("lista_especialidades")
+    
+    return render(request, "gpp/criar_especialidade.html")
 
 # 🔹 Editar Especialidade
 def editar_especialidade(request, cod_especialidade):
     especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
+    
     if request.method == "POST":
-        form = EspecialidadeForm(request.POST, instance=especialidade)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Especialidade atualizada com sucesso!")
-            return redirect('lista_especialidades')
-    else:
-        form = EspecialidadeForm(instance=especialidade)
-    return render(request, 'gpp/form_especialidade.html', {'form': form})
+        especialidade.descricao = request.POST.get("descricao")
+        especialidade.save()
+        return redirect("lista_especialidades")
+
+    return render(request, "gpp/editar_especialidade.html", {"especialidade": especialidade})
 
 # 🔹 Excluir Especialidade
 def excluir_especialidade(request, cod_especialidade):
     especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
     especialidade.delete()
-    messages.success(request, "Especialidade excluída com sucesso!")
-    return redirect('lista_especialidades')
-
+    return redirect("lista_especialidades")
 
 # 🔹 Listar Ciclos de Manutenção
 def lista_ciclos(request):

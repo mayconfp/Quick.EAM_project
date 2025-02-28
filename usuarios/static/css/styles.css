@@ -633,6 +633,16 @@ background-color: #4f46e5;
     
 }   
 
+#sidebar2.open_sidebar {
+    width: 300px; 
+    right: 0;
+}
+
+#sidebar.open_sidebar {
+    width: 300px;
+    transform: translateX(0);
+}
+
 .logo a{
     width: 70px;
 }
