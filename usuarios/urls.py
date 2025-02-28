@@ -20,34 +20,23 @@ urlpatterns = [
     path('definir-idioma/', views.definir_idioma, name="definir_idioma"),
 
 
-    # 🔹 Rotas do GPP - Categorias
-    path('gpp/categorias/', views.listar_categorias, name="listar_categorias"),
+ path('gpp/categorias/', views.listar_categorias, name="listar_categorias"),
     path('gpp/categorias/nova/', views.criar_categoria, name="criar_categoria"),
     path('gpp/categorias/editar/<str:cod_categoria>/', views.editar_categoria, name="editar_categoria"),
     path('gpp/categorias/excluir/<str:cod_categoria>/', views.excluir_categoria, name="excluir_categoria"),
-
-
+    path('gpp/categorias/adicionar_traducao/<str:cod_categoria>/', views.adicionar_traducao, name="adicionar_traducao"),
 
     # 🔹 Gerenciamento de Especialidades (GPP)
     path('gpp/especialidades/', views.lista_especialidades, name='lista_especialidades'),
     path('gpp/especialidades/nova/', views.criar_especialidade, name='criar_especialidade'),
-    path('gpp/especialidades/editar/<int:id>/', views.editar_especialidade, name='editar_especialidade'),
-    path('gpp/especialidades/excluir/<int:id>/', views.excluir_especialidade, name='excluir_especialidade'),
-
-
-    # 🔹 Rotas do GPP - Especialidades
-    path('gpp/especialidades/', views.lista_especialidades, name='lista_especialidades'),
-    path('gpp/especialidades/nova/', views.criar_especialidade, name='criar_especialidade'),
     path('gpp/especialidades/editar/<str:cod_especialidade>/', views.editar_especialidade, name='editar_especialidade'),
-    path('gpp/especialidades/excluir/<str:cod_especialidade>/', views.excluir_especialidade,
-         name='excluir_especialidade'),
+    path('gpp/especialidades/excluir/<str:cod_especialidade>/', views.excluir_especialidade, name='excluir_especialidade'),
 
-    # 🔹 Rotas do GPP - Ciclos de Manutenção
+    # 🔹 Gerenciamento de Ciclos de Manutenção (GPP)
     path('gpp/ciclos/', views.lista_ciclos, name='lista_ciclos'),
     path('gpp/ciclos/novo/', views.criar_ciclo, name='criar_ciclo'),
-    path('gpp/ciclos/editar/<int:id>/', views.editar_ciclo, name='editar_ciclo'),
-    path('gpp/ciclos/excluir/<int:id>/', views.excluir_ciclo, name='excluir_ciclo'),
-
+    path('gpp/ciclos/editar/<str:id>/', views.editar_ciclo, name='editar_ciclo'),
+    path('gpp/ciclos/excluir/<str:id>/', views.excluir_ciclo, name='excluir_ciclo'),
 
     # 🔹 Gerenciamento de Matriz Padrão Atividades (GPP)
     path('gpp/matriz/', views.lista_matriz_padrao, name='lista_matriz_padrao'),

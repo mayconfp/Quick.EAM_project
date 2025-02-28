@@ -1,42 +1,50 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Especialidades</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
 </head>
 <body>
+
     {% include 'usuarios/partials/nav.html' %}
-    <div class="container mt-5">
-        <h2>Especialidades</h2>
-        <a href="{% url 'criar_especialidade' %}" class="btn btn-primary mb-3">Nova Especialidade</a>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Descrição</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for especialidade in especialidades %}
-                <tr>
-                    <td>{{ especialidade.cod_especialidade }}</td>
-                    <td>{{ especialidade.descricao }}</td>
-                    <td>
-                        <a href="{% url 'editar_especialidade' especialidade.cod_especialidade %}" class="btn btn-warning btn-sm">Editar</a>
-                        <a href="{% url 'excluir_especialidade' especialidade.cod_especialidade %}" class="btn btn-danger btn-sm">Excluir</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3" class="text-center">Nenhuma especialidade encontrada.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+    <div class="especialidade">
+        <h2>Lista de Especialidades</h2>
+
+        <!-- Formulário de Busca -->
+        <form method="GET" action="{% url 'lista_especialidades' %}">
+            <label for="buscar_codigo">Buscar por Código:</label>
+            <input type="text" id="buscar_codigo" name="q" placeholder="Digite o código..." value="{{ request.GET.q }}">
+            <button type="submit">Buscar</button>
+        </form>
+        <h2>Não tem especialidades ainda? Crie aqui!</h2>
+        <a href="{% url 'criar_especialidade' %}" class="btn btn-primary">+ Nova Especialidade</a>
     </div>
-    {% include 'usuarios/partials/footer.html' %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for especialidade in especialidades %}
+            <tr>
+                <td>{{ especialidade.cod_especialidade }}</td>
+                <td>{{ especialidade.descricao }}</td>
+                <td>
+                    <a href="{% url 'editar_especialidade' especialidade.cod_especialidade %}" class="btn btn-warning">✏️ Editar</a>
+                    <a href="{% url 'excluir_especialidade' especialidade.cod_especialidade %}" class="btn btn-danger">🗑️ Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
 </body>
 </html>

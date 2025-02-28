@@ -8,17 +8,91 @@
     <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
 </head>
 <body>
+    {% include 'usuarios/partials/nav.html' %}
 
-    <h2>✏️ Editar Categoria</h2>
+    <div class="categoria">
+        <h2>Editar Categoria - {{ categoria.cod_categoria }}</h2>
 
-    <form method="POST">
-        {% csrf_token %}
-        <label for="descricao">Nome da Categoria:</label>
-        <input type="text" id="descricao" name="descricao" value="{{ categoria.descricao }}" required>
-        <button type="submit">Salvar Alterações</button>
-    </form>
+        <form method="POST" action="{% url 'editar_categoria' categoria.cod_categoria %}">
+            {% csrf_token %}
 
-    <a href="{% url 'listar_categorias' %}" class="btn btn-secondary">← Voltar</a>
+            <!-- 🔹 Nome da Categoria -->
+            <label for="descricao">Nome da Categoria:</label>
+            <input type="text" id="descricao" name="descricao" value="{{ categoria.descricao }}" required>
+
+            <!-- 🔹 Categoria Pai -->
+            <label for="categoria_pai">Categoria Pai:</label>
+            <select id="categoria_pai" name="categoria_pai">
+                <option value="">Nenhuma (Categoria Principal)</option>
+                {% for cat in categorias %}
+                    <option value="{{ cat.cod_categoria }}" {% if categoria.cod_categoria_pai == cat %}selected{% endif %}>
+                        {{ cat.descricao }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- 🔹 Traduções Existentes -->
+            <h3>Traduções</h3>
+            <div id="traducaoContainer">
+                {% for traducao in categoria.traducoes.all %}
+                    <div class="traducao">
+                        <label>Idioma:</label>
+                        <select name="idiomas[]">
+                            <option value="pt" {% if traducao.cod_idioma == 'pt' %}selected{% endif %}>Português</option>
+                            <option value="en" {% if traducao.cod_idioma == 'en' %}selected{% endif %}>Inglês</option>
+                            <option value="es" {% if traducao.cod_idioma == 'es' %}selected{% endif %}>Espanhol</option>
+                            <option value="fr" {% if traducao.cod_idioma == 'fr' %}selected{% endif %}>Francês</option>
+                            <option value="de" {% if traducao.cod_idioma == 'de' %}selected{% endif %}>Alemão</option>
+                        </select>
+
+                        <label>Descrição:</label>
+                        <input type="text" name="traducoes[]" value="{{ traducao.descricao }}" required>
+
+                        <button type="button" class="removeTraducao">Remover</button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- 🔹 Botão para adicionar novas traduções -->
+            <button type="button" id="addTraducao">Adicionar Nova Tradução</button>
+
+            <!-- 🔹 Botão de Salvar -->
+            <button type="submit">Salvar Alterações</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("addTraducao").addEventListener("click", function() {
+            let container = document.getElementById("traducaoContainer");
+            let div = document.createElement("div");
+            div.classList.add("traducao");
+
+            div.innerHTML = `
+                <label>Idioma:</label>
+                <select name="idiomas[]">
+                    <option value="pt">Português</option>
+                    <option value="en">Inglês</option>
+                    <option value="es">Espanhol</option>
+                    <option value="fr">Francês</option>
+                    <option value="de">Alemão</option>
+                </select>
+
+                <label>Descrição:</label>
+                <input type="text" name="traducoes[]" required>
+
+                <button type="button" class="removeTraducao">Remover</button>
+            `;
+
+            container.appendChild(div);
+        });
+
+        // 🔹 Remover Tradução Individualmente
+        document.addEventListener("click", function(event) {
+            if (event.target.classList.contains("removeTraducao")) {
+                event.target.parentElement.remove();
+            }
+        });
+    </script>
 
 </body>
 </html>

@@ -33,25 +33,35 @@
 <div class="login">
     <h1>Login</h1>
     <form method="post">
-        {% csrf_token %}
-        <label for="username">Usuário:</label>
-        <input type="text" id="username" name="username" required>
+    {% csrf_token %}
+    
+    <label for="username">Usuário:</label>
+    <input type="text" id="username" name="username" required>
 
-        <label for="password">Senha:</label>
-        <input type="password" id="password" name="password" class="password-field">
-        <button type="button" class="toggle-password" onclick="togglePassword('password')">👁️</button>
+    <label for="password">Senha:</label>
+    <input type="password" id="password" name="password" class="password-field">
+    <button type="button" class="toggle-password" onclick="togglePassword('password')">👁️</button>
 
-        <label for="idioma">Idioma:</label>
-        <select name="idioma" id="idioma">
-            <option value="en">English</option>
-            <option value="pt-br" selected>Português</option>
-            <option value="es">Español</option>
-        </select>
-        
-        <button type="submit">Entrar</button>
+    <label for="idioma">Idioma:</label>
+    <select name="idioma" id="idioma">
+        <option value="en" {% if request.session.django_language == 'en' %}selected{% endif %}>English</option>
+        <option value="pt-br" {% if request.session.django_language == 'pt-br' %}selected{% endif %}>Português</option>
+        <option value="es" {% if request.session.django_language == 'es' %}selected{% endif %}>Español</option>
+    </select>
+    
+    <button type="submit">Entrar</button>
 
-        <a href="{% url 'password_reset_request' %}">Esqueceu sua senha?</a>
-    </form>
+    <a href="{% url 'password_reset_request' %}">Esqueceu sua senha?</a>
+</form>
+
+{% if errormessage %}
+    <div class="senha-errada">
+        {{ errormessage }}
+    </div>
+{% endif %}
+
+<p>Novo na QuickEAM? <a href="{% url 'register' %}">Cadastre-se aqui</a>.</p>
+
     {% if errormessage %}
         <div class="senha-errada">
             {{ errormessage }}

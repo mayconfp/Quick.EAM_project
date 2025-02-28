@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Especialidade</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+
+    {% include 'usuarios/partials/nav.html' %}
+
+    <h2>Editar Especialidade</h2>
+    
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- ✅ Renderiza o formulário corretamente -->
+        <button type="submit">Salvar Alterações</button>
+    </form>
+
+</body>
+</html>

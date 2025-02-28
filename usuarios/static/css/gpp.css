@@ -104,3 +104,19 @@ th {
     font-size: 22px;
     cursor: pointer;
 }
+
+.categoria{
+    margin-top: 85px;
+}
+
+.especialidade{
+    margin-top: 85px;
+}
+
+.especialidade a {
+    text-decoration: none;
+}
+
+.especialidade a:hover{
+    color :rgb(5, 201, 201);
+}

@@ -23,7 +23,7 @@ import logging
 from .services import recuperar_ultima_resposta
 import json
 from django.shortcuts import redirect, render
-
+from django.db import transaction
 from django.db import DatabaseError
 
 
@@ -53,10 +53,9 @@ def perfil(request):
     return render(request, 'usuarios/perfil.html', {'form': form, 'pagina_atual': 'perfil'})
 
 
-
-
 def user_login(request):
     if request.user.is_authenticated:
+        print("🔄 Usuário já autenticado. Redirecionando para chat...")
         return redirect('chat')
 
     if request.method == 'POST':
@@ -74,17 +73,22 @@ def user_login(request):
                 request.session["user_language"] = idioma_preferido
                 activate(idioma_preferido)
 
-                # 🔥 **Removemos os prints duplicados**
-                return redirect(request.GET.get('next') or 'chat')
+                print(f"✅ Usuário autenticado com sucesso: {user.username}, idioma: {idioma_preferido}")
+
+                # 🔹 Imprime antes de redirecionar
+                redirect_url = request.GET.get('next') or 'chat'
+                print(f"🔄 Redirecionando para: {redirect_url}")
+
+                return redirect(redirect_url)  # 🔥 Isso precisa retornar `302` no log!
 
             else:
+                print("❌ Erro de login: Usuário ou senha inválidos.")
                 messages.error(request, "Usuário ou CNPJ e senha inválidos.")
 
     else:
         form = CustomLoginForm()
 
     return render(request, 'usuarios/login.html', {'form': form})
-
 
 
 
@@ -420,7 +424,7 @@ def listar_categorias(request):
             "cod_categoria_pai": categoria.cod_categoria_pai.cod_categoria if categoria.cod_categoria_pai else None
         })
 
-    return render(request, 'gpp/lista_categorias.html', {'categorias': categorias_formatadas})
+    return render(request, "gpp/listar_categorias.html", {"categorias": categorias ,'pagina_atual': 'listar_categorias'})
 
 
 
@@ -428,10 +432,15 @@ def listar_categorias(request):
 # 🔹 Criar Categoria
 def criar_categoria(request):
     if request.method == "POST":
-        descricao = request.POST.get("descricao")
+        descricao = request.POST.get("descricao").strip()
         categoria_pai_id = request.POST.get("categoria_pai")
 
         print(f"🚀 Recebendo POST - Descrição: {descricao}, Categoria Pai: {categoria_pai_id}")
+
+        # 🔹 Evita a criação de categorias com a mesma descrição
+        if Categoria.objects.filter(descricao=descricao).exists():
+            messages.error(request, "Já existe uma categoria com essa descrição!")
+            return redirect("listar_categorias")
 
         if descricao:
             num = Categoria.objects.count() + 1
@@ -441,9 +450,7 @@ def criar_categoria(request):
                 num += 1
                 novo_cod_categoria = f"CAT{num}"
 
-            categoria_pai = None
-            if categoria_pai_id:
-                categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first()
+            categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first() if categoria_pai_id else None
 
             print(f"🔍 Criando categoria - Código: {novo_cod_categoria}, Descrição: {descricao}")
 
@@ -459,17 +466,18 @@ def criar_categoria(request):
             # Criando as traduções
             idiomas_disponiveis = ["en", "pt", "es"]
             for idioma in idiomas_disponiveis:
-                CategoriaLang.objects.create(
-                    cod_categoria=nova_categoria,
-                    cod_idioma=idioma,
-                    descricao=descricao
-                )
+                if not CategoriaLang.objects.filter(cod_categoria=nova_categoria, cod_idioma=idioma).exists():
+                    CategoriaLang.objects.create(
+                        cod_categoria=nova_categoria,
+                        cod_idioma=idioma,
+                        descricao=descricao
+                    )
 
+            messages.success(request, "Categoria criada com sucesso!")
             return redirect("listar_categorias")
 
     categorias = Categoria.objects.all()
-    return render(request, "gpp/criar_categoria.html", {"categorias": categorias})
-
+    return render(request, "gpp/criar_categoria.html")
 
 
 
@@ -477,12 +485,13 @@ def criar_categoria(request):
 
 def editar_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
-    idioma = request.session.get('user_language', 'en')
-
+    
     if request.method == "POST":
-        nova_descricao = request.POST.get("descricao")
-        categoria_pai_id = request.POST.get("categoria_pai")
+        # Atualiza a descrição da categoria
+        categoria.descricao = request.POST.get("descricao").strip()
 
+        # Atualiza a categoria pai
+        categoria_pai_id = request.POST.get("categoria_pai")
         if categoria_pai_id:
             categoria.cod_categoria_pai = Categoria.objects.get(cod_categoria=categoria_pai_id)
         else:
@@ -490,25 +499,35 @@ def editar_categoria(request, cod_categoria):
 
         categoria.save()
 
-        traducao, created = CategoriaLang.objects.get_or_create(
-            cod_categoria=categoria,
-            cod_idioma=idioma,
-            defaults={"descricao": nova_descricao}
-        )
-        if not created:
-            traducao.descricao = nova_descricao
-            traducao.save()
+        # 🔹 Atualiza ou adiciona as traduções
+        idiomas = request.POST.getlist("idiomas[]")
+        traducoes = request.POST.getlist("traducoes[]")
+
+        for i in range(len(idiomas)):
+            idioma = idiomas[i]
+            descricao_traduzida = traducoes[i]
+
+            # 🔥 Se a tradução já existe, apenas atualiza. Caso contrário, cria uma nova
+            traducao, created = CategoriaLang.objects.get_or_create(
+                cod_categoria=categoria, cod_idioma=idioma,
+                defaults={"descricao": descricao_traduzida}
+            )
+            if not created:
+                traducao.descricao = descricao_traduzida
+                traducao.save()
+
+        messages.success(request, "Categoria atualizada com sucesso!")
         return redirect("listar_categorias")
 
+    # 🔹 Lista categorias para selecionar uma categoria pai
     categorias = Categoria.objects.exclude(cod_categoria=categoria.cod_categoria)
-    traducao = categoria.traducoes.filter(cod_idioma=idioma).first()
-    descricao = traducao.descricao if traducao else categoria.descricao
 
     return render(request, "gpp/editar_categoria.html", {
         "categoria": categoria,
-        "categorias": categorias,
-        "descricao": descricao
+        "categorias": categorias
     })
+
+
 
 
 
@@ -517,13 +536,67 @@ def editar_categoria(request, cod_categoria):
 def excluir_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
 
-    categoria.traducoes.all().delete()
+    # Verifica se existem subcategorias associadas antes de excluir
+    if Categoria.objects.filter(cod_categoria_pai=categoria).exists():
+        messages.error(request, "Não é possível excluir uma categoria que possui subcategorias!")
+        return redirect("listar_categorias")
 
+    # Exclui as traduções associadas antes de excluir a categoria
+    categoria.traducoes.all().delete()
     categoria.delete()
+    messages.success(request, "Categoria excluída com sucesso!")
 
     return redirect("listar_categorias")
-        
 
+
+
+def adicionar_traducao(request, cod_categoria):
+    categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
+
+    if request.method == "POST":
+        idioma = request.POST.get("idioma").strip()
+        descricao_traduzida = request.POST.get("descricao_traduzida").strip()
+
+        if idioma and descricao_traduzida:
+            # Verifica se a tradução já existe
+            traducao_existente = CategoriaLang.objects.filter(
+                cod_categoria=categoria,
+                cod_idioma=idioma
+            ).first()
+
+            if traducao_existente:
+                messages.error(request, f"A tradução para {idioma.upper()} já existe!")
+            else:
+                CategoriaLang.objects.create(
+                    cod_categoria=categoria,
+                    cod_idioma=idioma,
+                    descricao=descricao_traduzida
+                )
+                messages.success(request, f"Tradução para {idioma.upper()} adicionada com sucesso!")
+
+    return redirect("editar_categoria", cod_categoria=categoria.cod_categoria)
+
+
+
+# 🔹 Excluir Categoria (SEM JAVASCRIPT, APENAS FORMULÁRIO)
+def excluir_categoria(request, cod_categoria):
+    categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
+
+    # ✅ Se a categoria tem subcategorias, impedimos a exclusão direta
+    if Categoria.objects.filter(cod_categoria_pai=categoria).exists():
+        messages.error(request, "Não é possível excluir uma categoria que tenha subcategorias. Remova as subcategorias primeiro.")
+        return redirect("listar_categorias")
+
+    # ✅ Exclui apenas as traduções da categoria específica
+    categoria.traducoes.all().delete()
+
+    # ✅ Agora, exclui a categoria corretamente
+    categoria.delete()
+
+    messages.success(request, "Categoria excluída com sucesso!")
+    return redirect("listar_categorias")
+
+        
 
 
 # 🔹 Listar Especialidades
@@ -561,7 +634,7 @@ def editar_especialidade(request, cod_especialidade):
             return redirect('lista_especialidades')
     else:
         form = EspecialidadeForm(instance=especialidade)
-    return render(request, 'gpp/form_especialidade.html', {'form': form})
+    return render(request, 'gpp/editar_especialidade.html', {'form': form})
 
 
 
@@ -602,7 +675,7 @@ def criar_ciclo(request):
 
 # 🔹 Editar Ciclo de Manutenção
 def editar_ciclo(request, id):
-    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=id)  # 🔹 Certifique-se de que "id" é um número
+    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=id)  # 🔹 `id` já é string, então não convertemos
     if request.method == "POST":
         form = CicloPadraoForm(request.POST, instance=ciclo)
         if form.is_valid():
@@ -611,15 +684,14 @@ def editar_ciclo(request, id):
             return redirect('lista_ciclos')
     else:
         form = CicloPadraoForm(instance=ciclo)
-    return render(request, 'gpp/form_ciclo.html', {'form': form})
+    return render(request, "gpp/editar_ciclo.html", {"form": form, "ciclo": ciclo})
 
-# 🔹 Excluir Ciclo de Manutenção
-def excluir_ciclo(request, cod_ciclo):
-    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=cod_ciclo)
+
+def excluir_ciclo(request, id):
+    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=id)  # 🔹 Mantemos `id` como string
     ciclo.delete()
     messages.success(request, "Ciclo excluído com sucesso!")
     return redirect('lista_ciclos')
-
 
 
 
