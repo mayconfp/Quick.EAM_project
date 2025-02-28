@@ -120,3 +120,18 @@ th {
 .especialidade a:hover{
     color :rgb(5, 201, 201);
 }
+
+
+.especialidade_edit{
+    margin-top: 85px;
+}
+
+.subcategoria td {
+    padding-left: 40px; /* Dá um recuo para diferenciar subcategorias */
+    font-style: italic;
+    color: #555;
+}
+
+.categoria_table  {
+    color: #555;
+}

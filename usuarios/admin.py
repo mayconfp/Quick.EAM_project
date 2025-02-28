@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, ChatHistory  # Importa os modelos necessários
+from .models import CustomUser, ChatHistory,Especialidade  # Importa os modelos necessários
 
 # Registro do modelo CustomUser no admin
 @admin.register(CustomUser)
@@ -13,3 +13,9 @@ class ChatHistoryAdmin(admin.ModelAdmin):
     list_display = ('user', 'question', 'answer', 'timestamp')  # Colunas exibidas no admin
     search_fields = ('question', 'answer', 'user__username')   # Campos para pesquisa
     list_filter = ('timestamp',)                              # Filtros por data
+
+@admin.register(Especialidade)
+class EspecialidadeAdmin(admin.ModelAdmin):
+    list_display = ('cod_especialidade', 'descricao', 'ativo', 'responsavel', 'data_criacao', 'data_atualizacao')
+    list_filter = ('ativo', 'responsavel', 'data_criacao')
+    search_fields = ('cod_especialidade', 'descricao')

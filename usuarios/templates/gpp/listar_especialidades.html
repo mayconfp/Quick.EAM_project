@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Especialidades</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+
+    {% include 'usuarios/partials/nav.html' %}
+
+<div class="especialidade">
+        <h2>Lista de Especialidades</h2>
+
+        <!-- Exibir mensagens de sucesso -->
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!-- Formulário de Filtro e Busca -->
+        <form method="GET" action="{% url 'listar_especialidades' %}">
+            <label for="buscar_codigo">Buscar por Código:</label>
+            <input type="text" id="buscar_codigo" name="q" placeholder="Digite o código..." value="{{ request.GET.q }}">
+            
+            <label for="filtro">Filtrar por:</label>
+            <select name="filtro" id="filtro" onchange="this.form.submit()">
+                <option value="todas" {% if filtro == 'todas' %}selected{% endif %}>Todas</option>
+                <option value="ativas" {% if filtro == 'ativas' %}selected{% endif %}>Ativas</option>
+                <option value="inativas" {% if filtro == 'inativas' %}selected{% endif %}>Inativas</option>
+            </select>
+
+            <button type="submit">Buscar</button>
+        </form>
+
+        <h2>Não tem especialidades ainda? Crie aqui!</h2>
+        <a href="{% url 'criar_especialidade' %}" class="btn btn-primary">+ Nova Especialidade</a>
+
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Status</th>
+                <th>Responsável</th>
+                <th>Data Criação</th>
+                <th>Última Atualização</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for especialidade in especialidades %}
+            <tr>
+                <td>{{ especialidade.cod_especialidade }}</td>
+                <td>{{ especialidade.descricao }}</td>
+                <td>{% if especialidade.ativo %}✅ Ativo {% else %}❌ Inativo {% endif %}</td>
+                <td>{{ especialidade.responsavel|default:"-" }}</td>
+                <td>{{ especialidade.data_criacao|date:"d/m/Y H:i" }}</td>
+                <td>{{ especialidade.data_atualizacao|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'editar_especialidade' especialidade.cod_especialidade %}" class="btn btn-warning">✏️ Editar</a>
+                    <a href="{% url 'alterar_status_especialidade' especialidade.cod_especialidade %}" 
+                       class="btn {% if especialidade.ativo %}btn-danger{% else %}btn-success{% endif %}">
+                        {% if especialidade.ativo %} ❌ Desativar {% else %} ✅ Ativar {% endif %}
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">Nenhuma especialidade encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

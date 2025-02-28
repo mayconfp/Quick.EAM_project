@@ -1,0 +1,26 @@
+ <!-- 🔹 Formulário para Criar Categoria -->
+ <form method="POST" action="{% url 'criar_categoria' %}">
+    {% csrf_token %}
+
+    <label for="descricao">Nome da Categoria:</label>
+    <input type="text" id="descricao" name="descricao" required>
+
+    <label for="categoria_pai">Categoria Pai (opcional):</label>
+    <select id="categoria_pai" name="categoria_pai">
+        <option value="">Nenhuma (Categoria Principal)</option>
+        {% for categoria in categorias %}
+            <option value="{{ categoria.cod_categoria }}">{{ categoria.descricao }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="idioma">Idioma:</label>
+    <select id="idioma" name="idioma">
+        <option value="pt">Português</option>
+        <option value="en">Inglês</option>
+        <option value="es">Espanhol</option>
+        <option value="fr">Francês</option>
+        <option value="de">Alemão</option>
+    </select>
+
+    <button type="submit">Criar Categoria</button>
+</form>

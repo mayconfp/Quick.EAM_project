@@ -351,6 +351,7 @@ def password_reset_confirm(request):
 
 def listar_categorias(request):
     query = request.GET.get("q")
+    
     if query:
         categorias = Categoria.objects.filter(
             cod_categoria__icontains=query
@@ -358,9 +359,9 @@ def listar_categorias(request):
             cod_categoria_pai__cod_categoria__icontains=query
         )  # Busca por subcategorias associadas
     else:
-        categorias = Categoria.objects.all()
+        categorias = Categoria.objects.filter(cod_categoria_pai__isnull=True)  # Busca apenas categorias principais
 
-    return render(request, "gpp/listar_categorias.html", {"categorias": categorias ,'pagina_atual': 'listar_categorias'})
+    return render(request, "gpp/listar_categorias.html", {"categorias": categorias, 'pagina_atual': 'listar_categorias'})
 
 
 # 🔹 Criar Categoria
@@ -394,7 +395,7 @@ def criar_categoria(request):
 
         return redirect("listar_categorias")
     
-    return render(request, "gpp/criar_categoria.html")
+    return render(request, "gpp/criar_categoria.html" )
 
 # 🔹 Editar Categoria e Traduções
 def editar_categoria(request, cod_categoria):
@@ -464,14 +465,23 @@ def adicionar_traducao(request, cod_categoria):
 
 
 # 🔹 Listar Especialidades
-def lista_especialidades(request):
-    query = request.GET.get("q")
-    if query:
-        especialidades = Especialidade.objects.filter(cod_especialidade__icontains=query)
+def listar_especialidades(request):
+    filtro = request.GET.get('filtro', 'todas')  # Obtém o filtro da URL
+    if filtro == 'ativas':
+        especialidades = Especialidade.objects.filter(ativo=True)
+    elif filtro == 'inativas':
+        especialidades = Especialidade.objects.filter(ativo=False)
     else:
         especialidades = Especialidade.objects.all()
     
-    return render(request, "gpp/lista_especialidades.html", {"especialidades": especialidades})
+    return render(request, 'gpp/listar_especialidades.html', {'especialidades': especialidades, 'filtro': filtro ,'pagina_atual': 'listar_especialidades'})
+
+def alterar_status_especialidade(request, id):
+    especialidade = get_object_or_404(Especialidade, cod_especialidade=id)
+    especialidade.ativo = not especialidade.ativo  # Inverte o status
+    especialidade.save()
+    messages.success(request, f"Especialidade {especialidade.descricao} {'ativada' if especialidade.ativo else 'desativada'}.")
+    return redirect('listar_especialidades')
 
 # 🔹 Criar Especialidade
 def criar_especialidade(request):
@@ -504,15 +514,10 @@ def editar_especialidade(request, cod_especialidade):
     if request.method == "POST":
         especialidade.descricao = request.POST.get("descricao")
         especialidade.save()
-        return redirect("lista_especialidades")
+        return redirect("listar_especialidades" )
 
-    return render(request, "gpp/editar_especialidade.html", {"especialidade": especialidade})
+    return render(request, "gpp/editar_especialidade.html", {"especialidade": especialidade, 'pagina_atual': 'listar_especialidades' })
 
-# 🔹 Excluir Especialidade
-def excluir_especialidade(request, cod_especialidade):
-    especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
-    especialidade.delete()
-    return redirect("lista_especialidades")
 
 # 🔹 Listar Ciclos de Manutenção
 def lista_ciclos(request):

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import password_reset_request, password_reset_confirm, validate_reset_code
+from .views import password_reset_request, password_reset_confirm, validate_reset_code, alterar_status_especialidade
 
 
 urlpatterns = [
@@ -27,10 +27,11 @@ urlpatterns = [
     path('gpp/categorias/adicionar_traducao/<str:cod_categoria>/', views.adicionar_traducao, name="adicionar_traducao"),
 
     # 🔹 Gerenciamento de Especialidades (GPP)
-    path('gpp/especialidades/', views.lista_especialidades, name='lista_especialidades'),
+    path('gpp/especialidades/', views.listar_especialidades, name='listar_especialidades'),
     path('gpp/especialidades/nova/', views.criar_especialidade, name='criar_especialidade'),
     path('gpp/especialidades/editar/<str:cod_especialidade>/', views.editar_especialidade, name='editar_especialidade'),
-    path('gpp/especialidades/excluir/<str:cod_especialidade>/', views.excluir_especialidade, name='excluir_especialidade'),
+    path('especialidades/status/<str:id>/', alterar_status_especialidade, name='alterar_status_especialidade'),
+
 
     # 🔹 Gerenciamento de Ciclos de Manutenção (GPP)
     path('gpp/ciclos/', views.lista_ciclos, name='lista_ciclos'),

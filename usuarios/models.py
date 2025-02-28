@@ -147,11 +147,18 @@ class CategoriaLang(models.Model):
         return f"{self.cod_categoria} ({self.cod_idioma})"
 
 class Especialidade(models.Model):
-    cod_especialidade = models.CharField(max_length=50, primary_key=True)
-    descricao = models.CharField(max_length=255)
+    cod_especialidade = models.CharField(max_length=50, primary_key=True)  # Código único
+    descricao = models.CharField(max_length=255)  # Nome da especialidade
+    ativo = models.BooleanField(default=True)  # Indica se está ativa ou inativa
+    data_criacao = models.DateTimeField(auto_now_add=True)  # Data de criação automática
+    data_atualizacao = models.DateTimeField(auto_now=True)  # Atualiza toda vez que for editado
+    responsavel = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )  # Usuário responsável pela especialidade
+    observacao = models.TextField(blank=True, null=True)  # Notas adicionais
 
     def __str__(self):
-        return self.descricao
+        return f"{self.descricao} ({'Ativo' if self.ativo else 'Inativo'})"
 
 
 class MatrizPadraoAtividade(models.Model):
