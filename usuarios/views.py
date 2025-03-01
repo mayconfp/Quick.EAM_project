@@ -299,7 +299,6 @@ def deletar_conta(request):
 
 
 
-
 def password_reset_request(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -320,13 +319,12 @@ def password_reset_request(request):
 
         return JsonResponse({"success": False, "message": "Nenhuma conta encontrada com este e-mail."})
 
-    return render(request, "usuarios/password_reset.html" , {'pagina_atual': 'password_reset_request'})
-
+    return render(request, "usuarios/password_reset.html", {'pagina_atual': 'password_reset_request'})
 
 def validate_reset_code(request):
     if request.method == "POST":
-        email = request.POST.get("email", "").strip()  # 🔥 Evita erro se email for None
-        code = request.POST.get("code", "").strip()  # 🔥 Evita erro se code for None
+        email = request.POST.get("email", "").strip()
+        code = request.POST.get("code", "").strip()
 
         if not email:
             return JsonResponse({"success": False, "message": "E-mail não informado."})
@@ -352,9 +350,6 @@ def validate_reset_code(request):
         return JsonResponse({"success": False, "message": "Código inválido ou expirado."})
 
     return JsonResponse({"success": False, "message": "Requisição inválida."})
-
-
-
 
 def password_reset_confirm(request):
     if request.method == "POST":
@@ -382,7 +377,7 @@ def password_reset_confirm(request):
             return JsonResponse({"success": False, "message": "As senhas não coincidem."})
 
         try:
-            SenhaPersonalizada().validate(new_password)  # ✅ Corrigido!
+            SenhaPersonalizada().validate(new_password)
         except ValidationError as e:
             return JsonResponse({"success": False, "message": "Senha inválida: " + " ".join(e.messages)})
 
@@ -393,11 +388,10 @@ def password_reset_confirm(request):
         return JsonResponse({
             "success": True,
             "message": "Senha redefinida com sucesso!",
-            "redirect_url": reverse("login")  # 🔥 Certifique-se de que "login" é o nome correto da URL
+            "redirect_url": reverse("login")
         })
 
     return JsonResponse({"success": False, "message": "Requisição inválida."})
-
 
 
 
