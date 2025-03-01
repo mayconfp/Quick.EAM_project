@@ -42,8 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'modeltranslation',
     'usuarios',  # Aplicativo da sua aplicação
-    'modeltranslation',  # Aplicativo de tradução
+      # Aplicativo de tradução
 ]
 
 

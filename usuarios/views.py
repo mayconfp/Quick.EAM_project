@@ -482,13 +482,12 @@ def criar_categoria(request):
 
 
 # 🔹 Editar Categoria
-
 def editar_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
     
     if request.method == "POST":
         # Atualiza a descrição da categoria
-        categoria.descricao = request.POST.get("descricao").strip()
+        categoria.descricao = request.POST.get("descricao")
 
         # Atualiza a categoria pai
         categoria_pai_id = request.POST.get("categoria_pai")
@@ -499,27 +498,37 @@ def editar_categoria(request, cod_categoria):
 
         categoria.save()
 
-        # 🔹 Atualiza ou adiciona as traduções
-        idiomas = request.POST.getlist("idiomas[]")
-        traducoes = request.POST.getlist("traducoes[]")
+        # 🔹 Pegamos as traduções existentes no banco
+        traducoes_existentes = list(categoria.traducoes.all().values_list("id", flat=True))
 
+        # 🔹 Pegamos os IDs das traduções enviadas pelo formulário
+        traducoes_ids = request.POST.getlist("traducoes_ids[]")  # ID das traduções existentes
+        idiomas = request.POST.getlist("idiomas[]")  # Lista de idiomas enviados
+        traducoes = request.POST.getlist("traducoes[]")  # Lista de descrições enviadas
+
+        traducoes_ids = [int(id) for id in traducoes_ids if id]  # Convertendo IDs válidos para inteiros
+        
+        # 🔹 Excluir traduções que não estão mais na lista enviada pelo formulário
+        for traducao_id in traducoes_existentes:
+            if traducao_id not in traducoes_ids:
+                CategoriaLang.objects.filter(id=traducao_id).delete()  # Deletar traduções removidas no frontend
+
+        # 🔹 Atualizar ou Criar novas traduções
         for i in range(len(idiomas)):
-            idioma = idiomas[i]
-            descricao_traduzida = traducoes[i]
+            if i < len(traducoes_ids) and traducoes_ids[i]:  # Atualizar tradução existente
+                trad = CategoriaLang.objects.get(id=traducoes_ids[i])
+                trad.cod_idioma = idiomas[i]
+                trad.descricao = traducoes[i]
+                trad.save()
+            else:  # Criar nova tradução
+                CategoriaLang.objects.create(
+                    cod_categoria=categoria,
+                    cod_idioma=idiomas[i],
+                    descricao=traducoes[i]
+                )
 
-            # 🔥 Se a tradução já existe, apenas atualiza. Caso contrário, cria uma nova
-            traducao, created = CategoriaLang.objects.get_or_create(
-                cod_categoria=categoria, cod_idioma=idioma,
-                defaults={"descricao": descricao_traduzida}
-            )
-            if not created:
-                traducao.descricao = descricao_traduzida
-                traducao.save()
-
-        messages.success(request, "Categoria atualizada com sucesso!")
         return redirect("listar_categorias")
 
-    # 🔹 Lista categorias para selecionar uma categoria pai
     categorias = Categoria.objects.exclude(cod_categoria=categoria.cod_categoria)
 
     return render(request, "gpp/editar_categoria.html", {
