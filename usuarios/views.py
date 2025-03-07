@@ -597,24 +597,45 @@ def excluir_ciclo(request, cod_ciclo):
 
 
 
-@login_required
-def lista_matriz_padrao(request):
-    matriz = MatrizPadraoAtividade.objects.all()
-    return render(request, 'gpp/lista_matriz_padrao.html', {'matriz': matriz})
 
-@login_required
-def criar_matriz_padrao(request):
+def listar_matriz(request):
+    query = request.GET.get("q")
+    if query:
+        matriz = MatrizPadraoAtividade.objects.filter(
+            descricao__icontains=query
+        )
+    else:
+        matriz = MatrizPadraoAtividade.objects.all()
+
+    return render(request, "gpp/listar_matriz.html", {"matriz": matriz, "pagina_atual": "listar_matriz"})
+
+
+
+
+def criar_matriz(request):
     if request.method == "POST":
         form = MatrizPadraoAtividadeForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Relação criada com sucesso!")
-            return redirect('lista_matriz_padrao')
+            # 🔹 Gera automaticamente o código da matriz
+            ultimo_matriz = MatrizPadraoAtividade.objects.order_by('-cod_matriz').first()
+            if ultimo_matriz:
+                num = int(ultimo_matriz.cod_matriz.replace("MATRIZ", "")) + 1
+            else:
+                num = 1
+
+            novo_cod_matriz = f"MATRIZ{num}"
+
+            # 🔹 Salva o novo registro
+            matriz = form.save(commit=False)
+            matriz.cod_matriz = novo_cod_matriz
+            matriz.save()
+            return redirect('listar_matriz')
     else:
         form = MatrizPadraoAtividadeForm()
-    return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
 
-@login_required
+    return render(request, "gpp/criar_matriz.html", {"form": form})
+
+
 def editar_matriz_padrao(request, id):
     matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
     if request.method == "POST":
@@ -627,7 +648,8 @@ def editar_matriz_padrao(request, id):
         form = MatrizPadraoAtividadeForm(instance=matriz)
     return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
 
-@login_required
+
+
 def excluir_matriz_padrao(request, id):
     matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
     matriz.delete()

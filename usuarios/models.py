@@ -161,15 +161,20 @@ class Especialidade(models.Model):
         return f"{self.descricao} ({'Ativo' if self.ativo else 'Inativo'})"
 
 
-class MatrizPadraoAtividade(models.Model):
-    cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    cod_especialidade = models.ForeignKey(Especialidade, on_delete=models.CASCADE)
+class MatrizPadraoAtividade(models.Model): 
+    cod_matriz = models.CharField(max_length=50)  # Código único da matriz
+    cod_categoria = models.ForeignKey('Categoria', on_delete=models.CASCADE)  
+    cod_especialidade = models.ForeignKey('Especialidade', on_delete=models.CASCADE)  
+    cod_atividade = models.CharField(max_length=50)  
+    cod_centro_trab = models.CharField(max_length=50)  
+    ativo = models.BooleanField(default=True)  
 
     class Meta:
-        unique_together = ('cod_categoria', 'cod_especialidade')
+        unique_together = ('cod_matriz', 'cod_atividade')  # Evita registros duplicados
 
     def __str__(self):
-        return f"{self.cod_categoria} - {self.cod_especialidade}"
+        return f"{self.cod_matriz} - {self.cod_atividade} ({'Ativo' if self.ativo else 'Inativo'})"
+
 
 
 class CicloManutencao(models.Model):

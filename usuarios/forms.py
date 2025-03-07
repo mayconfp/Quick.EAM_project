@@ -140,12 +140,14 @@ class EspecialidadeForm(forms.ModelForm):
 class MatrizPadraoAtividadeForm(forms.ModelForm):
     class Meta:
         model = MatrizPadraoAtividade
-        fields = ['cod_categoria', 'cod_especialidade']
+        fields = ['cod_categoria', 'cod_especialidade', 'cod_atividade', 'cod_centro_trab', 'ativo']
         labels = {
             'cod_categoria': 'Categoria',
-            'cod_especialidade': 'Especialidade'
+            'cod_especialidade': 'Especialidade',
+            'cod_atividade': 'Código da Atividade',
+            'cod_centro_trab': 'Centro de Trabalho',
+            'ativo': 'Ativo'
         }
-
 
 class CicloPadraoForm(forms.ModelForm):
     class Meta:

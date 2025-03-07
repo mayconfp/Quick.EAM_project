@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Nova Atividade</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+    {% include 'usuarios/partials/nav.html' %}
+
+    <div class="container">
+        <h2>Criar Nova Atividade da Matriz</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Criar Atividade</button>
+        </form>
+
+        <br>
+        <a href="{% url 'listar_matriz' %}" class="btn btn-secondary">Voltar para Lista</a>
+    </div>
+
+</body>
+</html>

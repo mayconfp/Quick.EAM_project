@@ -40,8 +40,8 @@ urlpatterns = [
     path('gpp/ciclos/excluir/<str:cod_ciclo>/', views.excluir_ciclo, name='excluir_ciclo'),
 
     # 🔹 Gerenciamento de Matriz Padrão Atividades (GPP)
-    path('gpp/matriz/', views.lista_matriz_padrao, name='lista_matriz_padrao'),
-    path('gpp/matriz/nova/', views.criar_matriz_padrao, name='criar_matriz_padrao'),
+    path('gpp/matriz/', views.listar_matriz, name='listar_matriz'),
+    path('gpp/matriz/nova/', views.criar_matriz, name='criar_matriz'),
     path('gpp/matriz/editar/<int:id>/', views.editar_matriz_padrao, name='editar_matriz_padrao'),
     path('gpp/matriz/excluir/<int:id>/', views.excluir_matriz_padrao, name='excluir_matriz_padrao'),
 ]
