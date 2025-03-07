@@ -33,29 +33,22 @@
 
             <!-- 🔹 Traduções Existentes -->
             <h3>Traduções</h3>
-            <div id="traducaoContainer">
-                {% for traducao in categoria.traducoes.all %}
-                    <div class="traducao">
-                        <input type="hidden" name="traducoes_ids[]" value="{{ traducao.id }}">
-                        <label>Idioma:</label>
-                        <select name="idiomas[]">
-                            <option value="pt" {% if traducao.cod_idioma == 'pt' %}selected{% endif %}>Português</option>
-                            <option value="en" {% if traducao.cod_idioma == 'en' %}selected{% endif %}>Inglês</option>
-                            <option value="es" {% if traducao.cod_idioma == 'es' %}selected{% endif %}>Espanhol</option>
-                            <option value="fr" {% if traducao.cod_idioma == 'fr' %}selected{% endif %}>Francês</option>
-                            <option value="de" {% if traducao.cod_idioma == 'de' %}selected{% endif %}>Alemão</option>
-                        </select>
+            {% for traducao in categoria.traducoes.all %}
+                <div class="traducao">
+                    <label>Idioma:</label>
+                    <select name="idiomas[]">
+                        <option value="pt" {% if traducao.cod_idioma == 'pt' %}selected{% endif %}>Português</option>
+                        <option value="en" {% if traducao.cod_idioma == 'en' %}selected{% endif %}>Inglês</option>
+                        <option value="es" {% if traducao.cod_idioma == 'es' %}selected{% endif %}>Espanhol</option>
+                        <option value="fr" {% if traducao.cod_idioma == 'fr' %}selected{% endif %}>Francês</option>
+                        <option value="de" {% if traducao.cod_idioma == 'de' %}selected{% endif %}>Alemão</option>
+                    </select>
 
-                        <label>Descrição:</label>
-                        <input type="text" name="traducoes[]" value="{{ traducao.descricao }}" required>
+                    <label>Descrição:</label>
+                    <input type="text" name="traducoes[]" value="{{ traducao.descricao }}" required>
+                </div>
+            {% endfor %}
 
-                        <button type="button" class="removerTraducao">Remover</button>
-                    </div>
-                {% endfor %}
-            </div>
-
-            <!-- 🔹 Botão para adicionar novas traduções -->
-            <button type="button" id="addTraducao">Adicionar Nova Tradução</button>
 
             <button type="submit">Salvar Alterações</button>
         </form>
@@ -63,12 +56,11 @@
 
     <script>
         document.getElementById("addTraducao").addEventListener("click", function() {
-            let container = document.getElementById("traducaoContainer");
+            let container = document.getElementById("novaTraducaoContainer");
             let div = document.createElement("div");
             div.classList.add("traducao");
 
             div.innerHTML = `
-                <input type="hidden" name="traducoes_ids[]" value="">
                 <label>Idioma:</label>
                 <select name="idiomas[]">
                     <option value="pt">Português</option>
@@ -80,17 +72,9 @@
 
                 <label>Descrição:</label>
                 <input type="text" name="traducoes[]" required>
-
-                <button type="button" class="removerTraducao">Remover</button>
             `;
 
             container.appendChild(div);
-        });
-
-        document.addEventListener("click", function(e) {
-            if (e.target.classList.contains("removerTraducao")) {
-                e.target.parentElement.remove();
-            }
         });
     </script>
 

@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Ciclos de Manutenção</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+    {% include 'usuarios/partials/nav.html' %}
+
+    <div class="ciclo">
+        <h2>Lista de Ciclos de Manutenção</h2>
+
+        <!-- 🔹 Formulário de Busca -->
+        <form method="GET" action="{% url 'listar_ciclos' %}">
+            <label for="buscar_codigo">Buscar por Código ou Nome:</label>
+            <input type="text" id="buscar_codigo" name="q" placeholder="Digite o código ou nome..." value="{{ request.GET.q }}">
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <h2>Não tem ciclos ainda? Crie aqui!</h2>
+    <a href="{% url 'criar_ciclo' %}" class="btn btn-primary">+ Novo Ciclo</a>
+
+    <!-- 🔹 Tabela de Ciclos -->
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Especialidade</th>
+                <th>Intervalo</th>
+                <th>Status</th>  <!-- 🔹 Adicionamos a coluna Status -->
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ciclo in ciclos %}
+                <tr>
+                    <td>{{ ciclo.cod_ciclo }}</td>
+                    <td><strong>{{ ciclo.descricao }}</strong></td>
+                    <td>{{ ciclo.categoria.descricao }}</td>
+                    <td>{{ ciclo.especialidade.descricao }}</td>
+                    <td>{{ ciclo.intervalo }} {{ ciclo.get_tipo_intervalo_display }}</td>
+                    <td>
+                        {% if ciclo.ativo %}
+                            <span style="color: green; font-weight: bold;">🟢 Ativo</span>
+                        {% else %}
+                            <span style="color: red; font-weight: bold;">🔴 Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'editar_ciclo' ciclo.cod_ciclo %}" class="btn btn-warning">✏️ Editar</a>
+                        <a href="{% url 'excluir_ciclo' ciclo.cod_ciclo %}" class="btn btn-danger">🗑️ Excluir</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">Nenhum ciclo encontrado.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

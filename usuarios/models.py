@@ -149,33 +149,35 @@ class CategoriaLang(models.Model):
 
     
 
-
 class Especialidade(models.Model):
-    cod_especialidade = models.CharField(max_length=50, primary_key=True)
-    descricao = models.CharField(max_length=255)
+    cod_especialidade = models.CharField(max_length=50, primary_key=True)  # Código único
+    descricao = models.CharField(max_length=255)  # Nome da especialidade
+    ativo = models.BooleanField(default=True)  # Indica se está ativa ou inativa
+    data_criacao = models.DateTimeField(auto_now_add=True)  # Data de criação automática
+    data_atualizacao = models.DateTimeField(auto_now=True)  # Atualiza toda vez que for editado
+    responsavel = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )  # Usuário responsável pela especialidade
+    observacao = models.TextField(blank=True, null=True)  # Notas adicionais
 
     def __str__(self):
-        return self.descricao
+        return f"{self.descricao} ({'Ativo' if self.ativo else 'Inativo'})"
 
 
-class MatrizPadraoAtividade(models.Model):
-    cod_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    cod_especialidade = models.ForeignKey(Especialidade, on_delete=models.CASCADE)
+
+class MatrizPadraoAtividade(models.Model): 
+    cod_matriz = models.CharField(max_length=50)  # Código único da matriz
+    cod_categoria = models.ForeignKey('Categoria', on_delete=models.CASCADE)  
+    cod_especialidade = models.ForeignKey('Especialidade', on_delete=models.CASCADE)  
+    cod_atividade = models.CharField(max_length=50)  
+    cod_centro_trab = models.CharField(max_length=50)  
+    ativo = models.BooleanField(default=True)  
 
     class Meta:
-        unique_together = ('cod_categoria', 'cod_especialidade')
+        unique_together = ('cod_matriz', 'cod_atividade')  # Evita registros duplicados
 
     def __str__(self):
-        return f"{self.cod_categoria} - {self.cod_especialidade}"
-
-
-class CicloPadrao(models.Model):
-    cod_ciclo = models.CharField(max_length=50, primary_key=True)
-    descricao = models.CharField(max_length=255)
-    intervalo_dias = models.IntegerField()
-
-    def __str__(self):
-        return self.descricao
+        return f"{self.cod_matriz} - {self.cod_atividade} ({'Ativo' if self.ativo else 'Inativo'})"
 
 
 
@@ -196,3 +198,25 @@ class ChaveModelo(models.Model):
     def __str__(self):
         return self.descricao
 
+
+
+class CicloManutencao(models.Model):
+    TIPO_INTERVALO_CHOICES = [
+        ('D', 'Dias'),
+        ('S', 'Semanas'),
+        ('M', 'Meses'),
+        ('A', 'Anos')
+    ]
+
+    cod_ciclo = models.CharField(max_length=50, primary_key=True)
+    descricao = models.CharField(max_length=255)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name="ciclos")
+    especialidade = models.ForeignKey(Especialidade, on_delete=models.CASCADE, related_name="ciclos")
+    intervalo = models.IntegerField()
+    tipo_intervalo = models.CharField(max_length=1, choices=TIPO_INTERVALO_CHOICES)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    ativo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.descricao} ({self.get_tipo_intervalo_display()} - {self.intervalo})"

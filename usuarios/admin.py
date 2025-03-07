@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import CustomUser, ChatHistory  # Importa os modelos necessários
-from .models import Categoria, CategoriaLang, Especialidade, MatrizPadraoAtividade, CicloPadrao, Criticidade, ChaveModelo
+from .models import Categoria, CategoriaLang, Especialidade, MatrizPadraoAtividade, Criticidade, ChaveModelo
 
 
 # Registro do modelo CustomUser no admin
@@ -39,10 +39,6 @@ class MatrizPadraoAtividadeAdmin(admin.ModelAdmin):
     list_display = ('cod_categoria', 'cod_especialidade')
     list_filter = ('cod_categoria', 'cod_especialidade')
 
-@admin.register(CicloPadrao)
-class CicloPadraoAdmin(admin.ModelAdmin):
-    list_display = ('cod_ciclo', 'descricao', 'intervalo_dias')
-    search_fields = ('descricao',)
 
 @admin.register(Criticidade)
 class CriticidadeAdmin(admin.ModelAdmin):

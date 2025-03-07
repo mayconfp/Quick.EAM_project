@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista da Matriz Padrão</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+    {% include 'usuarios/partials/nav.html' %}
+
+    <div class="matriz">
+        <h2>Lista da Matriz Padrão de Atividades</h2>
+
+        <form method="GET" action="{% url 'listar_matriz' %}">
+            <label for="buscar_nome">Buscar por Nome:</label>
+            <input type="text" id="buscar_nome" name="q" placeholder="Digite o nome da atividade..." value="{{ request.GET.q }}">
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <h2>Não tem atividades ainda? Crie aqui!</h2>
+    <a href="{% url 'criar_matriz' %}" class="btn btn-primary">+ Nova Atividade</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Especialidade</th>
+                <th>Centro Trabalho</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for atividade in matriz %}
+                <tr>
+                    <td>{{ atividade.cod_matriz }}</td>
+                    <td>{{ atividade.cod_atividade }}</td>
+                    <td>{{ atividade.cod_categoria.descricao }}</td>
+                    <td>{{ atividade.cod_especialidade.descricao }}</td>
+                    <td>{{ atividade.cod_centro_trab }}</td>
+                    <td>{{ atividade.ativo|yesno:"🟢 Ativo,🔴 Inativo" }}</td>
+                    <td>
+                        <a href="{% url 'editar_matriz' atividade.cod_matriz %}" class="btn btn-warning">✏️ Editar</a>
+                        <a href="{% url 'excluir_matriz' atividade.cod_matriz %}" class="btn btn-danger">🗑️ Excluir</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Categorias</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+    {% include 'usuarios/partials/nav.html' %}
+
+    <div class="categoria">
+        <h2>Lista de Categorias</h2>
+
+        <!-- 🔹 Formulário para Buscar Categorias -->
+        <form method="GET" action="{% url 'listar_categorias' %}">
+            <label for="buscar_codigo">Buscar por Código:</label>
+            <input type="text" id="buscar_codigo" name="q" placeholder="Digite o código..." value="{{ request.GET.q }}">
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <h2>Não tem Categorias ainda? Crie aqui!</h2>
+    <a href="{% url 'criar_categoria' %}" class="btn btn-primary">+ Nova Categoria</a>
+
+    <!-- 🔹 Tabela de Categorias -->
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Categoria Pai</th>
+                <th>Idioma</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for categoria in categorias %}
+                <tr {% if categoria.cod_categoria_pai %}class="subcategoria"{% endif %}>
+                    <td>{{ categoria.cod_categoria }}</td>
+                    <td>
+                        {% if categoria.cod_categoria_pai %}
+                            ➝ <strong>{{ categoria.descricao }}</strong>
+                        {% else %}
+                            <strong>{{ categoria.descricao }}</strong>
+                        {% endif %}
+                        {% for traducao in categoria.traducoes.all %}
+                            <br> <small>({{ traducao.cod_idioma }}: {{ traducao.descricao }})</small>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if categoria.cod_categoria_pai %}
+                            {{ categoria.cod_categoria_pai.descricao }} ({{ categoria.cod_categoria_pai.cod_categoria }})
+                        {% else %}
+                            Nenhuma
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if categoria.traducoes.exists %}
+                            {% for traducao in categoria.traducoes.all %}
+                                {{ traducao.cod_idioma }},
+                            {% endfor %}
+                        {% else %}
+                            Nenhuma tradução
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'editar_categoria' categoria.cod_categoria %}" class="btn btn-warning">✏️ Editar</a>
+                        <a href="{% url 'excluir_categoria' categoria.cod_categoria %}" class="btn btn-danger">🗑️ Excluir</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">Nenhuma categoria encontrada.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

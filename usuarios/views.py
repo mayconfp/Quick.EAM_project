@@ -15,8 +15,8 @@ from .validators import SenhaPersonalizada
 from .models import PasswordResetCode
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm, CicloPadraoForm, MatrizPadraoAtividadeForm
-from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade, CicloPadrao, CategoriaLang
+from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm,CicloManutencao , MatrizPadraoAtividadeForm, CicloPadraoForm
+from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade,CicloManutencao, CategoriaLang
 from .provedores import processar_comunicacao_multi_ia
 from .services import gerar_resposta
 import logging
@@ -425,53 +425,46 @@ def listar_categorias(request):
 
 # 🔹 Criar Categoria
 def criar_categoria(request):
+    categorias_existentes = Categoria.objects.all()  # 🔹 Obtém todas as categorias existentes
+
     if request.method == "POST":
-        descricao = request.POST.get("descricao").strip()
-        categoria_pai_id = request.POST.get("categoria_pai")
-
-        print(f"🚀 Recebendo POST - Descrição: {descricao}, Categoria Pai: {categoria_pai_id}")
-
-        # 🔹 Evita a criação de categorias com a mesma descrição
-        if Categoria.objects.filter(descricao=descricao).exists():
-            messages.error(request, "Já existe uma categoria com essa descrição!")
-            return redirect("listar_categorias")
+        descricao = request.POST.get("descricao")
+        idioma = request.POST.get("idioma", "pt")  # Padrão para português
+        categoria_pai_id = request.POST.get("categoria_pai")  # 🔹 Obtém a categoria pai selecionada
 
         if descricao:
-            num = Categoria.objects.count() + 1
+            # Gera um código único baseado na contagem total de categorias + 1
+            ultimo_codigo = Categoria.objects.order_by('-cod_categoria').first()
+            if ultimo_codigo:
+                num = int(ultimo_codigo.cod_categoria.replace("CAT", "")) + 1
+            else:
+                num = 1  # Se não houver categorias, inicia a contagem do zero
+
             novo_cod_categoria = f"CAT{num}"
 
-            while Categoria.objects.filter(cod_categoria=novo_cod_categoria).exists():
-                num += 1
-                novo_cod_categoria = f"CAT{num}"
-
-            categoria_pai = Categoria.objects.filter(cod_categoria=categoria_pai_id).first() if categoria_pai_id else None
-
-            print(f"🔍 Criando categoria - Código: {novo_cod_categoria}, Descrição: {descricao}")
-
-            # Criando e salvando a nova categoria
-            nova_categoria = Categoria.objects.create(
+            # Criar a categoria
+            categoria = Categoria.objects.create(
                 cod_categoria=novo_cod_categoria,
-                cod_categoria_pai=categoria_pai,
                 descricao=descricao
             )
 
-            print(f"✅ Categoria criada com sucesso: {nova_categoria}")
+            # Se houver categoria pai selecionada, vincular
+            if categoria_pai_id:
+                categoria.cod_categoria_pai = Categoria.objects.get(cod_categoria=categoria_pai_id)
+                categoria.save()
 
-            # Criando as traduções
-            idiomas_disponiveis = ["en", "pt", "es"]
-            for idioma in idiomas_disponiveis:
-                if not CategoriaLang.objects.filter(cod_categoria=nova_categoria, cod_idioma=idioma).exists():
-                    CategoriaLang.objects.create(
-                        cod_categoria=nova_categoria,
-                        cod_idioma=idioma,
-                        descricao=descricao
-                    )
+            # Criar a tradução correspondente
+            CategoriaLang.objects.create(
+                cod_categoria=categoria,
+                cod_idioma=idioma,
+                descricao=descricao
+            )
 
-            messages.success(request, "Categoria criada com sucesso!")
-            return redirect("listar_categorias")
+        return redirect("listar_categorias")
 
-    categorias = Categoria.objects.all()
-    return render(request, "gpp/criar_categoria.html")
+    return render(request, "gpp/criar_categoria.html", {
+        "categorias": categorias_existentes  # 🔹 Agora passamos as categorias para o template
+    })
 
 
 
@@ -533,26 +526,6 @@ def editar_categoria(request, cod_categoria):
 
 
 
-
-
-# 🔹 Excluir Categoria (SEM JAVASCRIPT, APENAS FORMULÁRIO)
-def excluir_categoria(request, cod_categoria):
-    categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
-
-    # Verifica se existem subcategorias associadas antes de excluir
-    if Categoria.objects.filter(cod_categoria_pai=categoria).exists():
-        messages.error(request, "Não é possível excluir uma categoria que possui subcategorias!")
-        return redirect("listar_categorias")
-
-    # Exclui as traduções associadas antes de excluir a categoria
-    categoria.traducoes.all().delete()
-    categoria.delete()
-    messages.success(request, "Categoria excluída com sucesso!")
-
-    return redirect("listar_categorias")
-
-
-
 def adicionar_traducao(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
 
@@ -603,120 +576,187 @@ def excluir_categoria(request, cod_categoria):
 
 
 # 🔹 Listar Especialidades
-def lista_especialidades(request):
-    especialidades = Especialidade.objects.all()
-    return render(request, 'gpp/lista_especialidades.html', {'especialidades': especialidades})
+def listar_especialidades(request):
+    filtro = request.GET.get('filtro', 'todas')  # Obtém o filtro da URL
+    if filtro == 'ativas':
+        especialidades = Especialidade.objects.filter(ativo=True)
+    elif filtro == 'inativas':
+        especialidades = Especialidade.objects.filter(ativo=False)
+    else:
+        especialidades = Especialidade.objects.all()
+    
+    return render(request, 'gpp/listar_especialidades.html', {'especialidades': especialidades, 'filtro': filtro ,'pagina_atual': 'listar_especialidades'})
 
+
+
+
+def alterar_status_especialidade(request, id):
+    especialidade = get_object_or_404(Especialidade, cod_especialidade=id)
+    especialidade.ativo = not especialidade.ativo  # Inverte o status
+    especialidade.save()
+    messages.success(request, f"Especialidade {especialidade.descricao} {'ativada' if especialidade.ativo else 'desativada'}.")
+    return redirect('listar_especialidades')
 
 
 
 # 🔹 Criar Especialidade
 def criar_especialidade(request):
     if request.method == "POST":
-        form = EspecialidadeForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Especialidade criada com sucesso!")
-            return redirect('lista_especialidades')
-    else:
-        form = EspecialidadeForm()
-    return render(request, 'gpp/form_especialidade.html', {'form': form})
+        descricao = request.POST.get("descricao")
+        
+        if descricao:
+            # Gera código automático
+            ultimo_codigo = Especialidade.objects.order_by('-cod_especialidade').first()
+            if ultimo_codigo:
+                num = int(ultimo_codigo.cod_especialidade.replace("ESP", "")) + 1
+            else:
+                num = 1
 
+            novo_cod_especialidade = f"ESP{num}"
 
+            Especialidade.objects.create(
+                cod_especialidade=novo_cod_especialidade,
+                descricao=descricao
+            )
 
+        return redirect("listar_especialidades")
+    
+    return render(request, "gpp/criar_especialidade.html")
 
 
 # 🔹 Editar Especialidade
 def editar_especialidade(request, cod_especialidade):
     especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
+    
     if request.method == "POST":
-        form = EspecialidadeForm(request.POST, instance=especialidade)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Especialidade atualizada com sucesso!")
-            return redirect('lista_especialidades')
-    else:
-        form = EspecialidadeForm(instance=especialidade)
-    return render(request, 'gpp/editar_especialidade.html', {'form': form})
+        especialidade.descricao = request.POST.get("descricao")
+        especialidade.save()
+        return redirect("listar_especialidades" )
 
-
-
-
-# 🔹 Excluir Especialidade
-def excluir_especialidade(request, cod_especialidade):
-    especialidade = get_object_or_404(Especialidade, cod_especialidade=cod_especialidade)
-    especialidade.delete()
-    messages.success(request, "Especialidade excluída com sucesso!")
-    return redirect('lista_especialidades')
-
+    return render(request, "gpp/editar_especialidade.html", {"especialidade": especialidade, 'pagina_atual': 'listar_especialidades' })
 
 
 
 # 🔹 Listar Ciclos de Manutenção
-def lista_ciclos(request):
-    ciclos = CicloPadrao.objects.all()
-    return render(request, 'gpp/lista_ciclos.html', {'ciclos': ciclos})
+def listar_ciclos(request):
+    query = request.GET.get("q")
 
+    if query:
+        ciclos = CicloManutencao.objects.filter(
+            descricao__icontains=query
+        ) | CicloManutencao.objects.filter(
+            cod_ciclo__icontains=query
+        )
+    else:
+        ciclos = CicloManutencao.objects.all()
 
+    return render(request, "gpp/listar_ciclos.html", {
+        "ciclos": ciclos,
+        "pagina_atual": "listar_ciclos"
+    })
 
 
 
 # 🔹 Criar Ciclo de Manutenção
+@login_required
 def criar_ciclo(request):
+    categorias = Categoria.objects.all()  # Busca todas as categorias
+    especialidades = Especialidade.objects.all()  # Busca todas as especialidades
+
     if request.method == "POST":
         form = CicloPadraoForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Ciclo de manutenção criado com sucesso!")
-            return redirect('lista_ciclos')
+            # 🔹 Gera automaticamente o código do ciclo baseado no último ciclo cadastrado
+            ultimo_ciclo = CicloManutencao.objects.order_by('-cod_ciclo').first()
+            if ultimo_ciclo:
+                num = int(ultimo_ciclo.cod_ciclo.replace("CICLO", "")) + 1
+            else:
+                num = 1  # Se não houver ciclos cadastrados, começa do 1
+
+            novo_cod_ciclo = f"CICLO{num}"
+
+            # 🔹 Salva o novo ciclo com o código gerado
+            ciclo = form.save(commit=False)
+            ciclo.cod_ciclo = novo_cod_ciclo
+            ciclo.save()
+            messages.success(request, "Ciclo criado com sucesso!")
+            return redirect('listar_ciclos')
     else:
         form = CicloPadraoForm()
-    return render(request, 'gpp/form_ciclo.html', {'form': form})
+
+    return render(request, "gpp/criar_ciclos.html", {
+        "form": form,
+        "categorias": categorias,
+        "especialidades": especialidades,
+    })
 
 
 
 
 # 🔹 Editar Ciclo de Manutenção
-def editar_ciclo(request, id):
-    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=id)  # 🔹 `id` já é string, então não convertemos
+def editar_ciclo(request, cod_ciclo):
+    ciclo = get_object_or_404(CicloManutencao, cod_ciclo=cod_ciclo)
+
     if request.method == "POST":
         form = CicloPadraoForm(request.POST, instance=ciclo)
         if form.is_valid():
             form.save()
-            messages.success(request, "Ciclo atualizado com sucesso!")
-            return redirect('lista_ciclos')
+            return redirect('listar_ciclos')  # Redireciona para a listagem de ciclos após a edição
     else:
-        form = CicloPadraoForm(instance=ciclo)
+        form = CicloPadraoForm(instance=ciclo)  # Preenche o formulário com os dados do ciclo
+
     return render(request, "gpp/editar_ciclo.html", {"form": form, "ciclo": ciclo})
 
 
-def excluir_ciclo(request, id):
-    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=id)  # 🔹 Mantemos `id` como string
+
+
+# 🔹 Excluir Ciclo de Manutenção
+def excluir_ciclo(request, cod_ciclo):
+    ciclo = get_object_or_404(CicloManutencao, cod_ciclo=cod_ciclo)
     ciclo.delete()
     messages.success(request, "Ciclo excluído com sucesso!")
-    return redirect('lista_ciclos')
+    return redirect('listar_ciclos')
+
+
+def listar_matriz(request):
+    query = request.GET.get("q")
+    if query:
+        matriz = MatrizPadraoAtividade.objects.filter(
+            descricao__icontains=query
+        )
+    else:
+        matriz = MatrizPadraoAtividade.objects.all()
+
+    return render(request, "gpp/listar_matriz.html", {"matriz": matriz, "pagina_atual": "listar_matriz"})
 
 
 
-@login_required
-def lista_matriz_padrao(request):
-    matriz = MatrizPadraoAtividade.objects.all()
-    return render(request, 'gpp/lista_matriz_padrao.html', {'matriz': matriz})
 
-@login_required
-def criar_matriz_padrao(request):
+def criar_matriz(request):
     if request.method == "POST":
         form = MatrizPadraoAtividadeForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Relação criada com sucesso!")
-            return redirect('lista_matriz_padrao')
+            # 🔹 Gera automaticamente o código da matriz
+            ultimo_matriz = MatrizPadraoAtividade.objects.order_by('-cod_matriz').first()
+            if ultimo_matriz:
+                num = int(ultimo_matriz.cod_matriz.replace("MATRIZ", "")) + 1
+            else:
+                num = 1
+
+            novo_cod_matriz = f"MATRIZ{num}"
+
+            # 🔹 Salva o novo registro
+            matriz = form.save(commit=False)
+            matriz.cod_matriz = novo_cod_matriz
+            matriz.save()
+            return redirect('listar_matriz')
     else:
         form = MatrizPadraoAtividadeForm()
-    return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
 
-@login_required
-def editar_matriz_padrao(request, id):
+    return render(request, "gpp/criar_matriz.html", {"form": form})
+
+
+def editar_matriz(request, id):
     matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
     if request.method == "POST":
         form = MatrizPadraoAtividadeForm(request.POST, instance=matriz)
@@ -728,11 +768,10 @@ def editar_matriz_padrao(request, id):
         form = MatrizPadraoAtividadeForm(instance=matriz)
     return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
 
-@login_required
-def excluir_matriz_padrao(request, id):
+
+
+def excluir_matriz(request, id):
     matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
     matriz.delete()
     messages.success(request, "Relação excluída com sucesso!")
     return redirect('lista_matriz_padrao')
-
-

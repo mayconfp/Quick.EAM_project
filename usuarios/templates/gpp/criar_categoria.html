@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Categoria</title>
+    <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
+</head>
+<body>
+    {% include 'usuarios/partials/nav.html' %}
+
+    <div class="categoria">
+        <h2>Criar Nova Categoria</h2>
+
+        <form method="POST" action="{% url 'criar_categoria' %}">
+            {% csrf_token %}
+            
+            <label for="nome_categoria">Nome da Categoria:</label>
+            <input type="text" id="nome_categoria" name="descricao" required>
+
+            <label for="categoria_pai">Categoria Pai (opcional):</label>
+            <select id="categoria_pai" name="categoria_pai">
+                <option value="">Nenhuma (Categoria Principal)</option>
+                {% for categoria in categorias %}
+                    <option value="{{ categoria.cod_categoria }}">{{ categoria.descricao }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="idioma">Idioma:</label>
+            <select id="idioma" name="idioma">
+                <option value="pt">Português</option>
+                <option value="en">Inglês</option>
+                <option value="es">Espanhol</option>
+            </select>
+
+            <button type="submit">Criar Categoria</button>
+        </form>
+    </div>
+</body>
+</html>
