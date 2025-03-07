@@ -4,7 +4,7 @@ from .models import CustomUser
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from .validators import validar_cnpj_existente
-from .models import Categoria, CategoriaLang, Especialidade, MatrizPadraoAtividade, CicloPadrao, Criticidade, ChaveModelo
+from .models import Categoria, CategoriaLang, Especialidade, MatrizPadraoAtividade,CicloManutencao, Criticidade, ChaveModelo
 
 
 
@@ -149,12 +149,12 @@ class MatrizPadraoAtividadeForm(forms.ModelForm):
 
 class CicloPadraoForm(forms.ModelForm):
     class Meta:
-        model = CicloPadrao
-        fields = ['cod_ciclo', 'descricao', 'intervalo_dias']
+        model = CicloManutencao
+        fields = [ 'descricao', 'categoria', 'especialidade', 'intervalo', 'tipo_intervalo', 'ativo']
         labels = {
             'cod_ciclo': 'Código do Ciclo',
             'descricao': 'Descrição',
-            'intervalo_dias': 'Intervalo em Dias'
+            'intervalo': 'Intervalo em Dias'
         }
 
 

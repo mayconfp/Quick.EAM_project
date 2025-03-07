@@ -18,13 +18,14 @@ def gerar_resposta_openai(user_message, contexto=None):
         messages = contexto + [{"role": "user", "content": user_message}]
 
         response = openai.ChatCompletion.create(
-            model="chatgpt-4o-latest",
+            model="gpt-4o-mini",
             messages=messages,
-            temperature=0.7,
-            max_tokens=200,
+            temperature=0.8,
+            max_tokens=700,
         )
 
         return response['choices'][0]['message']['content'].strip()
     except Exception as e:
         print(f"Erro na API OpenAI: {e}")
         return "Desculpe, ocorreu um erro ao processar sua mensagem."
+

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import password_reset_request, password_reset_confirm, validate_reset_code, alterar_status_especialidade
+from .views import password_reset_request, password_reset_confirm, validate_reset_code, alterar_status_especialidade,listar_ciclos
 
 
 urlpatterns = [
@@ -34,10 +34,10 @@ urlpatterns = [
 
 
     # 🔹 Gerenciamento de Ciclos de Manutenção (GPP)
-    path('gpp/ciclos/', views.lista_ciclos, name='lista_ciclos'),
-    path('gpp/ciclos/novo/', views.criar_ciclo, name='criar_ciclo'),
-    path('gpp/ciclos/editar/<str:id>/', views.editar_ciclo, name='editar_ciclo'),
-    path('gpp/ciclos/excluir/<str:id>/', views.excluir_ciclo, name='excluir_ciclo'),
+    path('gpp/ciclos/', views.listar_ciclos, name='listar_ciclos'),
+    path('gpp/ciclos/criar/', views.criar_ciclo, name='criar_ciclo'),
+    path('ciclos/editar/<str:cod_ciclo>/', views.editar_ciclo, name='editar_ciclo'),
+    path('gpp/ciclos/excluir/<str:cod_ciclo>/', views.excluir_ciclo, name='excluir_ciclo'),
 
     # 🔹 Gerenciamento de Matriz Padrão Atividades (GPP)
     path('gpp/matriz/', views.lista_matriz_padrao, name='lista_matriz_padrao'),

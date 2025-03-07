@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm, CicloPadraoForm, MatrizPadraoAtividadeForm
-from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade, CicloPadrao, CategoriaLang
+from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade,CicloManutencao, CategoriaLang
 from .provedores import gerar_contexto_completo, processar_comunicacao_multi_ia , formatar_texto_para_html
 from django.utils.translation import activate
 from django.utils.safestring import mark_safe
@@ -348,27 +348,31 @@ def password_reset_confirm(request):
     return JsonResponse({"success": False, "message": "Requisição inválida."})
 
 
-
 def listar_categorias(request):
     query = request.GET.get("q")
-    
+
     if query:
         categorias = Categoria.objects.filter(
             cod_categoria__icontains=query
         ) | Categoria.objects.filter(
             cod_categoria_pai__cod_categoria__icontains=query
-        )  # Busca por subcategorias associadas
+        )
     else:
-        categorias = Categoria.objects.filter(cod_categoria_pai__isnull=True)  # Busca apenas categorias principais
+        categorias = Categoria.objects.all()  # 🔹 Agora busca TODAS as categorias, incluindo subcategorias
 
-    return render(request, "gpp/listar_categorias.html", {"categorias": categorias, 'pagina_atual': 'listar_categorias'})
-
+    return render(request, "gpp/listar_categorias.html", {
+        "categorias": categorias,
+        "pagina_atual": "listar_categorias"
+    })
 
 # 🔹 Criar Categoria
 def criar_categoria(request):
+    categorias_existentes = Categoria.objects.all()  # 🔹 Obtém todas as categorias existentes
+
     if request.method == "POST":
         descricao = request.POST.get("descricao")
         idioma = request.POST.get("idioma", "pt")  # Padrão para português
+        categoria_pai_id = request.POST.get("categoria_pai")  # 🔹 Obtém a categoria pai selecionada
 
         if descricao:
             # Gera um código único baseado na contagem total de categorias + 1
@@ -383,8 +387,13 @@ def criar_categoria(request):
             # Criar a categoria
             categoria = Categoria.objects.create(
                 cod_categoria=novo_cod_categoria,
-                descricao=descricao  # Pode armazenar o nome original
+                descricao=descricao
             )
+
+            # Se houver categoria pai selecionada, vincular
+            if categoria_pai_id:
+                categoria.cod_categoria_pai = Categoria.objects.get(cod_categoria=categoria_pai_id)
+                categoria.save()
 
             # Criar a tradução correspondente
             CategoriaLang.objects.create(
@@ -394,9 +403,10 @@ def criar_categoria(request):
             )
 
         return redirect("listar_categorias")
-    
-    return render(request, "gpp/criar_categoria.html" )
 
+    return render(request, "gpp/criar_categoria.html", {
+        "categorias": categorias_existentes  # 🔹 Agora passamos as categorias para o template
+    })
 # 🔹 Editar Categoria e Traduções
 def editar_categoria(request, cod_categoria):
     categoria = get_object_or_404(Categoria, cod_categoria=cod_categoria)
@@ -503,9 +513,10 @@ def criar_especialidade(request):
                 descricao=descricao
             )
 
-        return redirect("lista_especialidades")
+        return redirect("listar_especialidades")
     
     return render(request, "gpp/criar_especialidade.html")
+
 
 # 🔹 Editar Especialidade
 def editar_especialidade(request, cod_especialidade):
@@ -520,41 +531,68 @@ def editar_especialidade(request, cod_especialidade):
 
 
 # 🔹 Listar Ciclos de Manutenção
-def lista_ciclos(request):
-    ciclos = CicloPadrao.objects.all()
-    return render(request, 'gpp/lista_ciclos.html', {'ciclos': ciclos})
+def listar_ciclos(request):
+    query = request.GET.get("q")
+
+    if query:
+        ciclos = CicloManutencao.objects.filter(
+            descricao__icontains=query
+        ) | CicloManutencao.objects.filter(
+            cod_ciclo__icontains=query
+        )
+    else:
+        ciclos = CicloManutencao.objects.all()
+
+    return render(request, "gpp/listar_ciclos.html", {
+        "ciclos": ciclos,
+        "pagina_atual": "listar_ciclos"
+    })
 
 # 🔹 Criar Ciclo de Manutenção
 def criar_ciclo(request):
     if request.method == "POST":
         form = CicloPadraoForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Ciclo de manutenção criado com sucesso!")
-            return redirect('lista_ciclos')
+            # 🔹 Gera automaticamente o código do ciclo baseado no último ciclo cadastrado
+            ultimo_ciclo = CicloManutencao.objects.order_by('-cod_ciclo').first()
+            if ultimo_ciclo:
+                num = int(ultimo_ciclo.cod_ciclo.replace("CICLO", "")) + 1
+            else:
+                num = 1  # Se não houver ciclos cadastrados, começa do 1
+
+            novo_cod_ciclo = f"CICLO{num}"
+
+            # 🔹 Salva o novo ciclo com o código gerado
+            ciclo = form.save(commit=False)
+            ciclo.cod_ciclo = novo_cod_ciclo
+            ciclo.save()
+            return redirect('listar_ciclos')
     else:
         form = CicloPadraoForm()
-    return render(request, 'gpp/form_ciclo.html', {'form': form})
+
+    return render(request, "gpp/criar_ciclos.html", {"form": form})
 
 # 🔹 Editar Ciclo de Manutenção
 def editar_ciclo(request, cod_ciclo):
-    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=cod_ciclo)
+    ciclo = get_object_or_404(CicloManutencao, cod_ciclo=cod_ciclo)
+
     if request.method == "POST":
         form = CicloPadraoForm(request.POST, instance=ciclo)
         if form.is_valid():
             form.save()
-            messages.success(request, "Ciclo atualizado com sucesso!")
-            return redirect('lista_ciclos')
+            return redirect('listar_ciclos')  # Redireciona para a listagem de ciclos após a edição
     else:
-        form = CicloPadraoForm(instance=ciclo)
-    return render(request, 'gpp/form_ciclo.html', {'form': form})
+        form = CicloPadraoForm(instance=ciclo)  # Preenche o formulário com os dados do ciclo
+
+    return render(request, "gpp/editar_ciclo.html", {"form": form, "ciclo": ciclo})
+
 
 # 🔹 Excluir Ciclo de Manutenção
 def excluir_ciclo(request, cod_ciclo):
-    ciclo = get_object_or_404(CicloPadrao, cod_ciclo=cod_ciclo)
+    ciclo = get_object_or_404(CicloManutencao, cod_ciclo=cod_ciclo)
     ciclo.delete()
     messages.success(request, "Ciclo excluído com sucesso!")
-    return redirect('lista_ciclos')
+    return redirect('listar_ciclos')
 
 
 

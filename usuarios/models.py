@@ -172,14 +172,26 @@ class MatrizPadraoAtividade(models.Model):
         return f"{self.cod_categoria} - {self.cod_especialidade}"
 
 
-class CicloPadrao(models.Model):
+class CicloManutencao(models.Model):
+    TIPO_INTERVALO_CHOICES = [
+        ('D', 'Dias'),
+        ('S', 'Semanas'),
+        ('M', 'Meses'),
+        ('A', 'Anos')
+    ]
+
     cod_ciclo = models.CharField(max_length=50, primary_key=True)
     descricao = models.CharField(max_length=255)
-    intervalo_dias = models.IntegerField()
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name="ciclos")
+    especialidade = models.ForeignKey(Especialidade, on_delete=models.CASCADE, related_name="ciclos")
+    intervalo = models.IntegerField()
+    tipo_intervalo = models.CharField(max_length=1, choices=TIPO_INTERVALO_CHOICES)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    ativo = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.descricao
-
+        return f"{self.descricao} ({self.get_tipo_intervalo_display()} - {self.intervalo})"
 
 
 
