@@ -1,26 +1,50 @@
 from .openai_cliente import gerar_resposta_openai
 from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
-import re
+import markdown
+from django.utils.safestring import mark_safe
 
 
 def formatar_texto_para_html(texto):
-    """Converte marcações de texto em HTML."""
-    # Negrito: **texto**
-    texto = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)
-    # Itálico: *texto*
-    texto = re.sub(r'\*(.*?)\*', r'<i>\1</i>', texto)
-    # Sublinhado: _texto_
-    texto = re.sub(r'_(.*?)_', r'<u>\1</u>', texto)
-    # Títulos: ### Título
-    texto = re.sub(r'(?m)^### (.*?)$', r'<h3>\1</h3>', texto)
-    texto = re.sub(r'(?m)^#### (.*?)$', r'<h4>\1</h4>', texto)
-    # Listas ordenadas: 1. item
-    texto = re.sub(r'(?m)^\d+\.\s(.*?)$', r'<li>\1</li>', texto)
-    texto = re.sub(r'(<li>.*?</li>)', r'<ol>\1</ol>', texto, flags=re.DOTALL)
-    # Linha horizontal: ---
-    texto = texto.replace('---', '<hr>')
-    return texto
+    """Converte marcações de texto em HTML e melhora a formatação da tabela."""
+    if not texto:
+        return ""
+
+    # 🔹 Adiciona um CSS para melhorar a aparência da tabela
+    estilo_tabela = """
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 16px;
+            text-align: left;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        ul, ol {
+            margin-left: 20px;
+        }
+    </style>
+    """
+
+    # 🔹 Converter Markdown para HTML (com suporte a tabelas e listas)
+    texto = markdown.markdown(texto, extensions=['extra', 'tables'])
+
+    # 🔹 Adiciona o estilo no início do texto
+    texto = estilo_tabela + texto
+
+    return mark_safe(texto)
 
 def processar_comunicacao_multi_ia(user_message, historico_completo):
     """

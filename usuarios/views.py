@@ -152,9 +152,11 @@ def chat(request):
     if not session:
         return redirect('nova_conversa')  # Redireciona para criar uma nova conversa
 
-    # Processa a mensagem do usuário
+    # Processa a mensagem do usuário (AJAX)
     if request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
+        
+
         if user_message:
             if not session.title or session.title == "Nova Conversa":
                 session.title = user_message[:35]  # Define o título da sessão com base na primeira mensagem
@@ -178,7 +180,10 @@ def chat(request):
                 answer=ai_response_formatado
             )
 
-    # Recupera o histórico da sessão atual
+
+            return JsonResponse({"response": ai_response_formatado})  # ✅ Agora retorna JSON corretamente
+
+    # 🔹 Se for um GET, renderiza o template normal
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
     sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
 
@@ -600,7 +605,7 @@ def excluir_ciclo(request, cod_ciclo):
 
 def listar_matriz(request):
     query = request.GET.get("q")
-    if query:
+    if query:    
         matriz = MatrizPadraoAtividade.objects.filter(
             descricao__icontains=query
         )

@@ -143,7 +143,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://3eff-2804-1b1-118a-ceb8-11b9-efc6-57e-8910.ngrok-free.app'
+    'https://9053-179-185-2-106.ngrok-free.app'
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
