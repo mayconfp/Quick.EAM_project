@@ -27,8 +27,14 @@
                     <p><strong>Você:</strong> {{ chat.question }}</p>
                 </div>
                 <div class="message_bot">
-                    <p><strong>Manuela:</strong> {{ chat.answer|safe }}</p>
+                    <p><strong>Manuela:</strong></p>
+                    <span class="bot-response">
+                        {{ chat.answer|safe }}
+                    </span>
+                    <button class="copy-btn" onclick="copyToClipboard(this)">📋 Copiar</button>
                 </div>
+                
+                
             {% empty %}
                 <p>Sem mensagens ainda nesta conversa.</p>
             {% endfor %}
@@ -40,15 +46,24 @@
         </div>
 
         <div class="chat-form">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                <textarea id="message_area" name="message" placeholder="Fale com a Manuela..."></textarea>
+                
+                <!-- Botão de anexar arquivos -->
+                <label for="file_input" class="file-label">
+                    🖇️
+                </label>
+                <input type="file" id="file_input" name="file" accept="image/*, .pdf, .docx, .xlsx" style="display: none;">
+                
+                <!-- Área de digitação -->
+                <textarea id="message_area" name="message" placeholder="Digite sua mensagem..."></textarea>
+                
+                <!-- Botão de enviar -->
                 <button id="submitbutton" type="submit">
-                    <i class="arrow-up">↑</i>
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
         </div>
-    </div>
    
     <script src="{% static 'js/chat.js' %}"></script>
     

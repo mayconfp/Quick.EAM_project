@@ -13,16 +13,19 @@ def formatar_texto_para_html(texto):
     # 🔹 Adiciona um CSS para melhorar a aparência da tabela
     estilo_tabela = """
     <style>
-        table {
-            width: 100%;
+            table {
             border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 16px;
-            text-align: left;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            display: block;
         }
+
         th, td {
-            padding: 10px;
+            padding: 8px;
+            text-align: left;
             border: 1px solid #ddd;
+            font-size: 14px;
         }
         th {
             background-color: #4CAF50;

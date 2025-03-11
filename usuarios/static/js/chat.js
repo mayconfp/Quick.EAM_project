@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // 🔥 Seleciona elementos do chat
+    // 🔥 Selecionando elementos do chat
     const form = document.querySelector(".chat-form form");
     const messageArea = document.getElementById("message_area");
     const submitButton = document.getElementById("submitbutton");
     const chatHistory = document.getElementById("chatHistory");
+    const fileInput = document.getElementById("file_input");
 
     function scrollToBottom() {
         if (chatHistory) {
@@ -13,14 +14,51 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // 📎 Evento para anexar arquivos e mostrar no textarea
+    if (fileInput) {
+        fileInput.addEventListener("change", function (event) {
+            const file = event.target.files[0];
+
+            if (file) {
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const imgTag = `<img src="${e.target.result}" style="max-width: 100px; border-radius: 5px;">`;
+                        messageArea.value += "\n" + imgTag;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    messageArea.value += `\n📎 Arquivo anexado: ${file.name}`;
+                }
+            }
+        });
+    }
+
+    // ✅ Função para copiar resposta ao clicar no botão
+    window.copyToClipboard = function (button) {
+        const responseElement = button.closest(".message_bot").querySelector(".bot-response");
+        if (!responseElement) return;
+
+        const responseText = responseElement.innerText.replace(/<[^>]+>/g, '').trim();
+        if (!responseText) return;
+
+        navigator.clipboard.writeText(responseText)
+            .then(() => {
+                button.textContent = "✅ Copiado!";
+                setTimeout(() => {
+                    button.textContent = "📋 Copiar";
+                }, 2000);
+            });
+    };
+
+    // 🔥 Função para envio de mensagens
     if (form) {
         form.addEventListener("submit", function (event) {
-            event.preventDefault(); // Impede o envio padrão do formulário
+            event.preventDefault();
 
             const userMessage = messageArea.value.trim();
             if (userMessage === "") return;
 
-            // 🔹 Adiciona a mensagem do usuário no chat imediatamente
             chatHistory.innerHTML += `
                 <div class="message_user">
                     <p><strong>Você:</strong> ${userMessage}</p>
@@ -28,24 +66,19 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
             scrollToBottom();
 
-            messageArea.value = ""; // Limpa o campo de entrada
-            messageArea.style.height = "40px"; // Reseta a altura do textarea
+            messageArea.value = "";
+            messageArea.style.height = "40px";
 
-            // 🔹 Criar e adicionar os pontos piscando ANTES de chamar o fetch
             const loadingIndicator = document.createElement("div");
             loadingIndicator.classList.add("loading-dots");
             loadingIndicator.innerHTML = `<span>.</span><span>.</span><span>.</span>`;
             chatHistory.appendChild(loadingIndicator);
             scrollToBottom();
 
-            // Criar um objeto FormData para enviar os dados corretamente
             const formData = new FormData();
             formData.append("message", userMessage);
-
-            // Adiciona o token CSRF para evitar erro 403 no Django
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-            // 🔹 Enviar a mensagem via AJAX para o servidor Django
             fetch(form.action, {
                 method: "POST",
                 body: formData,
@@ -54,33 +87,40 @@ document.addEventListener("DOMContentLoaded", function () {
                     "X-CSRFToken": csrfToken,
                 },
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Erro ao enviar a mensagem.");
-                }
-                return response.json(); // Esperamos um JSON como resposta
-            })
+            .then(response => response.json())
             .then(data => {
-                // 🔹 Remove os pontos piscando quando a resposta chegar
                 loadingIndicator.remove();
-
-                // 🔹 Adiciona a resposta da IA no chat
-                chatHistory.innerHTML += `
-                    <div class="message_bot">
-                        <p><strong>Manuela:</strong> ${data.response}</p>
-                    </div>
+                const botMessage = document.createElement("div");
+                botMessage.classList.add("message_bot");
+                botMessage.innerHTML = `
+                    <p><strong>Manuela:</strong></p>
+                    <span class="bot-response">${data.response}</span>
+                    <button class="copy-btn" onclick="copyToClipboard(this)">📋 Copiar</button>
                 `;
 
+                chatHistory.appendChild(botMessage);
                 scrollToBottom();
-            })
-            .catch(error => {
-                console.error("❌ Erro ao enviar a mensagem:", error);
-                loadingIndicator.remove();
             });
         });
     }
 
-    // 🔥 Sidebar Controls
+    // 🔥 Ajuste automático do textarea no chat
+    if (messageArea) {
+        messageArea.addEventListener("input", function () {
+            this.style.height = "auto";
+            this.style.height = this.scrollHeight + "px";
+            scrollToBottom();
+        });
+
+        messageArea.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                submitButton.click();
+            }
+        });
+    }
+
+    // 🔥 Controles da Sidebar
     const openBtn = document.getElementById("open_btn");
     const sidebar = document.getElementById("sidebar");
     const openRightBtn = document.getElementById("openright_btn");
@@ -134,20 +174,4 @@ document.addEventListener("DOMContentLoaded", function () {
     // 🔥 Scroll automático no chat
     scrollToBottom();
     window.addEventListener("resize", scrollToBottom);
-
-    // 🔥 Ajuste automático do textarea no chat
-    if (messageArea) {
-        messageArea.addEventListener("input", function () {
-            this.style.height = "auto";
-            this.style.height = this.scrollHeight + "px";
-            scrollToBottom();
-        });
-
-        messageArea.addEventListener("keydown", function (event) {
-            if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                submitButton.click();
-            }
-        });
-    }
 });
