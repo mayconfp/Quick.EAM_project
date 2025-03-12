@@ -120,3 +120,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
 });
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const fileUpload = document.getElementById("file-upload");
+    const fileNameDisplay = document.getElementById("file-name");
+
+    fileUpload.addEventListener("change", function (event) {
+        let file = event.target.files[0];
+        if (file) {
+            fileNameDisplay.textContent = file.name;
+        }
+    });
+});

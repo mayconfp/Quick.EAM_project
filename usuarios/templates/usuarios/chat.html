@@ -31,21 +31,42 @@
                 <div class="message_bot">
                     <p><strong>Manuela:</strong> <span class="chat-response" data-resposta="{{ chat.answer|escape }}"></span></p>
 
+                    {% if chat.file_url and chat.file_name %}
+                        <div class="chat-attachment">
+                            <a href="{{ chat.file_url }}" target="_blank">
+                                <img src="{% static 'images/pdf.png' %}" alt="PDF" class="file-icon">
+                                <span>{{ chat.file_name }}</span>
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             {% empty %}
                 <p>Sem mensagens ainda nesta conversa.</p>
             {% endfor %}
-        </div>
 
+
+        </div>
         <div class="chat-form">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <textarea id="message_area" name="message" placeholder="Fale com a Manuela..."></textarea>
+        
+                <!-- Botão de Upload -->
+                <label for="file-upload" class="file-label">
+                    📎 <!-- Ícone de clipe -->
+                </label>
+                <input type="file" name="file" id="file-upload" style="display: none;">
+        
+                <!-- Nome do Arquivo Selecionado -->
+                <span id="file-name"></span>
+        
+                <!-- Botão de Envio -->
                 <button id="submitbutton" type="submit">
                     <i class="arrow-up">↑</i>
                 </button>
             </form>
         </div>
+        
     </div>
     <script src="{% static 'js/chat.js' %}"></script>
     

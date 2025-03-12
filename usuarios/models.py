@@ -87,6 +87,8 @@ class ChatHistory(models.Model):
         ],
         default='GPT'
     )
+    file_url = models.URLField(blank=True, null=True)  # ✅ Campo para armazenar a URL do arquivo
+    file_name = models.CharField(max_length=255, blank=True, null=True)  # ✅ Nome do arquivo
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:

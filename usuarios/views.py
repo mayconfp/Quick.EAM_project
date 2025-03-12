@@ -25,7 +25,13 @@ import json
 from django.shortcuts import redirect, render
 from django.db import transaction
 from django.db import DatabaseError
-
+import os
+from django.conf import settings
+import pymupdf as fitz
+from django.http import JsonResponse
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from .openai_cliente import processar_arquivo
 
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
@@ -92,15 +98,14 @@ def user_login(request):
 
 
 
-
-
 logger = logging.getLogger(__name__)  # Criando o logger para registrar eventos
+
 
 
 
 @login_required
 def chat(request):
-    ai_response = "Ocorreu um erro ao obter a resposta."  # Define um valor padrão
+    ai_response = "Ocorreu um erro ao obter a resposta."
     session_id = request.GET.get('session')
     session = None
 
@@ -112,10 +117,7 @@ def chat(request):
     if not session:
         return redirect('nova_conversa')
 
-    # 🔄 **Busca histórico da conversa**
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
-
-    # 🔎 **Formatar histórico (removendo mensagens de erro para evitar loops)**
     chat_history_formatado = [
         {"question": mensagem.question, "answer": mensagem.answer}
         for mensagem in chat_history
@@ -124,17 +126,38 @@ def chat(request):
 
     if request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
+        uploaded_file = request.FILES.get('file')
 
-        if not user_message:
+        file_path = None
+        extracted_text = None
+        contexto_adicional = None
+
+        if uploaded_file:
+            file_path = os.path.join(settings.MEDIA_ROOT, "uploads", uploaded_file.name)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with default_storage.open(file_path, 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
+
+            # ✅ Extração de texto do PDF
+            if uploaded_file.name.lower().endswith('.pdf'):
+                extracted_text = processar_arquivo(file_path)
+
+        if extracted_text:
+            contexto_adicional = f"[Texto extraído do PDF]:\n{extracted_text}"
+            logger.info(f"[DEBUG] Texto extraído do PDF (500 caracteres): {extracted_text[:500]}...")
+
+        if not user_message and not uploaded_file:
             return JsonResponse({"success": False, "message": "A mensagem não pode estar vazia."})
 
+        # ✅ Definir o título da sessão na primeira mensagem
         if not session.title or session.title == "Nova Conversa":
-            session.title = user_message[:45]
+            session.title = user_message[:45] if user_message else "Nova Conversa"
             session.save()
 
         logger.info(f"[DEBUG] Usuário enviou: {user_message}")
 
-        # ✅ **Se for um pedido de resumo, busca a última resposta**
+        # ✅ Se for um pedido de resumo, busca a última resposta
         if "resuma" in user_message.lower() or "resumo" in user_message.lower():
             ultima_resposta = recuperar_ultima_resposta(request.user)
 
@@ -145,15 +168,19 @@ def chat(request):
                 ai_response = "Não há texto anterior para resumir."
 
         else:
-            # ✅ **Garante que a IA use o histórico antes de responder**
-            ai_response = gerar_resposta(user_message, chat_history_formatado)
+            # ✅ Inclui o contexto do PDF na geração de resposta (mas não no histórico!)
+            ai_response = gerar_resposta(
+                user_message if user_message else "O usuário enviou um arquivo e deseja informações sobre o conteúdo.",
+                chat_history_formatado,
+                file_path,
+                contexto_adicional
+            )
 
             if not ai_response:
                 logger.info(f"[DEBUG] Nenhuma resposta no JSON. Chamando IA para responder: '{user_message}'")
                 try:
                     ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
 
-                    # 🔥 **Se a IA falhar, tenta novamente sem o contexto da QuickEAM**
                     if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
                         logger.info(f"[DEBUG] Reenviando pergunta sem base da QuickEAM: {user_message}")
                         ai_response = processar_comunicacao_multi_ia(user_message, [])  # Remove contexto
@@ -165,37 +192,26 @@ def chat(request):
                     logger.error(f"[ERROR] Erro ao processar IA: {e}")
                     ai_response = "Ocorreu um erro ao tentar responder. Tente novamente mais tarde."
 
-        # ✅ **Salva no banco (mantendo a conversa do usuário)**
+        # ✅ Salva apenas a pergunta e a resposta, não o conteúdo extraído do PDF
         ChatHistory.objects.create(
             session=session,
             user=request.user,
-            question=user_message,
-            answer=ai_response
+            question=user_message if user_message else "[Arquivo enviado]",
+            answer=ai_response,
+            file_name=uploaded_file.name if uploaded_file else None
         )
 
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
-
-    # ✅ **Evita salvar mensagens de erro repetitivas no histórico**
     chat_history_formatado = [
         {"question": mensagem.question, "answer": mensagem.answer}
         for mensagem in chat_history
         if "não consegui gerar uma resposta precisa" not in mensagem.answer.lower()
     ]
 
-    # ✅ **Garante que ai_response nunca seja None**
     if ai_response is None:
         ai_response = "Ocorreu um erro ao obter a resposta."
 
-    # 🛑 Verificação: Se a IA retornar uma lista, converte para string corretamente
-    if isinstance(ai_response, list):
-        ai_response = ", ".join(ai_response)  # Junta elementos da lista sem colchetes e aspas
-
-    # 🔥 Remove aspas extras que possam ter ficado na string
-    ai_response = ai_response.replace("'", "").replace("[", "").replace("]", "")
-
-    ai_response_formatado = json.dumps(ai_response, ensure_ascii=False) # Enviar resposta em Markdown puro
-
-
+    ai_response_formatado = json.dumps(ai_response, ensure_ascii=False)
 
     return render(request, 'usuarios/chat.html', {
         'response': ai_response_formatado,
@@ -204,6 +220,49 @@ def chat(request):
         'current_session': session,
         'pagina_atual': 'chat'
     })
+
+
+
+
+# ✅ **Função para extrair texto de um PDF**
+def extract_text_from_pdf(file_path):
+    """Extrai o texto de um arquivo PDF sem exibir na interface."""
+    try:
+        with fitz.open(file_path) as pdf:
+            text = "\n".join(page.get_text("text") for page in pdf)
+        return text.strip() if text else "O PDF não contém texto extraível."
+    except Exception as e:
+        logger.error(f"[ERROR] Erro ao extrair texto do PDF: {e}")
+        return "Erro ao processar o PDF."
+
+
+
+# ✅ Função para extrair texto de um PDF
+def extract_text_from_pdf(file_path):
+    """Extrai o texto de um arquivo PDF."""
+    try:
+        with fitz.open(file_path) as pdf:
+            text = ""
+            for page in pdf:
+                text += page.get_text("text") + "\n"
+        return text.strip() if text else "O PDF não contém texto extraível."
+    except Exception as e:
+        print(f"[ERROR] Erro ao extrair texto do PDF: {e}")
+        return "Erro ao processar o PDF."
+    
+
+def handle_uploaded_file(uploaded_file):
+    """Salva o arquivo no diretório de uploads"""
+    upload_dir = os.path.join(settings.MEDIA_ROOT, "uploads")
+    os.makedirs(upload_dir, exist_ok=True)  # ✅ Garante que o diretório existe
+
+    file_path = os.path.join(upload_dir, uploaded_file.name)
+    with open(file_path, 'wb+') as destination:
+        for chunk in uploaded_file.chunks():
+            destination.write(chunk)
+    return settings.MEDIA_URL + f"uploads/{uploaded_file.name}"
+
+
 
 
 
