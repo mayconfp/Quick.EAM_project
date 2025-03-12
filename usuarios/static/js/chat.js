@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const responseElement = button.closest(".message_bot").querySelector(".bot-response");
         if (!responseElement) return;
 
-        const responseText = responseElement.innerText.replace(/<[^>]+>/g, '').trim();
+        const responseText = responseElement.innerText.trim();
         if (!responseText) return;
 
         navigator.clipboard.writeText(responseText)
@@ -92,10 +92,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 loadingIndicator.remove();
                 const botMessage = document.createElement("div");
                 botMessage.classList.add("message_bot");
+
+                // Criando um elemento temporário para processar a resposta
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = data.response;
+
+                // Verifica se há listas ou tabelas dentro da resposta
+                const hasListOrTable = tempDiv.querySelector("ul, ol, table");
+
+                // Só adiciona o botão se houver listas/tabelas
+                const copyButton = hasListOrTable 
+                    ? `<button class="copy-btn" onclick="copyToClipboard(this)">📋 Copiar</button>` 
+                    : "";
+
                 botMessage.innerHTML = `
                     <p><strong>Manuela:</strong></p>
                     <span class="bot-response">${data.response}</span>
-                    <button class="copy-btn" onclick="copyToClipboard(this)">📋 Copiar</button>
+                    ${copyButton}
                 `;
 
                 chatHistory.appendChild(botMessage);

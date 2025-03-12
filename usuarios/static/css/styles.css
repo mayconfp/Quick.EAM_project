@@ -299,7 +299,7 @@ transform: translateX(0);
 
 
 #sidebar2.open_sidebar {
-    width: 600px;
+    width: 330px;
     right: 0;
 }
 
@@ -454,7 +454,7 @@ transform: translateX(0);
 }
 
 #sidebar.open_sidebar {
-    width: 400px;
+    width: 330px;
     transform: translateX(0);
 }
 

@@ -5,11 +5,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm, CicloPadraoForm, MatrizPadraoAtividadeForm
 from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade,CicloManutencao, CategoriaLang
-from .provedores import gerar_contexto_completo, processar_comunicacao_multi_ia , formatar_texto_para_html
+from .provedores import processar_comunicacao_multi_ia
 from django.utils.translation import activate
 from django.utils.safestring import mark_safe
 import requests
 import logging
+from .openai_cliente import processar_arquivo
 User = get_user_model() 
 from django.urls import reverse
 from django.core.mail import send_mail
@@ -17,9 +18,10 @@ from django.conf import settings
 from .validators import SenhaPersonalizada
 from .models import PasswordResetCode
 from django.core.exceptions import ValidationError
-
-
-
+import pymupdf as fitz
+import os
+from django.core.files.storage import default_storage
+from .services import recuperar_ultima_resposta , gerar_resposta
 
 
 
@@ -142,68 +144,154 @@ def chat(request):
     session_id = request.GET.get('session')
     session = None
 
-    # Carrega a sessão atual se o session_id for fornecido
+    # 🔹 Busca a sessão do chat (ou cria uma nova)
     if session_id:
         session = get_object_or_404(ChatSession, id=session_id, user=request.user)
     else:
-        # Busca a última sessão criada para o usuário
         session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
 
     if not session:
-        return redirect('nova_conversa')  # Redireciona para criar uma nova conversa
+        return redirect('nova_conversa')
 
-    # Processa a mensagem do usuário (AJAX)
+    # 🔹 Carrega e formata o histórico do chat
+    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp')
+    chat_history_formatado = [
+        {"question": msg.question, "answer": msg.answer}
+        for msg in chat_history
+        if "não consegui gerar uma resposta precisa" not in msg.answer.lower()
+    ]
+
+    # 🔥 Processamento de mensagens do usuário (AJAX)
     if request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
-        
+        uploaded_file = request.FILES.get('file')
 
-        if user_message:
-            if not session.title or session.title == "Nova Conversa":
-                session.title = user_message[:35]  # Define o título da sessão com base na primeira mensagem
-                session.save()
+        file_path = None
+        extracted_text = None
+        contexto_adicional = None
 
-            # Gera o contexto completo com base no histórico
-            historico_completo = ChatHistory.objects.filter(session=session).order_by('timestamp')
-            contexto_para_openai = gerar_contexto_completo(historico_completo)
+        # 🔹 Processa arquivos anexados (PDFs)
+        if uploaded_file:
+            file_path = os.path.join(settings.MEDIA_ROOT, "uploads", uploaded_file.name)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with default_storage.open(file_path, 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
 
-            # Processa a mensagem com múltiplas IAs
-            ai_response = processar_comunicacao_multi_ia(user_message, contexto_para_openai)
+            # ✅ Extração de texto do PDF
+            if uploaded_file.name.lower().endswith('.pdf'):
+                extracted_text = processar_arquivo(file_path)
 
-            # Formata a resposta para HTML antes de salvar e exibir
-            ai_response_formatado = formatar_texto_para_html(ai_response)
+        if extracted_text:
+            contexto_adicional = f"[Texto extraído do PDF]:\n{extracted_text}"
+            logger.info(f"[DEBUG] Texto extraído do PDF (500 caracteres): {extracted_text[:500]}...")
 
-            # Salva a mensagem e a resposta no histórico
-            ChatHistory.objects.create(
-                session=session,
-                user=request.user,
-                question=user_message,
-                answer=ai_response_formatado
+        # ❌ Impede envios vazios
+        if not user_message and not uploaded_file:
+            return JsonResponse({"success": False, "message": "A mensagem não pode estar vazia."})
+
+        # ✅ Define o título da sessão na primeira mensagem
+        if not session.title or session.title == "Nova Conversa":
+            session.title = user_message[:45] if user_message else "Nova Conversa"
+            session.save()
+
+        logger.info(f"[DEBUG] Usuário enviou: {user_message}")
+
+        # 🔥 Resumo automático se solicitado
+        if "resuma" in user_message.lower() or "resumo" in user_message.lower():
+            ultima_resposta = recuperar_ultima_resposta(request.user)
+
+            if ultima_resposta:
+                prompt_resumo = f"Resuma o seguinte texto de forma objetiva:\n\n{ultima_resposta}"
+                ai_response = processar_comunicacao_multi_ia(prompt_resumo, chat_history_formatado)
+            else:
+                ai_response = "Não há texto anterior para resumir."
+
+        else:
+            # 🔥 Geração da resposta usando IA
+            ai_response = gerar_resposta(
+                user_message if user_message else "O usuário enviou um arquivo e deseja informações sobre o conteúdo.",
+                chat_history_formatado,
+                file_path,
+            
             )
 
+            if not ai_response:
+                logger.info(f"[DEBUG] Reenviando pergunta sem contexto: {user_message}")
+                ai_response = processar_comunicacao_multi_ia(user_message, [])
 
-            return JsonResponse({"response": ai_response_formatado})  # ✅ Agora retorna JSON corretamente
+            if not ai_response:
+                ai_response = "Desculpe, não consegui processar sua mensagem. Tente reformular."
+                logger.warning(f"[WARNING] IA não conseguiu gerar resposta para: '{user_message}'")
 
-    # 🔹 Se for um GET, renderiza o template normal
-    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp') if session else []
-    sessions = ChatSession.objects.filter(user=request.user).order_by('-created_at')
+        # ✅ Salva a pergunta e resposta no histórico (sem o conteúdo do PDF)
+        ChatHistory.objects.create(
+            session=session,
+            user=request.user,
+            question=user_message if user_message else "[Arquivo enviado]",
+            answer=ai_response,
+            file_name=uploaded_file.name if uploaded_file else None
+        )
 
-    # Formata o histórico para renderização segura
-    chat_history = [
-        {
-            'question': mensagem.question,
-            'answer': mark_safe(mensagem.answer),
-        }
-        for mensagem in chat_history
+        return JsonResponse({"response": ai_response})
+
+    # 🔹 Renderiza o template do chat
+    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp')
+    chat_history_formatado = [
+        {"question": msg.question, "answer": mark_safe(msg.answer)}
+        for msg in chat_history
     ]
 
     return render(request, 'usuarios/chat.html', {
         'response': ai_response,
-        'chat_history': chat_history,
-        'sessions': sessions,
+        'chat_history': chat_history_formatado,
+        'sessions': ChatSession.objects.filter(user=request.user).order_by('-created_at'),
         'current_session': session,
         'pagina_atual': 'chat'
     })
 
+
+# ✅ **Função para extrair texto de um PDF**
+def extract_text_from_pdf(file_path):
+    """Extrai o texto de um arquivo PDF sem exibir na interface."""
+    try:
+        with fitz.open(file_path) as pdf:
+            text = "\n".join(page.get_text("text") for page in pdf)
+        return text.strip() if text else "O PDF não contém texto extraível."
+    except Exception as e:
+        logger.error(f"[ERROR] Erro ao extrair texto do PDF: {e}")
+        return "Erro ao processar o PDF."
+
+
+
+# ✅ Função para extrair texto de um PDF
+def extract_text_from_pdf(file_path):
+    """Extrai o texto de um arquivo PDF."""
+    try:
+        with fitz.open(file_path) as pdf:
+            text = ""
+            for page in pdf:
+                text += page.get_text("text") + "\n"
+        return text.strip() if text else "O PDF não contém texto extraível."
+    except Exception as e:
+        print(f"[ERROR] Erro ao extrair texto do PDF: {e}")
+        return "Erro ao processar o PDF."
+    
+
+def handle_uploaded_file(uploaded_file):
+    """Salva o arquivo no diretório de uploads"""
+    upload_dir = os.path.join(settings.MEDIA_ROOT, "uploads")
+    os.makedirs(upload_dir, exist_ok=True)  # ✅ Garante que o diretório existe
+
+    file_path = os.path.join(upload_dir, uploaded_file.name)
+    with open(file_path, 'wb+') as destination:
+        for chunk in uploaded_file.chunks():
+            destination.write(chunk)
+    return settings.MEDIA_URL + f"uploads/{uploaded_file.name}"
+
+ 
+ 
+ 
 
 
 @login_required

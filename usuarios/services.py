@@ -1,61 +1,77 @@
-from .openai_cliente import gerar_resposta_openai
 from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
+import logging
 from .models import ChatHistory
-import json
+from .openai_cliente import processar_arquivo
+from .openai_cliente import carregar_conhecimento
+from .openai_cliente import buscar_no_json
+from .openai_cliente import buscar_no_json, carregar_conhecimento, gerar_resposta_openai, processar_arquivo
+import os
+import fitz
 
-def processar_comunicacao_multi_ia(mensagem, historico=None):
+logger = logging.getLogger(__name__)
+
+
+def gerar_resposta(user_message, chat_history=None, file_path=None, contexto_adicional=None):
+    """Gera uma resposta consolidada com base no JSON, arquivos e IA."""
+
+    if not isinstance(user_message, str) or not user_message.strip():
+        logger.warning("Mensagem inválida recebida.")
+        return "Não entendi sua mensagem. Pode reformular?"
+
+    user_message = user_message.strip()
+
+    # 🔎 **Busca no JSON primeiro**
+    resposta_json = buscar_no_json(user_message, carregar_conhecimento())
+    if resposta_json:
+        return resposta_json  
+
+    # 🔥 **Processa o arquivo se houver e extrai o texto**
+    extracted_text = None
+    if file_path:
+        extracted_text = processar_arquivo(file_path)
+
+    # 🔥 **Se o PDF contém informações, adiciona ao contexto da IA**
+    if extracted_text:
+        contexto_adicional = (contexto_adicional or "") + f"\n\n[Conteúdo do PDF]:\n{extracted_text}"
+
+    # 🔎 **Se não encontrou no JSON, chama a OpenAI**
+    return gerar_resposta_openai(user_message, chat_history, contexto_adicional)
+
+
+
+
+def processar_comunicacao_multi_ia(user_message, historico):
+    """Processa a mensagem consultando JSON antes de usar IAs externas."""
+
+    if not user_message.strip():
+        return "A mensagem não pode estar vazia."
+
+    # 🔎 **Verifica se é um pedido de resumo**
+    if "resuma" in user_message.lower() or "resumo" in user_message.lower():
+        return gerar_resposta(user_message, [])  # Remove contexto da QuickEAM
+
+    respostas = {}
+
     try:
-        # Log da mensagem recebida
-        print(f"[DEBUG] Mensagem recebida para processar: {mensagem}")
-        if historico:
-            print(f"[DEBUG] Histórico recebido: {list(historico)}")
-
-        # Inicializar dicionário para armazenar respostas de cada IA
-        respostas_adicionais = {
-            "Llama": None,
-            "Gemini": None,
-            "Historico": [msg.question for msg in historico] if historico else []
-        }
-
-        # Obter resposta da Llama
-        try:
-            resposta_llama = gerar_resposta_llama(mensagem)
-            respostas_adicionais["Llama"] = resposta_llama
-            print(f"[DEBUG] Resposta da Llama: {resposta_llama}")
-        except Exception as e:
-            print(f"[ERROR] Erro ao obter resposta da Llama: {e}")
-            respostas_adicionais["Llama"] = "Erro ao processar com Llama."
-
-        # Obter resposta da Gemini
-        try:
-            resposta_gemini = gemini_gerar_resposta(mensagem)
-            respostas_adicionais["Gemini"] = resposta_gemini
-            print(f"[DEBUG] Resposta da Gemini: {resposta_gemini}")
-        except Exception as e:
-            print(f"[ERROR] Erro ao obter resposta da Gemini: {e}")
-            respostas_adicionais["Gemini"] = "Erro ao processar com Gemini."
-
-        # Preparar contexto para OpenAI
-        print(f"[DEBUG] Contexto enviado para OpenAI: {respostas_adicionais}")
-
-        # Obter resposta final da OpenAI
-        resposta_final = gerar_resposta_openai(mensagem, respostas_adicionais)
-        print(f"[DEBUG] Resposta final da OpenAI: {resposta_final}")
-
-        # Certificar-se de que a resposta está em formato JSON e codificada corretamente
-        return json.dumps(resposta_final, ensure_ascii=False)
-
+        respostas['openai'] = gerar_resposta(user_message, historico)
     except Exception as e:
-        print(f"[ERROR] Erro ao processar comunicação multi-IA: {e}")
-        return json.dumps({"erro": "Erro ao processar as respostas entre as IAs."}, ensure_ascii=False)
+        print(f"[ERROR] Erro na OpenAI: {e}")
+        respostas['openai'] = None
+
+    melhor_resposta = respostas.get('openai')
+
+    return melhor_resposta or "Desculpe, não consegui gerar uma resposta no momento."
+
+
+
 
 def recuperar_ultima_resposta(user):
     """
     Recupera a última resposta registrada no banco de dados para o usuário.
     """
     try:
-        ultima_resposta = ChatHistory.objects.filter(user=user).order_by('-timestamp').first()
+        ultima_resposta = ChatHistory.objects.filter(session__user=user).order_by('-timestamp').first()
         if ultima_resposta and ultima_resposta.answer.strip():
             print(f"[DEBUG] Última resposta encontrada: {ultima_resposta.answer}")
             return ultima_resposta.answer.strip()

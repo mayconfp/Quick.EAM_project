@@ -412,6 +412,11 @@ overflow-y: auto; /* Adiciona rolagem caso o conteúdo exceda a altura */
 
 @media (max-width: 768px) {
 
+
+    body{
+        overflow: hidden;
+    }
+    
 header {
     display: flex; /* Ativa o flexbox */
     align-items: center; /* Centraliza verticalmente os itens */

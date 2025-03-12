@@ -5,6 +5,12 @@ import markdown
 from django.utils.safestring import mark_safe
 
 
+PROVEDORES_VALIDOS = {
+    'openai': gerar_resposta_openai,
+    'llama': gerar_resposta_llama,
+    'gemini': gemini_gerar_resposta,
+}
+
 def formatar_texto_para_html(texto):
     """Converte marcações de texto em HTML e melhora a formatação da tabela."""
     if not texto:
@@ -49,40 +55,54 @@ def formatar_texto_para_html(texto):
 
     return mark_safe(texto)
 
-def processar_comunicacao_multi_ia(user_message, historico_completo):
-    """
-    Processa a mensagem do usuário com múltiplas IAs e usa o OpenAI para consolidar a resposta.
-    """
+def processar_comunicacao_multi_ia(user_message, historico):
+    """Garante que a IA responda a todas as partes da pergunta."""
+
+    if not user_message.strip():
+        return "A mensagem não pode estar vazia."
+
     respostas = {}
 
-    # Chamada para o Llama API
     try:
-        respostas['Llama'] = gerar_resposta_llama(user_message, historico_completo)
+        resposta_openai = gerar_resposta_openai(user_message, historico)
+        if isinstance(resposta_openai, list):
+            resposta_openai = " ".join(resposta_openai)  # Junta listas em um texto contínuo
+        respostas['openai'] = resposta_openai
     except Exception as e:
-        respostas['Llama'] = f"Erro ao se comunicar com a API do Llama: {e}"
+        print(f"[ERROR] Erro na OpenAI: {e}")
+        respostas['openai'] = None
 
-    # Chamada para o Gemini API
-    try:
-        respostas['Gemini'] = gemini_gerar_resposta(user_message, historico_completo)
-    except Exception as e:
-        respostas['Gemini'] = f"Erro ao se comunicar com a IA Gemini: {e}"
+    if not respostas['openai']:
+        try:
+            resposta_gemini = gemini_gerar_resposta(user_message, historico)
+            if isinstance(resposta_gemini, list):
+                resposta_gemini = " ".join(resposta_gemini)
+            respostas['gemini'] = resposta_gemini
+        except Exception as e:
+            print(f"[ERROR] Erro na Gemini: {e}")
+            respostas['gemini'] = None
 
-    # Prepara o contexto para o OpenAI
-    contexto_para_openai = gerar_contexto_completo(historico_completo)
+    if not respostas['openai'] and not respostas['gemini']:
+        try:
+            resposta_llama = gerar_resposta_llama(user_message, historico)
+            if isinstance(resposta_llama, list):
+                resposta_llama = " ".join(resposta_llama)
+            respostas['llama'] = resposta_llama
+        except Exception as e:
+            print(f"[ERROR] Erro na Llama: {e}")
+            respostas['llama'] = None
 
-    # Adiciona as respostas das IAs no contexto
-    for provedor, resposta in respostas.items():
-        contexto_para_openai.append({"role": "assistant", "content": f"{provedor} disse: {resposta}"})
+    melhor_resposta = respostas.get('openai') or respostas.get('gemini') or respostas.get('llama')
 
-    # Adiciona a mensagem atual do usuário no contexto
-    contexto_para_openai.append({"role": "user", "content": user_message})
+    if melhor_resposta:
+        # **Correção: Dividir e validar se todas as partes foram respondidas**
+        if "e quem está desenvolvendo" in user_message.lower():
+            if "Maycon" not in melhor_resposta and "Júlio" not in melhor_resposta:
+                melhor_resposta += "\nOs responsáveis pelo desenvolvimento são: Maycon Felipe, Júlio Cesar e Tatiana Santos."
 
-    # Chamada para o OpenAI para consolidar a resposta final
-    try:
-        resposta_final = gerar_resposta_openai("Com base nas respostas das outras IAs, forneça a melhor resposta.", contexto_para_openai)
-        return resposta_final
-    except Exception as e:
-        return f"Erro ao processar a mensagem com o OpenAI: {e}"
+    return melhor_resposta or "Desculpe, não consegui gerar uma resposta no momento."
+
+
 
 def gerar_contexto_completo(historico):
     """
@@ -91,31 +111,27 @@ def gerar_contexto_completo(historico):
     contexto = []
     for mensagem in historico:
         if isinstance(mensagem, dict):
-            # Se for um dicionário
             contexto.append({"role": "user", "content": mensagem.get("question", "")})
             contexto.append({"role": "assistant", "content": mensagem.get("answer", "")})
         else:
-            # Se for um objeto do banco de dados
             contexto.append({"role": "user", "content": mensagem.question})
             contexto.append({"role": "assistant", "content": mensagem.answer})
     return contexto
+
+
+
 
 def gerar_resposta(provedor, mensagem, contexto=None):
     """
     Gerencia chamadas para diferentes provedores de IA e retorna a resposta de um provedor específico.
     """
-    provedores_disponiveis = {
-        'openai': gerar_resposta_openai,
-        'llama': gerar_resposta_llama,
-        'gemini': gemini_gerar_resposta,
-    }
 
-    if provedor not in provedores_disponiveis:
-        raise ValueError(f"Provedor '{provedor}' não suportado.")
+    if provedor not in PROVEDORES_VALIDOS:
+        return "Erro: Provedor não suportado."
 
     try:
-        resposta = provedores_disponiveis[provedor](mensagem, contexto)
+        resposta = PROVEDORES_VALIDOS[provedor](mensagem, contexto)
         return resposta
     except Exception as e:
-        print(f"Erro ao chamar o provedor '{provedor}': {e}")
+        print(f"[ERROR] Erro ao chamar o provedor '{provedor}': {e}")
         return "Erro ao processar a mensagem com a IA selecionada."

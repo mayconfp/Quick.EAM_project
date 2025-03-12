@@ -30,13 +30,16 @@ DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
+    'django_cleanup',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'modeltranslation',
     'usuarios',  # Aplicativo da sua aplicação
+      # Aplicativo de tradução
 ]
 
 
@@ -143,7 +146,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://9942-2804-1b1-1293-8f05-e437-975b-2bd5-ff37.ngrok-free.app'
+    'https://1c7a-2804-1b1-1293-8f05-20bb-3670-6d9-d536.ngrok-free.app'
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

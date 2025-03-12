@@ -89,6 +89,10 @@ class ChatHistory(models.Model):
     )
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    file_url = models.URLField(blank=True, null=True)  # ✅ Campo para armazenar a URL do arquivo
+    file_name = models.CharField(max_length=255, blank=True, null=True)  # ✅ Nome do arquivo
+    timestamp = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         indexes = [
             models.Index(fields=['user', 'timestamp']),
@@ -96,7 +100,6 @@ class ChatHistory(models.Model):
 
     def __str__(self):
         return f"{self.user}: {self.question[:20]} - {self.ia_used}"
-
 
 
 User = get_user_model()
