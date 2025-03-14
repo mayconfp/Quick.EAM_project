@@ -273,6 +273,12 @@ height: 60px;
 }
 
 
+img{
+    width: 24px; /* Ajuste o tamanho conforme necessário */
+    height: auto;
+    margin-right: 10px; /* Espaço entre o ícone e o texto */
+    vertical-align: middle; /* Alinha verticalmente com o texto */
+}
 
 .side-menu {
 position: fixed;
@@ -441,6 +447,9 @@ header {
     height: 40px; /* Altura do textarea */
 }
 
+
+
+
 /* Configuração do botão */
 .chat-form button {
     padding: 10px 15px;
@@ -491,3 +500,4 @@ header {
 
 
 }
+

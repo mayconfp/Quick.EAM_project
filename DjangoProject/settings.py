@@ -163,5 +163,5 @@ EMAIL_HOST_PASSWORD = "zpdj lvos ffow fusg"  # Use uma senha de aplicativo, se f
 DEFAULT_FROM_EMAIL = "QuickEAM <seu-email@gmail.com>"
 
 
-CSRF_TRUSTED_ORIGINS = ['https://55b1-2804-1b1-1293-8f04-4d56-7da6-cac0-eae7.ngrok-free.app',
+CSRF_TRUSTED_ORIGINS = ['https://24f7-2804-1b1-118a-ffdc-9b5-68e3-6b96-a54.ngrok-free.app',
 ]

@@ -2,36 +2,29 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import activate
-import requests
 from .models import Categoria, CategoriaLang
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
 from django.core.mail import send_mail
-from django.http import JsonResponse
 from django.conf import settings
 from .validators import SenhaPersonalizada
-from .models import PasswordResetCode
 from django.core.exceptions import ValidationError
-from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm,CicloManutencao , MatrizPadraoAtividadeForm, CicloPadraoForm
-from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade,CicloManutencao, CategoriaLang
+from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade,CicloManutencao, CategoriaLang, PasswordResetCode
 from .provedores import processar_comunicacao_multi_ia
-from .services import gerar_resposta
-import logging
-from .services import recuperar_ultima_resposta
-import json
-from django.shortcuts import redirect, render
-from django.db import transaction
+from .services import gerar_resposta, recuperar_ultima_resposta
 from django.db import DatabaseError
-import os
-from django.conf import settings
 import pymupdf as fitz
 from django.http import JsonResponse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from .openai_cliente import processar_arquivo
+import requests
+import logging
+import json
+import os
 
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
@@ -39,7 +32,7 @@ PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
 logger = logging.getLogger(__name__)  # Cria um logger para este módulo
 
-#mudança na função de perfil
+
 @login_required
 def perfil(request):
     """Exibe e permite atualizar os dados do usuário logado."""

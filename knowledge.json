@@ -1,79 +1,187 @@
 {
   "empresa": {
-    "nome": "QuickEAM",
-    "descricao": "A QuickEAM é uma empresa especializada em soluções de gestão de ativos empresariais (Enterprise Asset Management - EAM).",
-    "missao": "Fornecer tecnologia avançada para otimizar a gestão de ativos, reduzir custos e aumentar a eficiência operacional das empresas.",
-    "solucoes": [
-      "Sistemas inteligentes que utilizam IA e machine learning.",
-      "Integração com ERPs para otimizar a manutenção e monitoramento de ativos.",
-      "Ferramentas para análise preditiva e automação de processos."
-    ]
+      "nome": "QuickEAM",
+      "descricao": "A QuickEAM é uma empresa especializada em soluções de gestão de ativos empresariais (Enterprise Asset Management - EAM), oferecendo tecnologias de inteligência artificial, machine learning e integração com ERPs para otimização da manutenção industrial.",
+      "missao": "Impulsionar a manutenção industrial com modernas aplicações de software, IA e consultoria especializada, comprometidos com os resultados dos clientes.",
+      "visao": "Desenvolver, implementar e oferecer soluções inovadoras de software, IA e consultoria especializada em manutenção industrial, garantindo resultados excepcionais para nossos clientes e promovendo a sustentabilidade e a criação de valor no setor.",
+      "valores": [
+          "Compromisso com a excelência",
+          "Inovação contínua",
+          "Foco no cliente",
+          "Sustentabilidade",
+          "Integridade e ética",
+          "Colaboração e trabalho em equipe",
+          "Responsabilidade",
+          "Adaptabilidade",
+          "Desenvolvimento contínuo",
+          "Criação de valor sustentável"
+      ],
+      "solucoes": [
+          "Sistemas inteligentes que utilizam IA e machine learning para prever falhas e otimizar processos.",
+          "Integração com ERPs como SAP/PM e outras plataformas para automação da manutenção.",
+          "Ferramentas de análise preditiva para minimizar custos operacionais e maximizar eficiência.",
+          "Assistentes virtuais para suporte e otimização de processos industriais."
+      ],
+      "contato": {
+          "site": "https://quickeam.com/",
+          "email": "contato@quickeam.com",
+          "telefone": "+55 11 98765-4321"
+      }
   },
   "projetos": {
-    "manutencao_preditiva": "Sistema que prevê falhas em equipamentos industriais usando IA.",
-    "gestao_ativos": "Plataforma integrada para monitoramento de ativos empresariais.",
-    "otimizacao_processos": "Ferramenta para análise de dados e tomada de decisões estratégicas.",
-    "GPP": {
-      "descricao": "O GPP (Gestão de Planos Padrões) é um processo estruturado para padronizar, otimizar e gerenciar planos de manutenção e ativos industriais, garantindo eficiência operacional e conformidade com melhores práticas.",
-      "objetivo": "Criar e manter um conjunto de planos padrão para manutenção e gestão de ativos, promovendo uniformidade, rastreabilidade e otimização de recursos.",
-      "beneficios": [
-        "Padronização dos procedimentos de manutenção.",
-        "Redução de tempo na criação e atualização de planos.",
-        "Melhoria na confiabilidade e disponibilidade dos ativos.",
-        "Facilidade na auditoria e conformidade regulatória.",
-        "Redução de custos operacionais e desperdícios."
-      ],
-      "fases": {
-        "1. Planejamento": {
-          "descricao": "Definição dos requisitos e escopo do plano padrão.",
-          "entradas": ["Inventário de ativos", "Histórico de manutenção", "Normas técnicas"],
-          "saidas": ["Lista de ativos a serem incluídos", "Critérios de padronização"],
-          "responsaveis": ["Engenheiros de manutenção", "Coordenadores de ativos"]
-        },
-        "2. Estruturação": {
-          "descricao": "Criação e modelagem dos planos de manutenção com base nos requisitos definidos.",
-          "entradas": ["Critérios padronizados", "Base de conhecimento da empresa"],
-          "saidas": ["Estrutura detalhada dos planos padrões"],
-          "responsaveis": ["Especialistas em manutenção", "Equipe de planejamento"]
-        },
-        "3. Validação e Teste": {
-          "descricao": "Simulação e testes dos planos padrões para verificar a aderência e eficácia.",
-          "entradas": ["Planos estruturados", "Histórico de falhas"],
-          "saidas": ["Ajustes necessários para otimização"],
-          "responsaveis": ["Engenharia de confiabilidade", "Gestores de manutenção"]
-        },
-        "4. Implantação": {
-          "descricao": "Aplicação dos planos padrões nos processos operacionais e nos sistemas de gestão.",
-          "entradas": ["Planos validados", "Sistemas integrados (SAP/PM, CMMS)"],
-          "saidas": ["Planos implementados e ativos atualizados"],
-          "responsaveis": ["Técnicos de manutenção", "Administradores de sistema"]
-        },
-        "5. Monitoramento e Melhoria Contínua": {
-          "descricao": "Acompanhamento dos resultados e otimização contínua dos planos.",
-          "entradas": ["Dados operacionais", "Relatórios de desempenho"],
-          "saidas": ["Revisões periódicas dos planos padrões"],
-          "responsaveis": ["Analistas de manutenção", "Coordenadores de ativos"]
-        }
+      "manutencao_preditiva": {
+          "descricao": "Sistema baseado em IA para prever falhas em equipamentos industriais e otimizar cronogramas de manutenção.",
+          "tecnologias": [
+              "Machine Learning",
+              "Análise Preditiva",
+              "Big Data",
+              "SAP/PM"
+          ],
+          "beneficios": [
+              "Redução de custos operacionais",
+              "Diminuição do tempo de inatividade dos equipamentos",
+              "Aumento da confiabilidade e disponibilidade dos ativos"
+          ],
+          "clientes": [
+              "Votorantim Cimentos",
+              "Suzano",
+              "Petrobras"
+          ]
       },
-      "integracoes": {
-        "sistemas": ["SAP/PM", "CMMS", "Plataformas de IoT"],
-        "formatos": ["APIs para integração", "Exportação em CSV/XML"]
+      "gestao_ativos": {
+          "descricao": "Plataforma integrada para monitoramento, rastreamento e análise do ciclo de vida dos ativos empresariais.",
+          "tecnologias": [
+              "IoT",
+              "Cloud Computing",
+              "Data Analytics"
+          ],
+          "beneficios": [
+              "Melhoria no planejamento de manutenção",
+              "Automação de processos para aumentar a eficiência operacional",
+              "Redução de desperdícios e custos com ativos"
+          ],
+          "clientes": [
+              "Vale",
+              "Braskem",
+              "Embraer"
+          ]
+      },
+      "GPP (Gestão de Planos Padrões)": {
+          "descricao": "Solução para padronizar, otimizar e gerenciar planos de manutenção e ativos industriais.",
+          "objetivo": "Criar e manter um conjunto de planos padrão para manutenção e gestão de ativos, promovendo uniformidade, rastreabilidade e otimização de recursos.",
+          "beneficios": [
+              "Padronização de procedimentos",
+              "Facilidade na auditoria e conformidade regulatória",
+              "Redução de custos e otimização dos recursos de manutenção"
+          ],
+          "clientes": [
+              "Volkswagen",
+              "Renault",
+              "Fiat"
+          ],
+          "fases": {
+              "1. Planejamento": "Definição de requisitos e escopo do plano padrão.",
+              "2. Estruturação": "Criação e modelagem dos planos com base nos requisitos.",
+              "3. Validação e Teste": "Simulação dos planos para verificar aderência e eficácia.",
+              "4. Implantação": "Aplicação dos planos nos processos operacionais.",
+              "5. Monitoramento e Melhoria Contínua": "Acompanhamento dos resultados e otimização contínua."
+          },
+          "integracoes": [
+              "SAP/PM",
+              "CMMS",
+              "Plataformas de IoT"
+          ]
+      },
+      "avaliacao_de_maturidade_em_manutencao": {
+          "descricao": "Metodologia que avalia a maturidade dos processos de manutenção das empresas, sugerindo melhorias com base em benchmarks de classe mundial.",
+          "beneficios": [
+              "Identificação de gaps e oportunidades de melhoria",
+              "Benchmarking com empresas de referência no setor",
+              "Desenvolvimento de estratégias para evolução da manutenção"
+          ],
+          "clientes": [
+              "Gerdau",
+              "Natura",
+              "Ambev"
+          ]
       }
-    }
+  },
+  "clientes": {
+      "Votorantim Cimentos": [
+          "manutencao_preditiva",
+          "GPP (Gestão de Planos Padrões)"
+      ],
+      "Suzano": [
+          "manutencao_preditiva",
+          "gestao_ativos"
+      ],
+      "Petrobras": [
+          "manutencao_preditiva"
+      ],
+      "Vale": [
+          "gestao_ativos"
+      ],
+      "Braskem": [
+          "gestao_ativos"
+      ],
+      "Embraer": [
+          "gestao_ativos"
+      ],
+      "Volkswagen": [
+          "GPP (Gestão de Planos Padrões)"
+      ],
+      "Renault": [
+          "GPP (Gestão de Planos Padrões)"
+      ],
+      "Fiat": [
+          "GPP (Gestão de Planos Padrões)"
+      ],
+      "Gerdau": [
+          "avaliacao_de_maturidade_em_manutencao"
+      ],
+      "Natura": [
+          "avaliacao_de_maturidade_em_manutencao"
+      ],
+      "Ambev": [
+          "avaliacao_de_maturidade_em_manutencao"
+      ]
+  },
+  "inteligencia_artificial": {
+      "descricao": "A QuickEAM utiliza IA para otimizar a gestão de ativos industriais, reduzindo falhas e aumentando a eficiência operacional.",
+      "aplicacoes": [
+          "Análise preditiva para prever falhas antes que ocorram.",
+          "Assistentes virtuais que auxiliam na tomada de decisão em tempo real.",
+          "Automação de processos de manutenção, reduzindo tempo de resposta."
+      ],
+      "beneficios": [
+          "Maior eficiência operacional e produtividade.",
+          "Redução de custos com manutenção corretiva.",
+          "Aprimoramento da análise de dados para tomada de decisões estratégicas."
+      ],
+      "tecnologias": [
+          "Machine Learning",
+          "Big Data",
+          "Deep Learning",
+          "Automação de Processos"
+      ]
   },
   "equipe": {
-    "desenvolvedores": [
-      "Maycon Felipe - Back-end",
-      "Júlio Cesar - Desenvolvedor Front-end",
-      "Tatiana Santos - Essencial para o Feedback no desenvolvimento"
-    ],
-    "supervisor": "Zander - Diretor de Tecnologia"
+      "desenvolvedores": [
+          "Maycon Felipe - Back-end",
+          "Júlio Cesar - Front-end",
+          "Tatiana Santos - Análise e Feedback"
+      ],
+      "supervisor": "Zander - Diretor de Tecnologia"
   },
   "tecnologias_utilizadas": [
-    "Python",
-    "Django",
-    "Machine Learning",
-    "OpenAI API",
-    "SAP/PM"
+      "Python",
+      "Django",
+      "Machine Learning",
+      "OpenAI API",
+      "SAP/PM",
+      "Big Data",
+      "IoT",
+      "Cloud Computing"
   ]
 }
+
