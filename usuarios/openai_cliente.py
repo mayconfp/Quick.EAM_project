@@ -49,9 +49,10 @@ def carregar_conhecimento():
         return {}
 
 
+
 def buscar_no_json(pergunta, conhecimento):
     """
-    Pesquisa no JSON e retorna uma resposta contextualizada caso exista algo relacionado.
+    Pesquisa no JSON e retorna uma resposta formatada corretamente, evitando retorno de listas ou dicionários brutos.
     """
     pergunta_clean = pergunta.lower().strip()
     
@@ -66,14 +67,26 @@ def buscar_no_json(pergunta, conhecimento):
                     melhor_correspondencia = valor
                     melhor_pontuacao = pontuacao
 
-    # ✅ Se a resposta for uma lista, formatamos corretamente e adicionamos contexto
+    # ✅ Se a resposta for uma lista, formatamos de maneira mais natural
     if isinstance(melhor_correspondencia, list):
-        if "desenvolvedor" in pergunta_clean or "quem criou" in pergunta_clean:
-            return "Os desenvolvedores da QuickEAM são:\n\n- " + "\n- ".join(melhor_correspondencia)
-        else:
-            return "\n".join(melhor_correspondencia)
+        return f"Aqui estão as informações encontradas:\n\n" + "\n".join(f"- {item}" for item in melhor_correspondencia)
 
-    return melhor_correspondencia if melhor_correspondencia else None
+    # ✅ Se a resposta for um dicionário, formatamos corretamente
+    if isinstance(melhor_correspondencia, dict):
+        resposta_formatada = "Aqui estão os detalhes:\n\n"
+        for key, value in melhor_correspondencia.items():
+            if isinstance(value, list):  # Se o valor for uma lista, formatamos adequadamente
+                resposta_formatada += f"**{key.capitalize()}**:\n" + "\n".join(f"- {item}" for item in value) + "\n\n"
+            else:
+                resposta_formatada += f"**{key.capitalize()}**: {value}\n\n"
+        return resposta_formatada.strip()  # Remove espaços extras no final
+
+    # ✅ Se a resposta for apenas um texto simples, retorna normalmente
+    if isinstance(melhor_correspondencia, str):
+        return melhor_correspondencia
+
+    return None  # Se não encontrar nada, retorna None para seguir para a OpenAI.
+
 
 
 
@@ -86,7 +99,7 @@ def gerar_resposta_openai(user_message, contexto=None, contexto_adicional=None):
     resposta_json = buscar_no_json(user_message, conhecimento)
 
     if resposta_json:
-        return resposta_json  
+        return str(resposta_json)  # ✅ Converte para string formatada antes de retornar
 
     messages = [
         {"role": "system", "content": "Você é a IA Manuela, um assistente virtual especializado na empresa QuickEAM, capaz de interpretar documentos enviados e responder perguntas sobre seu conteúdo."}
@@ -125,11 +138,13 @@ def gerar_resposta_openai(user_message, contexto=None, contexto_adicional=None):
             temperature=0.7,
             max_tokens=700
         )
-        return response.choices[0].message.content.strip()
+        resposta_ia = response.choices[0].message.content.strip()
+
+        return resposta_ia or "Desculpe, não consegui processar sua mensagem. Tente reformular."
+
     except Exception as e:
         logger.error(f"Erro na API OpenAI: {e}")
         return "Não consegui processar sua pergunta no momento."
-
 
 
 

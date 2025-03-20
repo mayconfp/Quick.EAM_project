@@ -216,20 +216,6 @@ def chat(request):
 
 
 
-
-# ✅ **Função para extrair texto de um PDF**
-def extract_text_from_pdf(file_path):
-    """Extrai o texto de um arquivo PDF sem exibir na interface."""
-    try:
-        with fitz.open(file_path) as pdf:
-            text = "\n".join(page.get_text("text") for page in pdf)
-        return text.strip() if text else "O PDF não contém texto extraível."
-    except Exception as e:
-        logger.error(f"[ERROR] Erro ao extrair texto do PDF: {e}")
-        return "Erro ao processar o PDF."
-
-
-
 # ✅ Função para extrair texto de um PDF
 def extract_text_from_pdf(file_path):
     """Extrai o texto de um arquivo PDF."""
