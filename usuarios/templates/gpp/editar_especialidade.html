@@ -11,13 +11,15 @@
 
     {% include 'usuarios/partials/nav.html' %}
 
-    <h2>Editar Especialidade</h2>
+   <div class="especialidade_edit">
+        <h2>Editar Especialidade</h2>
     
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}  <!-- ✅ Renderiza o formulário corretamente -->
-        <button type="submit">Salvar Alterações</button>
-    </form>
-
+        <form method="POST" action="{% url 'editar_especialidade' especialidade.cod_especialidade %}">
+            {% csrf_token %}
+            <label for="descricao">Nome da Especialidade:</label>
+            <input type="text" id="descricao" name="descricao" value="{{ especialidade.descricao }}" required>
+            <button type="submit">Salvar Alterações</button>
+        </form>
+    </div>
 </body>
 </html>

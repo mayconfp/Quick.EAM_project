@@ -809,21 +809,22 @@ def criar_matriz(request):
 
 
 def editar_matriz(request, id):
-    matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
+    matriz = get_object_or_404(MatrizPadraoAtividade, cod_matriz=id)
+
     if request.method == "POST":
         form = MatrizPadraoAtividadeForm(request.POST, instance=matriz)
         if form.is_valid():
             form.save()
             messages.success(request, "Relação atualizada com sucesso!")
-            return redirect('lista_matriz_padrao')
+            return redirect('listar_matriz')
     else:
-        form = MatrizPadraoAtividadeForm(instance=matriz)
-    return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
+        form = MatrizPadraoAtividadeForm(instance=matriz)  # 🟢 Verifique se os dados estão corretos
 
+    return render(request, 'gpp/editar_matriz.html', {'form': form, 'matriz': matriz})
 
 
 def excluir_matriz(request, id):
-    matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
+    matriz = get_object_or_404(MatrizPadraoAtividade, cod_matriz=id)
     matriz.delete()
     messages.success(request, "Relação excluída com sucesso!")
-    return redirect('lista_matriz_padrao')
+    return redirect('listar_matriz')
