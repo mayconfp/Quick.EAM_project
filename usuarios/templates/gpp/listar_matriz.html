@@ -49,6 +49,10 @@
                         <a href="{% url 'excluir_matriz' atividade.cod_matriz %}" class="btn btn-danger">🗑️ Excluir</a>
                     </td>
                 </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">Nenhuma atividade encontrada.</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

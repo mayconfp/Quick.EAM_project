@@ -42,6 +42,6 @@ urlpatterns = [
     # 🔹 Gerenciamento de Matriz Padrão Atividades (GPP)
     path('gpp/matriz/', views.listar_matriz, name='listar_matriz'),
     path('gpp/matriz/nova/', views.criar_matriz, name='criar_matriz'),
-    path('gpp/matriz/editar/<int:id>/', views.editar_matriz_padrao, name='editar_matriz_padrao'),
-    path('gpp/matriz/excluir/<int:id>/', views.excluir_matriz_padrao, name='excluir_matriz_padrao'),
+    path('gpp/matriz/editar/<str:cod_matriz>/', views.editar_matriz, name='editar_matriz'),
+    path('gpp/matriz/excluir/<str:cod_matriz>/', views.excluir_matriz, name='excluir_matriz'),
 ]

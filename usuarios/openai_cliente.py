@@ -48,32 +48,64 @@ def carregar_conhecimento():
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
+def obter_saudacao():
+     """Retorna uma saudação baseada no horário do dia."""
+     hora_atual = datetime.now().hour
+     if 5 <= hora_atual < 12:
+         return "Bom dia!"
+     elif 12 <= hora_atual < 18:
+         return "Boa tarde!"
+     else:
+         return "Boa noite!"
+ 
+def limpar_texto(texto):
+     """Remove caracteres especiais e padroniza a string para facilitar a busca."""
+     return texto.lower().replace("?", "").replace("!", "").strip()
+ 
+def dividir_pergunta(pergunta):
+     """Separa frases compostas e retorna as partes mais relevantes."""
+     delimitadores = [" e ", ", ", ". ", "; ", " mas ", " porém "]
+     for d in delimitadores:
+         if d in pergunta:
+             return pergunta.split(d)
+     return [pergunta]
 
 def buscar_no_json(pergunta, conhecimento):
-    """
-    Pesquisa no JSON e retorna uma resposta contextualizada caso exista algo relacionado.
-    """
-    pergunta_clean = pergunta.lower().strip()
-    
-    melhor_correspondencia = None
-    melhor_pontuacao = 0.0
-
-    for categoria, dados in conhecimento.items():
-        if isinstance(dados, dict):
-            for chave, valor in dados.items():
-                pontuacao = difflib.SequenceMatcher(None, pergunta_clean, chave.lower()).ratio()
-                if pontuacao > melhor_pontuacao and pontuacao > 0.6:
-                    melhor_correspondencia = valor
-                    melhor_pontuacao = pontuacao
-
-    # ✅ Se a resposta for uma lista, formatamos corretamente e adicionamos contexto
-    if isinstance(melhor_correspondencia, list):
-        if "desenvolvedor" in pergunta_clean or "quem criou" in pergunta_clean:
-            return "Os desenvolvedores da QuickEAM são:\n\n- " + "\n- ".join(melhor_correspondencia)
-        else:
-            return "\n".join(melhor_correspondencia)
-
-    return melhor_correspondencia if melhor_correspondencia else None
+     """
+     Pesquisa no JSON e retorna uma resposta caso exista algo relacionado.
+     Pesquisa no JSON e retorna uma resposta contextualizada caso exista algo relacionado.
+     """
+     pergunta_clean = limpar_texto(pergunta)
+     partes = dividir_pergunta(pergunta_clean)
+     pergunta_clean = pergunta.lower().strip()
+ 
+     melhor_correspondencia = None
+     melhor_pontuacao = 0.0
+ 
+     for parte in partes:
+         for categoria, dados in conhecimento.items():
+             if isinstance(dados, dict):
+                 for chave, valor in dados.items():
+                     pontuacao = difflib.SequenceMatcher(None, parte, chave.lower()).ratio()
+                     if pontuacao > melhor_pontuacao and pontuacao > 0.6:
+                         melhor_correspondencia = valor
+                         melhor_pontuacao = pontuacao
+     for categoria, dados in conhecimento.items():
+         if isinstance(dados, dict):
+             for chave, valor in dados.items():
+                 pontuacao = difflib.SequenceMatcher(None, pergunta_clean, chave.lower()).ratio()
+                 if pontuacao > melhor_pontuacao and pontuacao > 0.6:
+                     melhor_correspondencia = valor
+                     melhor_pontuacao = pontuacao
+ 
+     # ✅ Se a resposta for uma lista, formatamos corretamente e adicionamos contexto
+     if isinstance(melhor_correspondencia, list):
+         if "desenvolvedor" in pergunta_clean or "quem criou" in pergunta_clean:
+             return "Os desenvolvedores da QuickEAM são:\n\n- " + "\n- ".join(melhor_correspondencia)
+         else:
+             return "\n".join(melhor_correspondencia)
+ 
+     return melhor_correspondencia if melhor_correspondencia else None
 
 
 

@@ -14,14 +14,6 @@
 <div class="especialidade">
         <h2>Lista de Especialidades</h2>
 
-        <!-- Exibir mensagens de sucesso -->
-        {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li class="{{ message.tags }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
 
         <!-- Formulário de Filtro e Busca -->
         <form method="GET" action="{% url 'listar_especialidades' %}">

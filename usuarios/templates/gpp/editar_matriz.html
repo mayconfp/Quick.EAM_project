@@ -4,19 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Nova Matriz</title>
+    <title>Editar Matriz</title>
     <link rel="stylesheet" href="{% static 'css/gpp.css' %}">
 </head>
 <body>
     {% include 'usuarios/partials/nav.html' %}
 
     <div class="container">
-        <h2>Criar Nova Matriz</h2>
+        <h2>Editar Matriz: {{ matriz.cod_matriz }}</h2>
 
         <form method="POST">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Criar Matriz</button>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </form>
 
         <br>

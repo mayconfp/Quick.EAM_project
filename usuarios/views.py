@@ -20,9 +20,10 @@ from .models import PasswordResetCode
 from django.core.exceptions import ValidationError
 import pymupdf as fitz
 import os
+import markdown
 from django.core.files.storage import default_storage
 from .services import recuperar_ultima_resposta , gerar_resposta
-
+import json
 
 
 
@@ -137,14 +138,22 @@ def logout_view(request):
     return redirect('home')
 
 
+def formatar_texto_para_html(texto):
+    """Converte Markdown para HTML antes de exibir a resposta no chat."""
+    if not texto:
+        return ""
+    
+    html_formatado = markdown.markdown(texto, extensions=['extra', 'tables', 'fenced_code'])
+    return mark_safe(html_formatado)  # Evita escapar HTML válido no Django
+
 
 @login_required
 def chat(request):
-    ai_response = None
+    ai_response = "Ocorreu um erro ao obter a resposta."
     session_id = request.GET.get('session')
     session = None
 
-    # 🔹 Busca a sessão do chat (ou cria uma nova)
+    # 🔹 Busca ou cria a sessão do chat
     if session_id:
         session = get_object_or_404(ChatSession, id=session_id, user=request.user)
     else:
@@ -153,7 +162,7 @@ def chat(request):
     if not session:
         return redirect('nova_conversa')
 
-    # 🔹 Carrega e formata o histórico do chat
+    # 🔹 Carrega histórico do chat e remove respostas irrelevantes
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp')
     chat_history_formatado = [
         {"question": msg.question, "answer": msg.answer}
@@ -170,7 +179,7 @@ def chat(request):
         extracted_text = None
         contexto_adicional = None
 
-        # 🔹 Processa arquivos anexados (PDFs)
+        # ✅ **Tratamento de Arquivos** (PDFs e outros)
         if uploaded_file:
             file_path = os.path.join(settings.MEDIA_ROOT, "uploads", uploaded_file.name)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -178,26 +187,27 @@ def chat(request):
                 for chunk in uploaded_file.chunks():
                     destination.write(chunk)
 
-            # ✅ Extração de texto do PDF
+            # ✅ **Extração de texto do PDF**
             if uploaded_file.name.lower().endswith('.pdf'):
                 extracted_text = processar_arquivo(file_path)
 
+        # ✅ **Se extração de texto foi bem-sucedida, adiciona ao contexto**
         if extracted_text:
             contexto_adicional = f"[Texto extraído do PDF]:\n{extracted_text}"
             logger.info(f"[DEBUG] Texto extraído do PDF (500 caracteres): {extracted_text[:500]}...")
 
-        # ❌ Impede envios vazios
+        # ❌ **Impede envios vazios**
         if not user_message and not uploaded_file:
             return JsonResponse({"success": False, "message": "A mensagem não pode estar vazia."})
 
-        # ✅ Define o título da sessão na primeira mensagem
+        # ✅ **Define o título da sessão na primeira mensagem**
         if not session.title or session.title == "Nova Conversa":
             session.title = user_message[:45] if user_message else "Nova Conversa"
             session.save()
 
         logger.info(f"[DEBUG] Usuário enviou: {user_message}")
 
-        # 🔥 Resumo automático se solicitado
+        # ✅ **Se for um pedido de resumo, busca a última resposta**
         if "resuma" in user_message.lower() or "resumo" in user_message.lower():
             ultima_resposta = recuperar_ultima_resposta(request.user)
 
@@ -208,63 +218,52 @@ def chat(request):
                 ai_response = "Não há texto anterior para resumir."
 
         else:
-            # 🔥 Geração da resposta usando IA
+            # ✅ **Geração da resposta usando IA**
             ai_response = gerar_resposta(
                 user_message if user_message else "O usuário enviou um arquivo e deseja informações sobre o conteúdo.",
                 chat_history_formatado,
                 file_path,
-            
+                contexto_adicional
             )
 
+            # ✅ **Tenta gerar resposta sem contexto se a primeira tentativa falhar**
             if not ai_response:
-                logger.info(f"[DEBUG] Reenviando pergunta sem contexto: {user_message}")
-                ai_response = processar_comunicacao_multi_ia(user_message, [])
+                logger.info(f"[DEBUG] Nenhuma resposta no JSON. Chamando IA para responder: '{user_message}'")
+                ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
 
-            if not ai_response:
-                ai_response = "Desculpe, não consegui processar sua mensagem. Tente reformular."
-                logger.warning(f"[WARNING] IA não conseguiu gerar resposta para: '{user_message}'")
+                if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
+                    logger.info(f"[DEBUG] Reenviando pergunta sem base da QuickEAM: {user_message}")
+                    ai_response = processar_comunicacao_multi_ia(user_message, [])  # Remove contexto
 
-        # ✅ Salva a pergunta e resposta no histórico (sem o conteúdo do PDF)
+                if not ai_response:
+                    ai_response = "Desculpe, não consegui processar sua mensagem. Tente reformular."
+                    logger.warning(f"[WARNING] IA não conseguiu gerar resposta para: '{user_message}'")
+
+        # ✅ **Formata a resposta da IA para HTML antes de salvar e exibir**
+        ai_response_formatado = formatar_texto_para_html(ai_response)
+
+        # ✅ **Salva a pergunta e resposta no histórico**
         ChatHistory.objects.create(
             session=session,
             user=request.user,
             question=user_message if user_message else "[Arquivo enviado]",
-            answer=ai_response,
+            answer=ai_response_formatado,  # Agora a resposta estará formatada em HTML
             file_name=uploaded_file.name if uploaded_file else None
         )
 
-        return JsonResponse({"response": ai_response})
-
-    # 🔹 Renderiza o template do chat
-    chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp')
-    chat_history_formatado = [
-        {"question": msg.question, "answer": mark_safe(msg.answer)}
-        for msg in chat_history
-    ]
+        # ✅ **Retorna a resposta formatada no JSON**
+        return JsonResponse({"response": ai_response_formatado})
 
     return render(request, 'usuarios/chat.html', {
-        'response': ai_response,
-        'chat_history': chat_history_formatado,
+        'chat_history': chat_history,
         'sessions': ChatSession.objects.filter(user=request.user).order_by('-created_at'),
         'current_session': session,
         'pagina_atual': 'chat'
     })
 
 
-# ✅ **Função para extrair texto de um PDF**
-def extract_text_from_pdf(file_path):
-    """Extrai o texto de um arquivo PDF sem exibir na interface."""
-    try:
-        with fitz.open(file_path) as pdf:
-            text = "\n".join(page.get_text("text") for page in pdf)
-        return text.strip() if text else "O PDF não contém texto extraível."
-    except Exception as e:
-        logger.error(f"[ERROR] Erro ao extrair texto do PDF: {e}")
-        return "Erro ao processar o PDF."
 
 
-
-# ✅ Função para extrair texto de um PDF
 def extract_text_from_pdf(file_path):
     """Extrai o texto de um arquivo PDF."""
     try:
@@ -276,7 +275,7 @@ def extract_text_from_pdf(file_path):
     except Exception as e:
         print(f"[ERROR] Erro ao extrair texto do PDF: {e}")
         return "Erro ao processar o PDF."
-    
+
 
 def handle_uploaded_file(uploaded_file):
     """Salva o arquivo no diretório de uploads"""
@@ -289,9 +288,6 @@ def handle_uploaded_file(uploaded_file):
             destination.write(chunk)
     return settings.MEDIA_URL + f"uploads/{uploaded_file.name}"
 
- 
- 
- 
 
 
 @login_required
@@ -693,58 +689,97 @@ def excluir_ciclo(request, cod_ciclo):
 
 def listar_matriz(request):
     query = request.GET.get("q")
-    if query:    
-        matriz = MatrizPadraoAtividade.objects.filter(
+
+    if query:
+        matrizes = MatrizPadraoAtividade.objects.filter(
             descricao__icontains=query
+        ) | MatrizPadraoAtividade.objects.filter(
+            cod_matriz__icontains=query
+        )
+    else:
+        matrizes = MatrizPadraoAtividade.objects.all()
+
+    return render(request, "gpp/listar_matriz.html", {
+        "matrizes": matrizes,
+        "pagina_atual": "listar_matriz"
+    })
+
+# 🔹 Criar Matriz Padrão de Atividade
+def listar_matriz(request):
+    query = request.GET.get("q")
+
+    if query:
+        matriz = MatrizPadraoAtividade.objects.filter(
+            cod_matriz__icontains=query
+        ) | MatrizPadraoAtividade.objects.filter(
+            cod_atividade__icontains=query
         )
     else:
         matriz = MatrizPadraoAtividade.objects.all()
 
-    return render(request, "gpp/listar_matriz.html", {"matriz": matriz, "pagina_atual": "listar_matriz"})
+    return render(request, "gpp/listar_matriz.html", {
+        "matriz": matriz,
+        "pagina_atual": "listar_matriz"
+    })
 
-
-
-
+# 🔹 Criar Matriz Padrão
 def criar_matriz(request):
+    categorias = Categoria.objects.all()
+    especialidades = Especialidade.objects.all()
+
     if request.method == "POST":
         form = MatrizPadraoAtividadeForm(request.POST)
         if form.is_valid():
-            # 🔹 Gera automaticamente o código da matriz
-            ultimo_matriz = MatrizPadraoAtividade.objects.order_by('-cod_matriz').first()
-            if ultimo_matriz:
-                num = int(ultimo_matriz.cod_matriz.replace("MATRIZ", "")) + 1
-            else:
-                num = 1
+            try:
+                # 🔹 Gera automaticamente o código baseado no último cadastrado
+                ultima_matriz = MatrizPadraoAtividade.objects.order_by('-cod_matriz').first()
+                if ultima_matriz:
+                    num = int(ultima_matriz.cod_matriz.replace("MATRIZ", "")) + 1
+                else:
+                    num = 1  
 
-            novo_cod_matriz = f"MATRIZ{num}"
+                novo_cod_matriz = f"MATRIZ{num}"
 
-            # 🔹 Salva o novo registro
-            matriz = form.save(commit=False)
-            matriz.cod_matriz = novo_cod_matriz
-            matriz.save()
-            return redirect('listar_matriz')
+                matriz = form.save(commit=False)
+                matriz.cod_matriz = novo_cod_matriz
+                matriz.save()
+
+                messages.success(request, f"✅ Matriz {novo_cod_matriz} criada com sucesso!")
+                return redirect('listar_matriz')
+
+            except Exception as e:
+                messages.error(request, f"❌ Erro ao salvar matriz: {e}")
+        else:
+            messages.error(request, "⚠️ Formulário inválido. Verifique os campos.")
+
     else:
         form = MatrizPadraoAtividadeForm()
 
-    return render(request, "gpp/criar_matriz.html", {"form": form})
+    return render(request, "gpp/criar_matriz.html", {
+        "form": form,
+        "categorias": categorias,
+        "especialidades": especialidades
+    })
 
+# 🔹 Editar Matriz Padrão
+def editar_matriz(request, cod_matriz):
+    matriz = get_object_or_404(MatrizPadraoAtividade, cod_matriz=cod_matriz)
 
-def editar_matriz_padrao(request, id):
-    matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
     if request.method == "POST":
         form = MatrizPadraoAtividadeForm(request.POST, instance=matriz)
         if form.is_valid():
             form.save()
-            messages.success(request, "Relação atualizada com sucesso!")
-            return redirect('lista_matriz_padrao')
+            return redirect('listar_matriz')
     else:
         form = MatrizPadraoAtividadeForm(instance=matriz)
-    return render(request, 'gpp/form_matriz_padrao.html', {'form': form})
 
+    return render(request, "gpp/editar_matriz.html", {
+        "form": form,
+        "matriz": matriz
+    })
 
-
-def excluir_matriz_padrao(request, id):
-    matriz = get_object_or_404(MatrizPadraoAtividade, id=id)
+# 🔹 Excluir Matriz Padrão
+def excluir_matriz(request, cod_matriz):
+    matriz = get_object_or_404(MatrizPadraoAtividade, cod_matriz=cod_matriz)
     matriz.delete()
-    messages.success(request, "Relação excluída com sucesso!")
-    return redirect('lista_matriz_padrao')
+    return redirect('listar_matriz')  # Redireciona para a listagem após excluir

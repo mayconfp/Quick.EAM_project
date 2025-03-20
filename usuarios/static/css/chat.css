@@ -323,6 +323,36 @@ height: 60px;
     margin-right: auto; /* Empurra para a esquerda */
 }
 
+.message_bot table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+
+.message_bot th, 
+.message_bot td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.message_bot th {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+}
+
+.file-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-icon {
+    width: 30px;
+    height: 30px;
+}
 .side-menu {
 position: fixed;
 top: 0;

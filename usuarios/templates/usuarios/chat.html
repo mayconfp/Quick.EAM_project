@@ -32,6 +32,14 @@
                         {{ chat.answer|safe }}
                     </span>
                     <button class="copy-btn" onclick="copyToClipboard(this)">📋 Copiar</button>
+                    {% if chat.file_url and chat.file_name %}
+                    <div class="chat-attachment">
+                        <a href="{{ chat.file_url }}" target="_blank">
+                            <img src="{% static 'images/pdf.png' %}" alt="PDF" class="file-icon">
+                            <span>{{ chat.file_name }}</span>
+                        </a>
+                    </div>
+                {% endif %}
                 </div>
                 
                 
@@ -44,17 +52,18 @@
                 <span class="dot"></span>
             </div>
         </div>
-
         <div class="chat-form">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 <!-- Botão de anexar arquivos -->
-                <label for="file_input" class="file-label">
-                    🖇️
+                <label for="file-upload" class="file-label">
+                    🖇️ <!-- Ícone de clipe -->
                 </label>
-                <input type="file" id="file_input" name="file" accept="image/*, .pdf, .docx, .xlsx" style="display: none;">
+                <input type="file" name="file" id="file-upload" style="display: none;">
                 
+                <!-- Nome do Arquivo Selecionado -->
+                <span id="file-name"></span>
                 <!-- Área de digitação -->
                 <textarea id="message_area" name="message" placeholder="Digite sua mensagem..."></textarea>
                 
@@ -64,8 +73,13 @@
                 </button>
             </form>
         </div>
-   
+
+        
+        
     <script src="{% static 'js/chat.js' %}"></script>
     
 </body>
 </html>
+
+
+
