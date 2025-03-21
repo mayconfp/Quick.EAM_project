@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const fileNameDisplay = document.getElementById("file-name");
     const sugestoesContainer = document.getElementById("sugestoes-mensagens");
 
-    // 🔁 Scroll automático
     function scrollToBottom() {
         if (chatHistory) {
             setTimeout(() => {
@@ -16,7 +15,33 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 📋 Copiar conteúdo da resposta
+    // ✅ Exibir sugestões se não houver mensagens
+    function verificarSugestoes() {
+        setTimeout(() => {
+            if (chatHistory && chatHistory.querySelectorAll(".message_user, .message_bot").length === 0) {
+                sugestoesContainer.style.display = "flex";
+            } else {
+                sugestoesContainer.style.display = "none";
+            }
+        }, 300);
+    }
+
+    verificarSugestoes();
+
+    // ✅ Inserir sugestão no campo de mensagem e enviar
+    document.querySelectorAll(".sugestao-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            const texto = this.getAttribute("data-sugestao");
+            messageArea.value = texto;
+            sugestoesContainer.style.display = "none";
+
+            if (texto.trim() !== "") {
+                form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+            }
+        });
+    });
+
+    // ✅ Botão copiar conteúdo
     window.copyToClipboard = function (button) {
         const responseElement = button.closest(".message_bot").querySelector(".bot-response");
         if (!responseElement) return;
@@ -33,32 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     };
 
-    // 📦 Exibir nome do arquivo selecionado
-    if (fileInput) {
-        fileInput.addEventListener("change", function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                fileNameDisplay.textContent = file.name;
-            }
-        });
-    }
-
-    // 💬 Sugestões visíveis apenas no início
-    if (chatHistory.children.length === 0) {
-        sugestoesContainer.style.display = "flex";
-    } else {
-        sugestoesContainer.style.display = "none";
-    }
-
-    // 📎 Ao clicar nas sugestões
-    document.querySelectorAll(".sugestao-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            messageArea.value = this.getAttribute("data-sugestao");
-            sugestoesContainer.style.display = "none";
-        });
-    });
-
-    // 📨 Envio de mensagem
+    // ✅ Enviar mensagem
     if (form) {
         form.addEventListener("submit", function (event) {
             event.preventDefault();
@@ -119,19 +119,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     ajustarFormatacaoResposta(tempDiv);
 
+                    const hasListOrTable = tempDiv.querySelector("ul, ol, table");
+                    const copyButton = hasListOrTable
+                        ? `<button class="copy-btn" onclick="copyToClipboard(this)">📋 Copiar</button>`
+                        : "";
+
                     botMessage.innerHTML = `
                         <p><strong>Manuela:</strong></p>
                         <span class="bot-response">${tempDiv.innerHTML}</span>
+                        ${copyButton}
                     `;
-
-                    // ✅ Adiciona botão de copiar se tiver tabela ou lista
-                    if (tempDiv.querySelector("ul, ol, table")) {
-                        const copyBtn = document.createElement("button");
-                        copyBtn.classList.add("copy-btn");
-                        copyBtn.textContent = "📋 Copiar";
-                        copyBtn.onclick = () => copyToClipboard(copyBtn);
-                        botMessage.appendChild(copyBtn);
-                    }
 
                     chatHistory.appendChild(botMessage);
                     scrollToBottom();
@@ -143,19 +140,21 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 📦 Aplica botões de copiar no carregamento (para histórico)
+    // ✅ Botão de copiar no carregamento da página (para histórico)
     document.querySelectorAll(".message_bot").forEach(botMessage => {
         const response = botMessage.querySelector(".bot-response");
         if (response && (response.querySelector("ul") || response.querySelector("ol") || response.querySelector("table"))) {
-            const copyBtn = document.createElement("button");
-            copyBtn.classList.add("copy-btn");
-            copyBtn.textContent = "📋 Copiar";
-            copyBtn.onclick = () => copyToClipboard(copyBtn);
-            botMessage.appendChild(copyBtn);
+            if (!botMessage.querySelector(".copy-btn")) {
+                const copyBtn = document.createElement("button");
+                copyBtn.classList.add("copy-btn");
+                copyBtn.textContent = "📋 Copiar";
+                copyBtn.onclick = () => copyToClipboard(copyBtn);
+                botMessage.appendChild(copyBtn);
+            }
         }
     });
 
-    // ✏️ Textarea ajustável
+    // ✅ Textarea auto expand
     if (messageArea) {
         messageArea.addEventListener("input", function () {
             this.style.height = "auto";
@@ -171,11 +170,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 🔁 Scroll inicial
+    // ✅ Scroll inicial
     scrollToBottom();
     window.addEventListener("resize", scrollToBottom);
 
-    // 🔥 Sidebars
+    // ✅ Sidebars
     const openBtn = document.getElementById("open_btn");
     const sidebar = document.getElementById("sidebar");
     const openRightBtn = document.getElementById("openright_btn");
@@ -212,20 +211,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    overlay.addEventListener("click", function () {
-        closeAllSidebars();
-    });
-
-    sidebar.addEventListener("click", function (event) {
-        event.stopPropagation();
-    });
-
-    sidebar2.addEventListener("click", function (event) {
-        event.stopPropagation();
-    });
+    overlay.addEventListener("click", closeAllSidebars);
+    sidebar.addEventListener("click", event => event.stopPropagation());
+    sidebar2.addEventListener("click", event => event.stopPropagation());
 });
 
-// 🔧 Formatação da resposta
+// 🔧 Ajustes visuais das respostas
 function ajustarFormatacaoResposta(container) {
     container.querySelectorAll("table").forEach(table => {
         table.style.borderCollapse = "collapse";
@@ -239,13 +230,11 @@ function ajustarFormatacaoResposta(container) {
     });
 
     container.querySelectorAll("p").forEach(p => {
-        if (p.innerText.trim() === "") {
-            p.remove();
-        }
+        if (p.innerText.trim() === "") p.remove();
     });
 }
 
-// 🔧 Segurança do HTML
+// 🔧 Segurança para HTML
 function formatarTextoParaHTML(texto) {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = texto;
