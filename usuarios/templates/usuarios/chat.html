@@ -22,6 +22,12 @@
 
     <div class="chat-container">
         <div class="chat-history" id="chatHistory">
+            <div id="sugestoes-mensagens" class="sugestoes-container" style="display: none;">
+                <button class="sugestao-btn" data-sugestao="Como funciona o GPP da QuickEAM?">Como funciona o GPP da QuickEAM?</button>
+                <button class="sugestao-btn" data-sugestao="Quais os serviços oferecidos pela QuickEAM?">Quais os serviços oferecidos pela QuickEAM?</button>
+                <button class="sugestao-btn" data-sugestao="O que é a metodologia Quick Wins?">O que é a metodologia Quick Wins?</button>
+                <button class="sugestao-btn" data-sugestao="Como integrar os planos de manutenção ao SAP PM?">Como integrar os planos de manutenção ao SAP PM?</button>
+            </div>            
             {% for chat in chat_history %}
                 <div class="message_user">
                     <p><strong>Você:</strong> {{ chat.question }}</p>
@@ -31,7 +37,6 @@
                     <span class="bot-response">
                         {{ chat.answer|safe }}
                     </span>
-                    <button class="copy-btn" onclick="copyToClipboard(this)">📋 Copiar</button>
                     {% if chat.file_url and chat.file_name %}
                     <div class="chat-attachment">
                         <a href="{{ chat.file_url }}" target="_blank">
@@ -53,7 +58,7 @@
             </div>
         </div>
         <div class="chat-form">
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" action="{% url 'chat' %}">
                 {% csrf_token %}
                 
                 <!-- Botão de anexar arquivos -->

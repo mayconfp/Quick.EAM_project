@@ -142,27 +142,24 @@ def formatar_texto_para_html(texto):
     """Converte Markdown para HTML antes de exibir a resposta no chat."""
     if not texto:
         return ""
-    
-    html_formatado = markdown.markdown(texto, extensions=['extra', 'tables', 'fenced_code'])
+
+    html_formatado = markdown.markdown(
+        texto,
+        extensions=['extra', 'tables', 'fenced_code']  # 🔥 Garante suporte para tabelas!
+    )
+
     return mark_safe(html_formatado)  # Evita escapar HTML válido no Django
 
 
 @login_required
 def chat(request):
-    ai_response = "Ocorreu um erro ao obter a resposta."
     session_id = request.GET.get('session')
-    session = None
-
-    # 🔹 Busca ou cria a sessão do chat
-    if session_id:
-        session = get_object_or_404(ChatSession, id=session_id, user=request.user)
-    else:
-        session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
+    session = get_object_or_404(ChatSession, id=session_id, user=request.user) if session_id else \
+              ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
 
     if not session:
         return redirect('nova_conversa')
 
-    # 🔹 Carrega histórico do chat e remove respostas irrelevantes
     chat_history = ChatHistory.objects.filter(session=session).order_by('timestamp')
     chat_history_formatado = [
         {"question": msg.question, "answer": msg.answer}
@@ -170,16 +167,16 @@ def chat(request):
         if "não consegui gerar uma resposta precisa" not in msg.answer.lower()
     ]
 
-    # 🔥 Processamento de mensagens do usuário (AJAX)
     if request.method == 'POST':
         user_message = request.POST.get('message', '').strip()
         uploaded_file = request.FILES.get('file')
 
+        if not user_message and not uploaded_file:
+            return JsonResponse({"success": False, "message": "A mensagem não pode estar vazia."})
+
         file_path = None
-        extracted_text = None
         contexto_adicional = None
 
-        # ✅ **Tratamento de Arquivos** (PDFs e outros)
         if uploaded_file:
             file_path = os.path.join(settings.MEDIA_ROOT, "uploads", uploaded_file.name)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -187,79 +184,63 @@ def chat(request):
                 for chunk in uploaded_file.chunks():
                     destination.write(chunk)
 
-            # ✅ **Extração de texto do PDF**
             if uploaded_file.name.lower().endswith('.pdf'):
                 extracted_text = processar_arquivo(file_path)
+                if extracted_text:
+                    contexto_adicional = f"[Texto extraído do PDF]:\n{extracted_text}"
 
-        # ✅ **Se extração de texto foi bem-sucedida, adiciona ao contexto**
-        if extracted_text:
-            contexto_adicional = f"[Texto extraído do PDF]:\n{extracted_text}"
-            logger.info(f"[DEBUG] Texto extraído do PDF (500 caracteres): {extracted_text[:500]}...")
-
-        # ❌ **Impede envios vazios**
-        if not user_message and not uploaded_file:
-            return JsonResponse({"success": False, "message": "A mensagem não pode estar vazia."})
-
-        # ✅ **Define o título da sessão na primeira mensagem**
+        # Define título da sessão
         if not session.title or session.title == "Nova Conversa":
             session.title = user_message[:45] if user_message else "Nova Conversa"
             session.save()
 
-        logger.info(f"[DEBUG] Usuário enviou: {user_message}")
-
-        # ✅ **Se for um pedido de resumo, busca a última resposta**
-        if "resuma" in user_message.lower() or "resumo" in user_message.lower():
+        if "resumo" in user_message.lower() or "resuma" in user_message.lower():
             ultima_resposta = recuperar_ultima_resposta(request.user)
-
             if ultima_resposta:
                 prompt_resumo = f"Resuma o seguinte texto de forma objetiva:\n\n{ultima_resposta}"
                 ai_response = processar_comunicacao_multi_ia(prompt_resumo, chat_history_formatado)
             else:
                 ai_response = "Não há texto anterior para resumir."
-
         else:
-            # ✅ **Geração da resposta usando IA**
             ai_response = gerar_resposta(
-                user_message if user_message else "O usuário enviou um arquivo e deseja informações sobre o conteúdo.",
+                user_message or "O usuário enviou um arquivo e deseja informações sobre o conteúdo.",
                 chat_history_formatado,
                 file_path,
                 contexto_adicional
             )
 
-            # ✅ **Tenta gerar resposta sem contexto se a primeira tentativa falhar**
-            if not ai_response:
-                logger.info(f"[DEBUG] Nenhuma resposta no JSON. Chamando IA para responder: '{user_message}'")
+            if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
                 ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
 
-                if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
-                    logger.info(f"[DEBUG] Reenviando pergunta sem base da QuickEAM: {user_message}")
-                    ai_response = processar_comunicacao_multi_ia(user_message, [])  # Remove contexto
+            if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
+                ai_response = processar_comunicacao_multi_ia(user_message, [])
 
-                if not ai_response:
-                    ai_response = "Desculpe, não consegui processar sua mensagem. Tente reformular."
-                    logger.warning(f"[WARNING] IA não conseguiu gerar resposta para: '{user_message}'")
+            if not ai_response:
+                ai_response = "Desculpe, não consegui processar sua mensagem."
 
-        # ✅ **Formata a resposta da IA para HTML antes de salvar e exibir**
-        ai_response_formatado = formatar_texto_para_html(ai_response)
+        # Formata resposta com markdown
+        resposta_formatada_html = formatar_texto_para_html(ai_response)
 
-        # ✅ **Salva a pergunta e resposta no histórico**
+        # Salva histórico
         ChatHistory.objects.create(
             session=session,
             user=request.user,
-            question=user_message if user_message else "[Arquivo enviado]",
-            answer=ai_response_formatado,  # Agora a resposta estará formatada em HTML
+            question=user_message or "[Arquivo enviado]",
+            answer=resposta_formatada_html,
             file_name=uploaded_file.name if uploaded_file else None
         )
 
-        # ✅ **Retorna a resposta formatada no JSON**
-        return JsonResponse({"response": ai_response_formatado})
+        # ✅ Retorno para AJAX
+        return JsonResponse({"response": resposta_formatada_html})
 
+    # GET → renderiza histórico no HTML
     return render(request, 'usuarios/chat.html', {
         'chat_history': chat_history,
         'sessions': ChatSession.objects.filter(user=request.user).order_by('-created_at'),
         'current_session': session,
         'pagina_atual': 'chat'
     })
+
 
 
 
