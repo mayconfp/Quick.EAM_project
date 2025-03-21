@@ -12,35 +12,27 @@ import fitz
 logger = logging.getLogger(__name__)
 
 
-
-
 def gerar_resposta(user_message, chat_history=None, file_path=None, contexto_adicional=None):
     """Gera uma resposta consolidada com base no JSON, arquivos e IA."""
-
     if not isinstance(user_message, str) or not user_message.strip():
         logger.warning("Mensagem inválida recebida.")
         return "Não entendi sua mensagem. Pode reformular?"
 
     user_message = user_message.strip()
 
-    # 🔎 **Busca no JSON primeiro**
-    resposta_json = buscar_no_json(user_message, carregar_conhecimento())
-    if resposta_json:
-        return str(resposta_json)  # ✅ Retorna sempre como string, evitando JSON não formatado
+    # Busca no JSON e adiciona ao contexto
+    contexto_json = buscar_no_json(user_message, carregar_conhecimento())
+    if contexto_json:
+        contexto_adicional = (contexto_adicional or "") + "\n\n" + contexto_json
 
-    # 🔥 **Processa o arquivo se houver e extrai o texto**
-    extracted_text = None
-    if file_path:
-        extracted_text = processar_arquivo(file_path)
-
-    # 🔥 **Se o PDF contém informações, adiciona ao contexto da IA**
+    # Processa o arquivo PDF
+    extracted_text = processar_arquivo(file_path) if file_path else None
     if extracted_text:
         contexto_adicional = (contexto_adicional or "") + f"\n\n[Conteúdo do PDF]:\n{extracted_text}"
 
-    # 🔎 **Se não encontrou no JSON, chama a OpenAI**
-    resposta_ia = gerar_resposta_openai(user_message, chat_history, contexto_adicional)
+    return gerar_resposta_openai(user_message, chat_history, contexto_adicional) or \
+           "Desculpe, não consegui processar sua mensagem. Tente reformular."
 
-    return resposta_ia or "Desculpe, não consegui processar sua mensagem. Tente reformular."
 
 
 
