@@ -62,6 +62,8 @@ class ChatSession(models.Model):
     title = models.CharField(max_length=100, default="Nova Conversa")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    contexto_usado = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.title} - {self.user.username}"
 
@@ -171,7 +173,7 @@ class MatrizPadraoAtividade(models.Model):
     cod_matriz = models.CharField(max_length=50)  # Código único da matriz
     cod_categoria = models.ForeignKey('Categoria', on_delete=models.CASCADE)  
     cod_especialidade = models.ForeignKey('Especialidade', on_delete=models.CASCADE)  
-    cod_atividade = models.CharField(max_length=50)  
+    cod_atividade = models.CharField(max_length=50, blank=True, null=True)  
     cod_centro_trab = models.CharField(max_length=50)  
     ativo = models.BooleanField(default=True)  
 

@@ -97,6 +97,7 @@ logger = logging.getLogger(__name__)  # Criando o logger para registrar eventos
 
 
 @login_required
+@login_required
 def chat(request):
     ai_response = None
     session_id = request.GET.get('session')
@@ -149,11 +150,24 @@ def chat(request):
             else:
                 ai_response = "Não há texto anterior para resumir."
         else:
-            # Geração da resposta normal (serviço lida com contexto do JSON e PDF)
+            # ✅ Busca no JSON e aplica cache por sessão
+            conhecimento = carregar_conhecimento()
+            contexto_json = buscar_no_json(user_message, conhecimento)
+
+            if contexto_json and (not session.contexto_usado or contexto_json not in session.contexto_usado):
+                contexto_adicional = (contexto_adicional or "") + "\n\n" + contexto_json
+                session.contexto_usado = (session.contexto_usado or "") + "\n\n" + contexto_json
+                session.save()
+                logger.debug("[CACHE] Contexto do JSON adicionado à sessão.")
+            else:
+                logger.debug("[CACHE] Contexto já utilizado anteriormente ou não encontrado.")
+
+            # ✅ Geração da resposta (serviço usa o contexto acumulado)
             ai_response = gerar_resposta(
                 user_message,
                 chat_history_formatado,
-                file_path
+                file_path,
+                contexto_adicional
             )
 
             if not ai_response:
@@ -183,6 +197,7 @@ def chat(request):
         'current_session': session,
         'pagina_atual': 'chat'
     })
+
 
 
 
