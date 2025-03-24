@@ -202,12 +202,22 @@ def chat(request):
             else:
                 ai_response = "Não há texto anterior para resumir."
         else:
+            # 🔥 Criação de prompt baseado no PDF quando não há mensagem do usuário
+            if not user_message and extracted_text:
+                user_message = (
+                    f"O usuário enviou um documento com o seguinte conteúdo:\n\n"
+                    f"{extracted_text[:800]}\n\n"
+                    f"Com base nesse conteúdo, forneça um resumo ou destaque os principais pontos."
+                )
+            elif not user_message:
+                user_message = "O usuário enviou um arquivo e deseja informações sobre o conteúdo."
+
             ai_response = gerar_resposta(
-                user_message or "O usuário enviou um arquivo e deseja informações sobre o conteúdo.",
+                user_message,
                 chat_history_formatado,
                 file_path,
                 contexto_adicional
-            )
+)
 
             if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
                 ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)

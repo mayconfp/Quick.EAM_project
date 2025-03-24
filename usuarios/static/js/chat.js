@@ -7,6 +7,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const fileNameDisplay = document.getElementById("file-name");
     const sugestoesContainer = document.getElementById("sugestoes-mensagens");
 
+
+    if (fileInput) {
+        fileInput.addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                fileNameDisplay.textContent = file.name;
+            } else {
+                fileNameDisplay.textContent = "";
+            }
+        });
+    }
+
     function scrollToBottom() {
         if (chatHistory) {
             setTimeout(() => {
@@ -28,6 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     verificarSugestoes();
 
+    
     // ✅ Inserir sugestão no campo de mensagem e enviar
     document.querySelectorAll(".sugestao-btn").forEach(button => {
         button.addEventListener("click", function () {
