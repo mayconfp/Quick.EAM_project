@@ -226,9 +226,6 @@ def chat(request):
 
 
 
-
-
-
 # ✅ Função para extrair texto de um PDF
 def extract_text_from_pdf(file_path):
     """Extrai o texto de um arquivo PDF."""
