@@ -2,6 +2,9 @@ from .openai_cliente import gerar_resposta_openai
 from .llama_cliente import gerar_resposta_llama
 from .gemini_cliente import gemini_gerar_resposta
 import logging
+import markdown
+from django.utils.safestring import mark_safe
+
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +13,50 @@ PROVEDORES_VALIDOS = {
     'llama': gerar_resposta_llama,
     'gemini': gemini_gerar_resposta,
 }
+
+def formatar_texto_para_html(texto):
+    """Converte marcações de texto em HTML e melhora a formatação da tabela."""
+    if not texto:
+        return ""
+
+    # 🔹 Adiciona um CSS para melhorar a aparência da tabela
+    estilo_tabela = """
+    <style>
+            table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            display: block;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        ul, ol {
+            margin-left: 20px;
+        }
+    </style>
+    """
+
+    # 🔹 Converter Markdown para HTML (com suporte a tabelas e listas)
+    texto = markdown.markdown(texto, extensions=['extra', 'tables'])
+
+    # 🔹 Adiciona o estilo no início do texto
+    texto = estilo_tabela + texto
+
+    return mark_safe(texto)
 
 
 

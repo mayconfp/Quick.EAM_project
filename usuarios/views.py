@@ -13,7 +13,7 @@ from .validators import SenhaPersonalizada
 from django.core.exceptions import ValidationError
 from .forms import CustomUserCreationForm, CustomLoginForm, CustomUserUpdateForm , EspecialidadeForm,CicloManutencao , MatrizPadraoAtividadeForm, CicloPadraoForm
 from .models import ChatSession, ChatHistory ,MatrizPadraoAtividade, Categoria, Especialidade,CicloManutencao, CategoriaLang, PasswordResetCode
-from .provedores import processar_comunicacao_multi_ia
+from .provedores import formatar_texto_para_html, processar_comunicacao_multi_ia
 from .services import gerar_resposta, recuperar_ultima_resposta
 from django.db import DatabaseError
 import pymupdf as fitz
@@ -25,7 +25,8 @@ import requests
 import logging
 import json
 import os
-
+import markdown 
+from django.utils.safestring import mark_safe
 
 PROVEDORES_VALIDOS = ['openai', 'gemini', 'llama']
 
@@ -95,14 +96,23 @@ logger = logging.getLogger(__name__)  # Criando o logger para registrar eventos
 
 
 
+def formatar_texto_para_html(texto):
+    """Converte Markdown para HTML antes de exibir a resposta no chat."""
+    if not texto:
+        return ""
 
-@login_required
-@login_required
+    html_formatado = markdown.markdown(
+        texto,
+        extensions=['extra', 'tables', 'fenced_code']  # 🔥 Garante suporte para tabelas!
+    )
+
+    return mark_safe(html_formatado)  # Evita escapar HTML válido no Django
+
+
+
+@login_required 
 def chat(request):
-    ai_response = None
     session_id = request.GET.get('session')
-
-    # Obtém ou cria sessão
     session = get_object_or_404(ChatSession, id=session_id, user=request.user) if session_id else \
               ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
 
@@ -125,8 +135,8 @@ def chat(request):
 
         file_path = None
         contexto_adicional = None
+        limpar_contexto = False  # 🧠 Para resetar histórico se novo arquivo enviado
 
-        # Se houver arquivo, salva e processa
         if uploaded_file:
             file_path = os.path.join(settings.MEDIA_ROOT, "uploads", uploaded_file.name)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -134,15 +144,18 @@ def chat(request):
                 for chunk in uploaded_file.chunks():
                     destination.write(chunk)
 
-        # Define o título da sessão
+            if uploaded_file.name.lower().endswith('.pdf'):
+                extracted_text = processar_arquivo(file_path)
+                if extracted_text:
+                    contexto_adicional = f"[Texto extraído do PDF]:\n{extracted_text}"
+                    limpar_contexto = True  # ⚠️ Zera o histórico se for novo arquivo
+
+        # Define título da sessão
         if not session.title or session.title == "Nova Conversa":
             session.title = user_message[:45] if user_message else "Nova Conversa"
             session.save()
 
-        logger.info(f"[DEBUG] Usuário enviou: {user_message}")
-
-        # Verifica se é um pedido de resumo
-        if "resuma" in user_message.lower() or "resumo" in user_message.lower():
+        if "resumo" in user_message.lower() or "resuma" in user_message.lower():
             ultima_resposta = recuperar_ultima_resposta(request.user)
             if ultima_resposta:
                 prompt_resumo = f"Resuma o seguinte texto de forma objetiva:\n\n{ultima_resposta}"
@@ -150,53 +163,66 @@ def chat(request):
             else:
                 ai_response = "Não há texto anterior para resumir."
         else:
-            # ✅ Busca no JSON e aplica cache por sessão
-            conhecimento = carregar_conhecimento()
-            contexto_json = buscar_no_json(user_message, conhecimento)
+            # 🔁 Prompt automático se não há mensagem
+            if not user_message and contexto_adicional:
+                user_message = (
+                    f"O usuário enviou um documento com o seguinte conteúdo:\n\n"
+                    f"{contexto_adicional[:800]}\n\n"
+                    f"Com base nesse conteúdo, forneça um resumo ou destaque os principais pontos."
+                )
+            elif not user_message:
+                user_message = "O usuário enviou um arquivo e deseja informações sobre o conteúdo."
 
-            if contexto_json and (not session.contexto_usado or contexto_json not in session.contexto_usado):
-                contexto_adicional = (contexto_adicional or "") + "\n\n" + contexto_json
-                session.contexto_usado = (session.contexto_usado or "") + "\n\n" + contexto_json
-                session.save()
-                logger.debug("[CACHE] Contexto do JSON adicionado à sessão.")
-            else:
-                logger.debug("[CACHE] Contexto já utilizado anteriormente ou não encontrado.")
+            # ✅ Cache por JSON (somente se não for novo PDF)
+            if not limpar_contexto:
+                conhecimento = carregar_conhecimento()
+                contexto_json = buscar_no_json(user_message, conhecimento)
 
-            # ✅ Geração da resposta (serviço usa o contexto acumulado)
+                if contexto_json and (not session.contexto_usado or contexto_json not in session.contexto_usado):
+                    contexto_adicional = (contexto_adicional or "") + "\n\n" + contexto_json
+                    session.contexto_usado = (session.contexto_usado or "") + "\n\n" + contexto_json
+                    session.save()
+                    logger.debug("[CACHE] Contexto do JSON adicionado à sessão.")
+                else:
+                    logger.debug("[CACHE] Contexto já utilizado anteriormente ou não encontrado.")
+
             ai_response = gerar_resposta(
                 user_message,
-                chat_history_formatado,
+                [] if limpar_contexto else chat_history_formatado,
                 file_path,
                 contexto_adicional
             )
 
+            if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
+                ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
+
+            if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
+                ai_response = processar_comunicacao_multi_ia(user_message, [])
+
             if not ai_response:
-                try:
-                    logger.info(f"[DEBUG] IA fallback para pergunta: '{user_message}'")
-                    ai_response = processar_comunicacao_multi_ia(user_message, chat_history_formatado)
+                ai_response = "Desculpe, não consegui processar sua mensagem."
 
-                    if not ai_response or "não consegui gerar uma resposta precisa" in ai_response.lower():
-                        ai_response = processar_comunicacao_multi_ia(user_message, [])
-                except Exception as e:
-                    logger.error(f"[ERROR] Erro ao processar IA: {e}")
-                    ai_response = "Ocorreu um erro ao tentar responder. Tente novamente mais tarde."
+        resposta_formatada_html = formatar_texto_para_html(ai_response)
 
-        # Salva no histórico
         ChatHistory.objects.create(
             session=session,
             user=request.user,
-            question=user_message if user_message else "[Arquivo enviado]",
-            answer=ai_response,
+            question=user_message or "[Arquivo enviado]",
+            answer=resposta_formatada_html,
             file_name=uploaded_file.name if uploaded_file else None
         )
 
+        return JsonResponse({"response": resposta_formatada_html})
+
     return render(request, 'usuarios/chat.html', {
-        'response': ai_response or "Ocorreu um erro ao obter a resposta.",
-        'chat_history': ChatHistory.objects.filter(session=session).order_by('timestamp'),
+        'chat_history': chat_history,
         'sessions': ChatSession.objects.filter(user=request.user).order_by('-created_at'),
         'current_session': session,
         'pagina_atual': 'chat'
     })
+
+
+
 
 
 

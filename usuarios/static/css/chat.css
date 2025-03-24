@@ -30,6 +30,7 @@ html, body {
     text-align: center;
 }
 
+
 header {
 height: 60px;
     width: 100%;
@@ -47,6 +48,8 @@ height: 60px;
 .chat-page .menu-btn {
     display: none !important;
 }
+
+
 
 .history-msg {
     display: none; /* 🔥 Esconde o histórico quando a sidebar estiver fechada */
@@ -114,6 +117,8 @@ height: 60px;
     color: darkred;
 }
 
+
+
 #new-chat-btn {
     background-color: #4f46e5;
     color: white;
@@ -131,11 +136,29 @@ height: 60px;
     background-color: #3730a3;
 }
 
+.copy-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 5px;
+    transition: background 0.3s;
+}
+
+.copy-btn:hover {
+    background-color: #45a049;
+}
+
+
 .chat-container {
     display: flex;
     width: calc(100% - 332px);
     height: calc(100vh - 70px);
     display: flex;
+    height: calc(100dvh - 70px);
     margin-left: 250px;
     flex-direction: column;
     overflow: hidden;
@@ -148,12 +171,17 @@ height: 60px;
 /* Histórico de mensagens */
 .chat-history {
     flex: 1;
-    margin-top:60px;
+    margin-bottom: 30px;
+    margin-top: 60px;
     padding: 5px;
     overflow-y: auto;
     background-color: #F8F9FA;
     color: #2B2D42;
-    border-bottom: 1px solid #3b3b5e;
+}
+
+.chat-history li{
+     
+    margin-left: 20px;
 }
 
 /* Mensagens do histórico */
@@ -190,62 +218,89 @@ height: 60px;
     margin-top: 20px;
 }
 
+
+/* Botão de anexar arquivos */
+.file-label {
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    color: #4f46e5;
+    transition: color 0.3s ease-in-out;
+}
+
+.file-label:hover {
+    color: #3730a3;
+}
+#file-name{
+    margin-right: 5px;
+}
+
 .chat-form {
     display: flex;
-    align-items: center; /* Centraliza verticalmente */
+    align-items: center;
+    justify-content: center;
     padding: 10px;
     background-color: #E9ECEF;
     border-top: 1px solid #DEE2E6;
     position: fixed;
     bottom: 0;
-    left: 50px; /* Ajusta alinhamento com o histórico */
-    right: 0;
+    left: 54%;
+    transform: translateX(-50%);
+    width: 82%;
     z-index: 1000;
     box-sizing: border-box;
-    flex-wrap: wrap;
+    border-radius: 10px;
 }
 .chat-form form {
     display: flex;
+    align-items: center;
     width: 100%;
 }
 
+/* Ajustando o textarea */
 .chat-form textarea {
-    flex: 0.8;
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #3b3b5e;
+    width: 100%; /* Garante que o textarea ocupe o espaço correto */
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #dcdcdc;
     border-radius: 8px;
-    background-color: #FFFFFF;
-    color: #2B2D42;
+    background-color: #fff;
+    color: #333;
+    outline: none;
     resize: none;
-    margin-left: 200px;
-    overflow: auto;
-    min-height: 60px;
-    max-height: 300px;
+    min-height: 80px; /* Aumenta a altura mínima */
+    max-height: 250px; /* Ajusta a altura máxima */
+    overflow-y: auto;
+    transition: all 0.2s ease-in-out;
 }
 
+.chat-form textarea:focus {
+    border-color: #4f46e5;
+    box-shadow: 0px 0px 5px rgba(79, 70, 229, 0.5);
+}
+
+/* Ajustando o botão de envio */
 .chat-form button {
     margin-left: 10px;
-    padding: 10px 20px;
-    background-color: #3b3b5e;
-    color: #e0e0e0;
+    padding: 15px;
+    background-color: #4f46e5;
+    color: white;
     border: none;
     border-radius: 50%;
-    height: 50px;
+    height: 55px;
+    width: 55px;
     cursor: pointer;
+    display: flex;
     align-items: center;
     justify-content: center;
-    display: flex;
-    transition: background-color 0.3s ease;
-}
-
-.chat-form .arrow-up{
+    transition: background 0.3s ease-in-out;
     font-size: 20px;
 }
 
 .chat-form button:hover {
-    background-color: #4c4c7f;
+    background-color: #3730a3;
 }
+
 
 .message_user {
     text-align: right;
@@ -261,25 +316,71 @@ height: 60px;
 
 .message_bot {
     text-align: left;
-    max-width: 70%;
     background-color: #E9ECEF;
-    color: #2B2D42;
-    word-wrap: break-word;
-    padding: 15px 30px; /* Ajusta o padding lateral e superior/inferior */
+    color: #2B2D42; /* Fundo cinza claro */
+    word-wrap: break-word;/* Texto cinza escuro */
+    padding: 10px 15px;
     margin-bottom: 15px;
-    border-radius: 12px; /* Suaviza os cantos */
-    margin-right: auto;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Sombra leve para destacar */
+    border-radius: 10px;
+    margin-right: auto; /* Empurra para a esquerda */
 }
 
-
-img{
-    width: 24px; /* Ajuste o tamanho conforme necessário */
-    height: auto;
-    margin-right: 10px; /* Espaço entre o ícone e o texto */
-    vertical-align: middle; /* Alinha verticalmente com o texto */
+.message_bot table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
 }
 
+.message_bot th, 
+.message_bot td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.message_bot th {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+}
+
+.sugestoes-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+}
+
+.sugestao-btn {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.sugestao-btn:hover {
+    background-color: #3730a3;
+}
+
+.file-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-icon {
+    width: 30px;
+    height: 30px;
+}
 .side-menu {
 position: fixed;
 top: 0;
@@ -337,9 +438,43 @@ overflow-y: auto; /* Adiciona rolagem caso o conteúdo exceda a altura */
     display: none;
 }
 
+.loading-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;  /* Aumenta o tamanho da fonte */
+    font-weight: bold;
+    color: #007bff; /* Azul, você pode alterar */
+    margin: 10px 0;
+}
+
+.loading-dots span {
+    animation: blink 1.4s infinite;
+    margin: 0 5px;
+    font-size: 40px;  /* 🔥 Aqui você aumenta os pontos */
+}
+
+.loading-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes blink {
+    0% { opacity: 0.2; }
+    20% { opacity: 1; }
+    100% { opacity: 0.2; }
+}
 
 @media (max-width: 768px) {
 
+
+    body{
+        overflow: hidden;
+    }
+    
 header {
     display: flex; /* Ativa o flexbox */
     align-items: center; /* Centraliza verticalmente os itens */
@@ -368,28 +503,6 @@ header {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilo do botão hambúrguer */
-.menu-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    left: 0;
-    margin-left: 10px;
-}
-
-/* Estilo das barras do botão hambúrguer */
-.menu-btn .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    background-color: #e0e0e0;
-    margin: 4px 0; /* Espaçamento entre as barras */
-    transition: all 0.3s ease;
-}
-
 /* Estilo do logo */
 .logo {
     flex: 1; /* Faz com que o logo ocupe o espaço central */
@@ -397,6 +510,10 @@ header {
     font-size: 18px;
     font-weight: bold;
     color: #e0e0e0;
+}
+
+.logo a{
+    display: inline-block;
 }
 
 .history-msg {
@@ -422,12 +539,11 @@ header {
 .chat-form {
     display: flex;
     align-items: center; /* Centraliza os itens verticalmente */
-    padding: 10px;
     background-color: #E9ECEF;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2); /* Sombra para destaque */
     position: fixed;
     bottom: 0;
-    left: 0;
+    left: 50%;
     width: 100%; /* O formulário ocupa toda a largura */
     z-index: 1000; /* Certifica que está sobre outros elementos */
 }
@@ -437,26 +553,24 @@ header {
     margin-right: 10px; /* Espaço entre o textarea e o botão */
     padding: 10px;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 16px;
     margin-left: 0;
     border: 1px solid #3b3b5e;
     border-radius: 5px;
+    touch-action: manipulation;
     background-color: #FFFFFF;
     color: #2B2D42;
     resize: none; /* Desativa o redimensionamento */
     height: 40px; /* Altura do textarea */
 }
 
-
-
-
 /* Configuração do botão */
 .chat-form button {
-    padding: 10px 15px;
+    padding: 10px 20px;
     background-color: #007BFF;
     color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 50%;
     height: 60px;
     cursor: pointer;
     font-size: 14px;
@@ -470,34 +584,34 @@ header {
         color: #e0e0e0;
     }
 
-    .mobile-history ul li {
-        margin-bottom: 10px;
-        padding: 10px;
-        background-color: #2a2a40;
-        border-radius: 5px;
-        width: 90%;
-        text-align: center;
-    }
-
+.mobile-history ul li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #2a2a40;
+    border-radius: 5px;
+    width: 90%;
+    text-align: center;
+}
     .chat-container {
-        margin-left: 0;
         width: 100%;
-    }
+        margin-left: 0;
+        
+}
+
 
 .message_user,
-    .message_bot {
-        max-width: 90%;
-    }
+.message_bot {
+    padding: 5px 22px;
+    font-size: 14px;
+}
 
-
-    
 
 }
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     .desktop-only {
-        display: none; /* Esconde o histórico desktop*/
+        display: none; /* Esconde o histórico desktop */
+        
     }
 
 
 }
-

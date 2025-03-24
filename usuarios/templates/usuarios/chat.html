@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
 <body class="chat-page">
     
     {% include 'usuarios/partials/sidebar.html' %}
@@ -24,51 +22,72 @@
 
     <div class="chat-container">
         <div class="chat-history" id="chatHistory">
+            <div id="sugestoes-mensagens" class="sugestoes-container" style="display: none;">
+                <button class="sugestao-btn" data-sugestao="Como funciona o GPP da QuickEAM?">Como funciona o GPP da QuickEAM?</button>
+                <button class="sugestao-btn" data-sugestao="Quais os serviços oferecidos pela QuickEAM?">Quais os serviços oferecidos pela QuickEAM?</button>
+                <button class="sugestao-btn" data-sugestao="O que é a metodologia Quick Wins?">O que é a metodologia Quick Wins?</button>
+                <button class="sugestao-btn" data-sugestao="Como integrar os planos de manutenção ao SAP PM?">Como integrar os planos de manutenção ao SAP PM?</button>
+            </div>            
             {% for chat in chat_history %}
                 <div class="message_user">
                     <p><strong>Você:</strong> {{ chat.question }}</p>
                 </div>
                 <div class="message_bot">
-                    <p><strong>Manuela:</strong> <span class="chat-response" data-resposta="{{ chat.answer|escape }}"></span></p>
-
+                    <p><strong>Manuela:</strong></p>
+                    <span class="bot-response">
+                        {{ chat.answer|safe }}
+                    </span>
                     {% if chat.file_url and chat.file_name %}
-                        <div class="chat-attachment">
-                            <a href="{{ chat.file_url }}" target="_blank">
-                                <img src="{% static 'images/pdf.png' %}" alt="PDF" class="file-icon">
-                                <span>{{ chat.file_name }}</span>
-                            </a>
-                        </div>
-                    {% endif %}
+                    <div class="chat-attachment">
+                        <a href="{{ chat.file_url }}" target="_blank">
+                            <img src="{% static 'images/pdf.png' %}" alt="PDF" class="file-icon">
+                            <span>{{ chat.file_name }}</span>
+                        </a>
+                    </div>
+                {% endif %}
                 </div>
+                
+                
             {% empty %}
-                <p>Sem mensagens ainda nesta conversa.</p>
+                
             {% endfor %}
-
-
+            <div id="loading-indicator" class="loading-indicator" style="display: none;">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
         </div>
         <div class="chat-form">
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" action="{% url 'chat' %}">
                 {% csrf_token %}
-                <textarea id="message_area" name="message" placeholder="Fale com a Manuela..."></textarea>
-        
-                <!-- Botão de Upload -->
+                
+                <!-- Botão de anexar arquivos -->
                 <label for="file-upload" class="file-label">
-                    📎 <!-- Ícone de clipe -->
+                    🖇️ <!-- Ícone de clipe -->
                 </label>
                 <input type="file" name="file" id="file-upload" style="display: none;">
-        
+                
                 <!-- Nome do Arquivo Selecionado -->
                 <span id="file-name"></span>
-        
-                <!-- Botão de Envio -->
+                <!-- Área de digitação -->
+                <textarea id="message_area" name="message" placeholder="Digite sua mensagem..."></textarea>
+                
+                <!-- Botão de enviar -->
                 <button id="submitbutton" type="submit">
-                    <i class="arrow-up">↑</i>
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
         </div>
+
         
-    </div>
-    <script src="{% static 'js/chat.js' %}"></script>
+        
     
+        ...
+    </div>
+
+    <!-- ✅ Adicionado para suporte ao menu lateral -->
+    <div id="overlay"></div>
+
+    <script src="{% static 'js/chat.js' %}"></script>
 </body>
 </html>

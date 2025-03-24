@@ -113,7 +113,7 @@ def gerar_resposta_openai(user_message, contexto=None, contexto_adicional=None):
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=messages,
-            temperature=0.7,
+            temperature=0.5,
             max_tokens=700
         )
         return response.choices[0].message.content.strip()
