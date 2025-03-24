@@ -66,6 +66,11 @@
                     🖇️ <!-- Ícone de clipe -->
                 </label>
                 <input type="file" name="file" id="file-upload" style="display: none;">
+                <div id="file-preview" class="file-preview" style="display: none;">
+                    <img src="{% static 'images/pdf.png' %}" alt="PDF" class="file-icon-preview">
+                    <span id="file-name-preview"></span>
+                    <button type="button" id="remove-file-btn" class="remove-file-btn">❌</button>
+                </div>
                 
                 <!-- Nome do Arquivo Selecionado -->
                 <span id="file-name"></span>

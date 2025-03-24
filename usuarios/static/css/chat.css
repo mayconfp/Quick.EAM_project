@@ -235,6 +235,43 @@ height: 60px;
     margin-right: 5px;
 }
 
+.file-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.file-icon-preview {
+    width: 32px;
+    height: auto;
+}
+
+#file-name-preview {
+    font-size: 14px;
+    color: #333;
+}
+
+#remove-file-btn {
+    width: 2px;
+    background: none;
+    border: none;
+    color: red;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+#file-preview span {
+    max-width: 160px; /* Você pode ajustar esse valor conforme o layout */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
 .chat-form {
     display: flex;
     align-items: center;
@@ -503,6 +540,14 @@ header {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+
+.chat-history {
+    flex: 1;
+    margin-top: 60px;
+    overflow-y: auto;
+    background-color: #F8F9FA;
+    color: #2B2D42;
+}
 /* Estilo do logo */
 .logo {
     flex: 1; /* Faz com que o logo ocupe o espaço central */
@@ -603,7 +648,35 @@ header {
 .message_bot {
     padding: 5px 22px;
     font-size: 14px;
+
+
 }
+
+#file-preview {
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+#file-name {
+    max-width: 100%;
+}
+
+#file-preview button {
+    margin-left: 0;
+    align-self: flex-start;
+}
+
+
+#file-preview span {
+    max-width: 100%; /* Agora usa toda largura disponível no mobile */
+    max-width: 20px;
+}
+
+#file-preview img {
+    width: 28px;
+    height: 28px;
+}
+
 
 
 }

@@ -6,19 +6,31 @@ document.addEventListener("DOMContentLoaded", function () {
     const fileInput = document.getElementById("file-upload");
     const fileNameDisplay = document.getElementById("file-name");
     const sugestoesContainer = document.getElementById("sugestoes-mensagens");
+    const filePreview = document.getElementById("file-preview");
+    const fileNamePreview = document.getElementById("file-name-preview");
+    const removeFileBtn = document.getElementById("remove-file-btn");
 
 
     if (fileInput) {
-        fileInput.addEventListener("change", function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                fileNameDisplay.textContent = file.name;
-            } else {
-                fileNameDisplay.textContent = "";
-            }
-        });
-    }
+    fileInput.addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            filePreview.style.display = "flex";
+            fileNamePreview.textContent = file.name;
+        } else {
+            filePreview.style.display = "none";
+            fileNamePreview.textContent = "";
+        }
+    });
+}
 
+    if (removeFileBtn) {
+        removeFileBtn.addEventListener("click", function () {
+            fileInput.value = "";
+            filePreview.style.display = "none";
+            fileNamePreview.textContent = "";
+    });
+}
     function scrollToBottom() {
         if (chatHistory) {
             setTimeout(() => {
